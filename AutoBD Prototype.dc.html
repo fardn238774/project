@@ -49,19 +49,19 @@
       <div style="font-size:26px;font-weight:800;margin-bottom:24px">Platform Analytics &amp; Revenue</div>
 
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:28px">
-        <div style="border:1px solid var(--border);border-radius:14px;padding:18px;background:#ffffff">
+        <div style="border:1px solid var(--border);border-radius:14px;padding:18px;background:var(--card-bg)">
           <div style="font-size:24px;font-weight:800">4,812</div>
           <div style="font-size:12px;color:var(--dim)">Total active listings</div>
         </div>
-        <div style="border:1px solid var(--border);border-radius:14px;padding:18px;background:#ffffff">
+        <div style="border:1px solid var(--border);border-radius:14px;padding:18px;background:var(--card-bg)">
           <div style="font-size:24px;font-weight:800">9,340</div>
           <div style="font-size:12px;color:var(--dim)">Bids placed &middot; 68% win rate</div>
         </div>
-        <div style="border:1px solid var(--border);border-radius:14px;padding:18px;background:#ffffff">
+        <div style="border:1px solid var(--border);border-radius:14px;padding:18px;background:var(--card-bg)">
           <div style="font-size:24px;font-weight:800">2,610</div>
           <div style="font-size:12px;color:var(--dim)">Successful imports</div>
         </div>
-        <div style="border:1px solid var(--border);border-radius:14px;padding:18px;background:#ffffff">
+        <div style="border:1px solid var(--border);border-radius:14px;padding:18px;background:var(--card-bg)">
           <div style="font-size:24px;font-weight:800">41%</div>
           <div style="font-size:12px;color:var(--dim)">Container pooling match rate</div>
         </div>
@@ -125,6 +125,95 @@
     </div>
   </sc-if>
 
+  <!-- ORG (BIDDING ORGANIZATION) MODE -->
+  <sc-if value="{{ isOrgMode }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 40px;background:var(--ink);border-bottom:1px solid #211d18">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="font-size:22px;font-weight:800;letter-spacing:-0.02em;color:#fff">Auto<span style="color:#e2765f">BD</span> <span style="font-size:13px;font-weight:600;color:var(--dim);margin-left:6px">Bidding Org</span></div>
+        <div style="font-size:13px;color:#c9c4ba;padding-left:12px;border-left:1px solid #3a352d">{{ orgName }}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:16px">
+        <div style="position:relative;font-size:18px;color:#e2e0d9;cursor:pointer">&#128276;<div style="position:absolute;top:-4px;right:-6px;min-width:16px;height:16px;padding:0 4px;border-radius:8px;background:var(--accent);color:#0a0a0a;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center">{{ orgHireCount }}</div></div>
+        <div onClick="{{ exitOrg }}" style="font-size:13px;color:#e2e0d9;cursor:pointer;padding:8px 14px;border-radius:8px;background:#211d18">Log out</div>
+      </div>
+    </div>
+
+    <div style="max-width:1180px;margin:0 auto;padding:32px 40px 80px">
+      <div style="font-size:26px;font-weight:800;margin-bottom:4px">Welcome back, {{ orgName }}</div>
+      <div style="font-size:14px;color:var(--muted);margin-bottom:24px">Buyers who selected you, their target cars, and live chats — all in one place.</div>
+
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:28px">
+        <div style="border:1px solid var(--border);border-radius:14px;padding:18px;background:var(--card-bg)">
+          <div style="font-size:24px;font-weight:800">{{ orgHireCount }}</div>
+          <div style="font-size:12px;color:var(--dim)">Active hire requests</div>
+        </div>
+        <div style="border:1px solid var(--border);border-radius:14px;padding:18px;background:var(--card-bg)">
+          <div style="font-size:24px;font-weight:800">&#9733; {{ orgRating }}</div>
+          <div style="font-size:12px;color:var(--dim)">Buyer rating</div>
+        </div>
+        <div style="border:1px solid var(--border);border-radius:14px;padding:18px;background:var(--card-bg)">
+          <div style="font-size:24px;font-weight:800">{{ orgImports }}</div>
+          <div style="font-size:12px;color:var(--dim)">Successful imports</div>
+        </div>
+        <div style="border:1px solid var(--border);border-radius:14px;padding:18px;background:var(--card-bg)">
+          <div style="font-size:24px;font-weight:800">{{ orgResponse }}</div>
+          <div style="font-size:12px;color:var(--dim)">Avg response time</div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1.25fr 1fr;gap:20px">
+
+        <!-- NOTIFICATIONS: who's hiring -->
+        <div style="border:1px solid var(--border);border-radius:16px;background:var(--card-bg);padding:22px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+            <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:var(--dim)">Notifications &middot; who's hiring you</div>
+            <div style="font-size:12px;font-weight:700;color:var(--accent)">{{ orgHireCount }} active</div>
+          </div>
+          <sc-for list="{{ orgHires }}" as="hire" hint-placeholder-count="3">
+            <div style="border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px;background:var(--card-bg)">
+              <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px">
+                <div>
+                  <div style="font-size:15px;font-weight:700">{{ hire.customer }}</div>
+                  <div style="font-size:12px;color:var(--dim)">{{ hire.location }}</div>
+                </div>
+                <div style="font-size:10.5px;font-weight:700;padding:4px 9px;border-radius:20px;background:{{ hire.statusBg }};color:{{ hire.statusColor }}">{{ hire.statusLabel }}</div>
+              </div>
+              <div style="display:grid;gap:6px;margin-bottom:12px">
+                <div style="font-size:13px"><span style="color:var(--dim)">Target car:</span> <span style="font-weight:600">{{ hire.car }}</span></div>
+                <div style="font-size:13px"><span style="color:var(--dim)">Budget:</span> <span style="font-weight:600">{{ hire.budget }}</span></div>
+                <div style="font-size:13px"><span style="color:var(--dim)">Timing:</span> <span style="font-weight:600">{{ hire.timing }}</span></div>
+              </div>
+              <div style="display:flex;gap:8px">
+                <div style="flex:1;text-align:center;padding:8px;border-radius:8px;background:var(--ink);color:#fff;font-size:12.5px;font-weight:700;cursor:pointer">Open chat</div>
+                <div style="flex:1;text-align:center;padding:8px;border-radius:8px;background:var(--chip-bg);color:var(--text);font-size:12.5px;font-weight:700;cursor:pointer">View brief</div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+
+        <!-- LIVE CHAT with customer -->
+        <div style="border:1px solid var(--border);border-radius:16px;background:var(--card-bg);padding:22px;display:flex;flex-direction:column">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
+            <div style="width:9px;height:9px;border-radius:50%;background:#2f8f5f;animation:pulseDot 1.4s ease-in-out infinite"></div>
+            <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:var(--dim)">Live chat &middot; {{ chatCustomer }}</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px;min-height:260px;max-height:320px;overflow-y:auto">
+            <sc-for list="{{ orgChatMessages }}" as="msg" hint-placeholder-count="3">
+              <div style="display:flex;justify-content:{{ msg.justify }}">
+                <div style="max-width:78%;padding:10px 14px;border-radius:12px;background:{{ msg.bg }};color:{{ msg.color }};font-size:13.5px;line-height:1.45">{{ msg.text }}</div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:auto">
+            <input value="{{ orgChatInput }}" onChange="{{ setOrgChatInput }}" placeholder="Message the buyer…" style="flex:1;padding:11px 14px;border:1px solid var(--border);border-radius:9px;font-size:13.5px;background:#ffffff" />
+            <div onClick="{{ sendOrgChat }}" style="padding:11px 18px;border-radius:9px;background:var(--accent);color:#fff;font-size:13.5px;font-weight:700;cursor:pointer">Send</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </sc-if>
+
   <!-- BUYER MODE -->
   <sc-if value="{{ isBuyerMode }}" hint-placeholder-val="{{ true }}">
 
@@ -148,14 +237,16 @@
       </sc-if>
       <sc-if value="{{ isLoggedIn }}" hint-placeholder-val="{{ true }}">
         <div style="display:flex;align-items:center;gap:8px;padding:6px 12px 6px 6px;border-radius:20px;background:var(--chip-bg)">
-          <div style="width:26px;height:26px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">R</div>
-          <div style="font-size:13px;font-weight:600">Buyer</div>
+          <div style="width:26px;height:26px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">{{ userInitial }}</div>
+          <div style="font-size:13px;font-weight:600">{{ userLabel }}</div>
         </div>
       </sc-if>
       <div class="theme-toggle" onClick="{{ toggleTheme }}" style="position:relative;width:52px;height:27px;border-radius:999px;background:linear-gradient(90deg,#0a0a0a 50%,#f3f2ee 50%);cursor:pointer;flex-shrink:0;border:1px solid rgba(120,120,120,0.3)">
         <div class="toggle-knob" style="position:absolute;top:2px;left:{{ knobLeft }};width:21px;height:21px;border-radius:50%;background:var(--accent);box-shadow:0 2px 6px rgba(0,0,0,0.35);transition:left 0.32s cubic-bezier(0.16,1,0.3,1)"></div>
       </div>
-      <div onClick="{{ goAdmin }}" style="font-size:12px;color:var(--dim);cursor:pointer">Admin view</div>
+      <sc-if value="{{ isAdminUser }}" hint-placeholder-val="{{ false }}">
+        <div onClick="{{ goAdmin }}" style="font-size:12px;color:var(--dim);cursor:pointer">Admin view</div>
+      </sc-if>
     </div>
   </div>
 
@@ -168,40 +259,82 @@
     </div>
   </sc-if>
 
-  <!-- SCREEN: LOGIN -->
+  <!-- SCREEN: LOGIN / REGISTER -->
   <sc-if value="{{ isLogin }}" hint-placeholder-val="{{ false }}">
-    <div style="max-width:460px;margin:0 auto;padding:48px 40px 100px">
-      <div style="font-size:26px;font-weight:800;margin-bottom:6px">Create your account</div>
-      <div style="font-size:14px;color:var(--muted);margin-bottom:24px">Choose your role to continue.</div>
-      <div style="display:flex;gap:6px;margin-bottom:24px;background:var(--chip-bg);padding:4px;border-radius:10px">
-        <div onClick="{{ setRoleBuyer }}" style="flex:1;text-align:center;padding:9px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;background:{{ roleBuyerBg }};color:{{ roleBuyerColor }}">Buyer</div>
-        <div onClick="{{ setRoleOrg }}" style="flex:1;text-align:center;padding:9px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;background:{{ roleOrgBg }};color:{{ roleOrgColor }}">Bidding Organization</div>
-        <div onClick="{{ setRoleAdmin }}" style="flex:1;text-align:center;padding:9px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;background:{{ roleAdminBg }};color:{{ roleAdminColor }}">Admin</div>
+    <div style="max-width:1000px;margin:0 auto;padding:40px 40px 100px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--border);border-radius:20px;overflow:hidden;background:var(--card-bg);box-shadow:0 12px 44px rgba(0,0,0,0.08)">
+
+        <!-- BRAND PANEL -->
+        <div style="background:var(--ink);color:#fff;padding:44px 40px;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden">
+          <div style="position:absolute;top:-90px;right:-90px;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(var(--accent-rgb),0.35),transparent 70%)"></div>
+          <div style="position:absolute;bottom:-70px;left:-70px;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(var(--accent-rgb),0.15),transparent 70%)"></div>
+          <div style="position:relative">
+            <div style="font-size:24px;font-weight:800;letter-spacing:-0.02em;margin-bottom:26px">Auto<span style="color:var(--accent)">BD</span></div>
+            <div style="font-size:27px;font-weight:800;line-height:1.2;margin-bottom:14px">{{ authHeadline }}</div>
+            <div style="font-size:14px;color:#c9c4ba;line-height:1.65">{{ authSub }}</div>
+          </div>
+          <div style="position:relative;display:grid;gap:13px;margin-top:34px">
+            <div style="display:flex;align-items:center;gap:11px;font-size:13.5px;color:#e2e0d9"><span style="width:22px;height:22px;border-radius:6px;background:rgba(var(--accent-rgb),0.2);color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0">✓</span> Transparent landed-cost on every car</div>
+            <div style="display:flex;align-items:center;gap:11px;font-size:13.5px;color:#e2e0d9"><span style="width:22px;height:22px;border-radius:6px;background:rgba(var(--accent-rgb),0.2);color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0">✓</span> Licensed, rated bidding organizations</div>
+            <div style="display:flex;align-items:center;gap:11px;font-size:13.5px;color:#e2e0d9"><span style="width:22px;height:22px;border-radius:6px;background:rgba(var(--accent-rgb),0.2);color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0">✓</span> Live Japanese auctions, escrow-protected</div>
+          </div>
+        </div>
+
+        <!-- FORM PANEL -->
+        <div style="padding:40px;background:var(--card-bg)">
+          <div style="display:flex;gap:4px;margin-bottom:24px;background:var(--chip-bg);padding:4px;border-radius:10px">
+            <div onClick="{{ setAuthLogin }}" style="flex:1;text-align:center;padding:10px;border-radius:8px;font-size:13.5px;font-weight:700;cursor:pointer;background:{{ authLoginBg }};color:{{ authLoginColor }}">Log in</div>
+            <div onClick="{{ setAuthRegister }}" style="flex:1;text-align:center;padding:10px;border-radius:8px;font-size:13.5px;font-weight:700;cursor:pointer;background:{{ authRegisterBg }};color:{{ authRegisterColor }}">Create account</div>
+          </div>
+
+          <div style="font-size:11px;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:9px">I am a</div>
+          <div style="display:flex;gap:7px;margin-bottom:22px">
+            <div onClick="{{ setRoleBuyer }}" style="flex:1;text-align:center;padding:9px 4px;border-radius:9px;font-size:12.5px;font-weight:700;cursor:pointer;border:1px solid {{ roleBuyerBorder }};background:{{ roleBuyerBg }};color:{{ roleBuyerColor }}">Buyer</div>
+            <div onClick="{{ setRoleOrg }}" style="flex:1;text-align:center;padding:9px 4px;border-radius:9px;font-size:12.5px;font-weight:700;cursor:pointer;border:1px solid {{ roleOrgBorder }};background:{{ roleOrgBg }};color:{{ roleOrgColor }}">Bidding Org</div>
+            <div onClick="{{ setRoleAdmin }}" style="flex:1;text-align:center;padding:9px 4px;border-radius:9px;font-size:12.5px;font-weight:700;cursor:pointer;border:1px solid {{ roleAdminBorder }};background:{{ roleAdminBg }};color:{{ roleAdminColor }}">Admin</div>
+          </div>
+
+          <!-- LOGIN FORM -->
+          <sc-if value="{{ isAuthLogin }}" hint-placeholder-val="{{ true }}">
+            <div style="display:grid;gap:12px">
+              <input placeholder="Email" style="padding:12px 14px;border:1px solid var(--border);border-radius:9px;font-size:14px;background:#ffffff" />
+              <input placeholder="Password" type="password" style="padding:12px 14px;border:1px solid var(--border);border-radius:9px;font-size:14px;background:#ffffff" />
+              <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--dim)">
+                <div style="display:flex;align-items:center;gap:6px"><input type="checkbox" /> Remember me</div>
+                <span style="color:var(--accent);cursor:pointer">Forgot password?</span>
+              </div>
+            </div>
+            <div onClick="{{ submitLogin }}" style="margin-top:18px;text-align:center;padding:13px;border-radius:10px;background:var(--accent);color:#fff;font-size:14px;font-weight:700;cursor:pointer">Log in as {{ roleLabel }}</div>
+          </sc-if>
+
+          <!-- REGISTER FORM -->
+          <sc-if value="{{ isAuthRegister }}" hint-placeholder-val="{{ false }}">
+            <sc-if value="{{ regRoleBuyer }}" hint-placeholder-val="{{ true }}">
+              <div style="display:grid;gap:12px">
+                <input placeholder="Full name" style="padding:12px 14px;border:1px solid var(--border);border-radius:9px;font-size:14px;background:#ffffff" />
+                <input placeholder="Email" style="padding:12px 14px;border:1px solid var(--border);border-radius:9px;font-size:14px;background:#ffffff" />
+                <input placeholder="Phone" style="padding:12px 14px;border:1px solid var(--border);border-radius:9px;font-size:14px;background:#ffffff" />
+                <input placeholder="Password" type="password" style="padding:12px 14px;border:1px solid var(--border);border-radius:9px;font-size:14px;background:#ffffff" />
+              </div>
+            </sc-if>
+            <sc-if value="{{ regRoleOrg }}" hint-placeholder-val="{{ false }}">
+              <div style="display:grid;gap:12px">
+                <div style="font-size:12px;color:var(--dim)">Step 1 of 3 &middot; Company details</div>
+                <input placeholder="Company name" style="padding:12px 14px;border:1px solid var(--border);border-radius:9px;font-size:14px;background:#ffffff" />
+                <input placeholder="License number" style="padding:12px 14px;border:1px solid var(--border);border-radius:9px;font-size:14px;background:#ffffff" />
+                <input placeholder="Years of track record" style="padding:12px 14px;border:1px solid var(--border);border-radius:9px;font-size:14px;background:#ffffff" />
+                <input placeholder="Proposed fee structure" style="padding:12px 14px;border:1px solid var(--border);border-radius:9px;font-size:14px;background:#ffffff" />
+                <div style="font-size:12px;color:var(--dim)">Account stays inactive until admin approval.</div>
+              </div>
+            </sc-if>
+            <sc-if value="{{ regRoleAdmin }}" hint-placeholder-val="{{ false }}">
+              <div style="font-size:14px;color:var(--muted);padding:16px;background:var(--chip-bg);border-radius:10px">Admin accounts are provisioned internally and cannot self-register.</div>
+            </sc-if>
+            <div onClick="{{ submitRegistration }}" style="margin-top:18px;text-align:center;padding:13px;border-radius:10px;background:var(--accent);color:#fff;font-size:14px;font-weight:700;cursor:pointer">Create account &amp; continue</div>
+          </sc-if>
+
+        </div>
       </div>
-
-      <sc-if value="{{ regRoleBuyer }}" hint-placeholder-val="{{ true }}">
-        <div style="display:grid;gap:12px">
-          <input placeholder="Full name" style="padding:12px 14px;border:1px solid var(--border);border-radius:9px;font-size:14px" />
-          <input placeholder="Email" style="padding:12px 14px;border:1px solid var(--border);border-radius:9px;font-size:14px" />
-          <input placeholder="Phone" style="padding:12px 14px;border:1px solid var(--border);border-radius:9px;font-size:14px" />
-          <input placeholder="Password" type="password" style="padding:12px 14px;border:1px solid var(--border);border-radius:9px;font-size:14px" />
-        </div>
-      </sc-if>
-      <sc-if value="{{ regRoleOrg }}" hint-placeholder-val="{{ false }}">
-        <div style="display:grid;gap:12px">
-          <div style="font-size:12px;color:var(--dim)">Step 1 of 3 &middot; Company details</div>
-          <input placeholder="Company name" style="padding:12px 14px;border:1px solid var(--border);border-radius:9px;font-size:14px" />
-          <input placeholder="License number" style="padding:12px 14px;border:1px solid var(--border);border-radius:9px;font-size:14px" />
-          <input placeholder="Years of track record" style="padding:12px 14px;border:1px solid var(--border);border-radius:9px;font-size:14px" />
-          <input placeholder="Proposed fee structure" style="padding:12px 14px;border:1px solid var(--border);border-radius:9px;font-size:14px" />
-          <div style="font-size:12px;color:var(--dim)">Account stays inactive until admin approval.</div>
-        </div>
-      </sc-if>
-      <sc-if value="{{ regRoleAdmin }}" hint-placeholder-val="{{ false }}">
-        <div style="font-size:14px;color:var(--muted);padding:16px;background:var(--chip-bg);border-radius:10px">Admin accounts are provisioned internally and cannot self-register.</div>
-      </sc-if>
-
-      <div onClick="{{ submitRegistration }}" style="margin-top:20px;text-align:center;padding:13px;border-radius:10px;background:var(--accent);color:#fff;font-size:14px;font-weight:700;cursor:pointer">Create account &amp; continue</div>
     </div>
   </sc-if>
 
@@ -491,34 +624,18 @@
     </div>
   </sc-if>
 
-  <!-- SCREEN: MOD STUDIO -->
+  <!-- SCREEN: MOD STUDIO (KAIDO 3D configurator, embedded) -->
   <sc-if value="{{ isModStudio }}" hint-placeholder-val="{{ false }}">
-    <div style="max-width:1100px;margin:0 auto;padding:24px 40px 80px">
-      <div style="font-size:30px;font-weight:800;margin-bottom:8px">Modification Studio &amp; fitment checker</div>
-      <div style="font-size:15px;color:var(--muted);margin-bottom:22px;max-width:640px">BRTA-legal parts, filtered to what actually fits your car.</div>
-
-      <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:14px 18px">
-        <div style="font-size:13px;color:var(--muted)">Your garage:</div>
-        <div style="font-size:14px;font-weight:700">Toyota Harrier 2.0L Hybrid (2019) &middot; chassis AVU65</div>
-        <div onClick="{{ toggleFitmentFilter }}" style="margin-left:auto;font-size:13px;font-weight:700;color:var(--accent);cursor:pointer">{{ fitmentToggleLabel }}</div>
+    <div style="padding:16px 40px 32px">
+      <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:14px">
+        <div>
+          <div style="font-size:26px;font-weight:800;letter-spacing:-0.01em;margin-bottom:4px">Modification Studio</div>
+          <div style="font-size:14px;color:var(--muted)">Customize your car in 3D — paint, finish, wheels &amp; spoiler — then place your order with Confirm &amp; Pay.</div>
+        </div>
+        <div style="font-size:12px;color:var(--dim);white-space:nowrap">3D configurator</div>
       </div>
-
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px">
-        <sc-for list="{{ displayedParts }}" as="p" hint-placeholder-count="3">
-          <div style="border:1px solid var(--border);border-radius:16px;background:var(--card-bg);padding:18px">
-            <div style="height:90px;border-radius:9px;background:repeating-linear-gradient(135deg,#efece3,#efece3 10px,var(--border) 10px,var(--border) 20px);margin-bottom:12px"></div>
-            <div style="font-size:14px;font-weight:700;margin-bottom:4px">{{ p.name }}</div>
-            <div style="font-size:12px;color:var(--muted);margin-bottom:10px">{{ p.category }} &middot; {{ p.price }}</div>
-            <div style="font-size:11px;padding:3px 8px;border-radius:6px;display:inline-block;margin-bottom:10px;background:{{ p.fitBg }};color:{{ p.fitColor }}">{{ p.fitLabel }}</div>
-            <div onClick="{{ p.add }}" style="text-align:center;padding:9px;border-radius:8px;background:{{ p.addBg }};color:{{ p.addColor }};font-size:13px;font-weight:700;cursor:pointer">{{ p.addLabel }}</div>
-          </div>
-        </sc-for>
-      </div>
-
-      <div style="border:1px solid var(--border);border-radius:16px;background:var(--card-bg);padding:20px">
-        <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:var(--dim);margin-bottom:10px">Modification bundle ({{ modBundleCount }})</div>
-        <div style="font-size:13.5px;color:var(--text)">{{ modBundleSummary }}</div>
-        <div style="font-size:12px;color:var(--dim);margin-top:8px">Bundle through your bidding organization for combined shipping and pre-installation before delivery.</div>
+      <div style="border:1px solid var(--border);border-radius:16px;overflow:hidden;background:#000;box-shadow:0 12px 44px rgba(0,0,0,0.14)">
+        <iframe src="./kaido-multicar-garage.html" title="KAIDO Garage 3D configurator" style="width:100%;height:calc(100vh - 190px);min-height:600px;border:0;display:block"></iframe>
       </div>
     </div>
   </sc-if>
@@ -537,7 +654,7 @@
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
         <sc-for list="{{ agents }}" as="agent" hint-placeholder-count="4">
-          <div style="border:1px solid var(--border);border-radius:16px;padding:22px;background:#ffffff">
+          <div style="border:1px solid var(--border);border-radius:16px;padding:22px;background:var(--card-bg)">
             <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px">
               <div>
                 <div style="font-size:17px;font-weight:700;margin-bottom:4px">{{ agent.name }}</div>
@@ -586,19 +703,19 @@
       </div>
 
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px">
-        <div style="border:1px solid var(--border);border-radius:12px;padding:16px;background:#ffffff">
+        <div style="border:1px solid var(--border);border-radius:12px;padding:16px;background:var(--card-bg)">
           <div style="font-size:20px;font-weight:800">{{ selectedAgent.imports }}</div>
           <div style="font-size:11px;color:var(--dim);text-transform:uppercase">Successful imports</div>
         </div>
-        <div style="border:1px solid var(--border);border-radius:12px;padding:16px;background:#ffffff">
+        <div style="border:1px solid var(--border);border-radius:12px;padding:16px;background:var(--card-bg)">
           <div style="font-size:20px;font-weight:800">{{ selectedAgent.turnaround }} days</div>
           <div style="font-size:11px;color:var(--dim);text-transform:uppercase">Avg turnaround</div>
         </div>
-        <div style="border:1px solid var(--border);border-radius:12px;padding:16px;background:#ffffff">
+        <div style="border:1px solid var(--border);border-radius:12px;padding:16px;background:var(--card-bg)">
           <div style="font-size:20px;font-weight:800">{{ selectedAgent.feeLabel }}</div>
           <div style="font-size:11px;color:var(--dim);text-transform:uppercase">Fee structure</div>
         </div>
-        <div style="border:1px solid var(--border);border-radius:12px;padding:16px;background:#ffffff">
+        <div style="border:1px solid var(--border);border-radius:12px;padding:16px;background:var(--card-bg)">
           <div style="font-size:20px;font-weight:800">{{ selectedAgent.license }}</div>
           <div style="font-size:11px;color:var(--dim);text-transform:uppercase">License no.</div>
         </div>
@@ -609,7 +726,7 @@
       <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:var(--dim);margin-bottom:12px">Recent buyer ratings</div>
       <div style="display:grid;gap:10px;margin-bottom:100px">
         <sc-for list="{{ selectedAgent.testimonials }}" as="t" hint-placeholder-count="2">
-          <div style="border:1px solid var(--border);border-radius:12px;padding:16px;background:#ffffff">
+          <div style="border:1px solid var(--border);border-radius:12px;padding:16px;background:var(--card-bg)">
             <div style="font-size:14px;color:var(--text);margin-bottom:8px;line-height:1.5">"{{ t.quote }}"</div>
             <div style="display:flex;gap:8px;flex-wrap:wrap">
               <div style="font-size:11px;padding:3px 8px;border-radius:6px;background:var(--chip-bg);color:var(--muted)">Communication ★{{ t.comm }}</div>
@@ -624,8 +741,168 @@
         <div style="position:relative;display:inline-block">
           <div style="position:absolute;inset:-6px;border-radius:999px;border:1.5px solid rgba(var(--accent-rgb),0.5);animation:ringExpand 2.4s ease-out infinite;pointer-events:none"></div>
           <div style="position:absolute;inset:-6px;border-radius:999px;border:1.5px solid rgba(var(--accent-rgb),0.5);animation:ringExpand 2.4s ease-out infinite;animation-delay:1.2s;pointer-events:none"></div>
-          <div onClick="{{ startBidding }}" style="position:relative;padding:14px 32px;border-radius:11px;background:var(--accent);color:var(--on-accent);font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(var(--accent-rgb),0.3)" style-hover="background:var(--accent-hover)">Select {{ selectedAgent.name }} &amp; start bidding &rarr;</div>
+          <div onClick="{{ goAuctions }}" style="position:relative;padding:14px 32px;border-radius:11px;background:var(--accent);color:var(--on-accent);font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(var(--accent-rgb),0.3)" style-hover="background:var(--accent-hover)">Select {{ selectedAgent.name }} &amp; choose auction &rarr;</div>
         </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- SCREEN: AUCTION SELECT -->
+  <sc-if value="{{ isAuctionSelect }}" hint-placeholder-val="{{ false }}">
+    <div style="max-width:1180px;margin:0 auto;padding:24px 40px 80px">
+      <div onClick="{{ goProfile }}" style="font-size:13px;color:var(--muted);cursor:pointer;margin-bottom:18px">&larr; Back to {{ selectedAgent.name }}</div>
+      <div style="font-size:30px;font-weight:800;letter-spacing:-0.01em;margin-bottom:8px">Choose an auction session</div>
+      <div style="font-size:15px;color:var(--muted);margin-bottom:8px;max-width:680px">{{ selectedAgent.name }} will bid for you live at these upcoming Japanese auctions. Pick the session that fits your schedule &mdash; each shows the start time in Japan (JST) and in Bangladesh (BST).</div>
+      <div style="font-size:13px;color:var(--dim);margin-bottom:28px">Times auto-converted to Bangladesh Standard Time (UTC+6)</div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <sc-for list="{{ auctions }}" as="auction" hint-placeholder-count="4">
+          <div style="border:1px solid var(--border);border-radius:16px;padding:22px;background:var(--card-bg)">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px">
+              <div>
+                <div style="font-size:17px;font-weight:700;margin-bottom:4px">{{ auction.house }}</div>
+                <div style="font-size:12.5px;color:var(--muted)">{{ auction.location }}</div>
+              </div>
+              <div style="display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;padding:5px 10px;border-radius:20px;background:{{ auction.statusBg }};color:{{ auction.statusColor }}">
+                <div style="width:6px;height:6px;border-radius:50%;background:{{ auction.statusColor }}"></div>
+                {{ auction.statusLabel }}
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:14px 0;border-top:1px solid var(--track-bg);border-bottom:1px solid var(--track-bg);margin-bottom:14px">
+              <div>
+                <div style="font-size:15px;font-weight:700">{{ auction.day }}</div>
+                <div style="font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:0.03em">Session</div>
+              </div>
+              <div>
+                <div style="font-size:15px;font-weight:700">{{ auction.jst }} JST</div>
+                <div style="font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:0.03em">{{ auction.bst }} your time</div>
+              </div>
+              <div>
+                <div style="font-size:15px;font-weight:700">{{ auction.matches }}</div>
+                <div style="font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:0.03em">Matching lots</div>
+              </div>
+            </div>
+            <div onClick="{{ auction.select }}" style="text-align:center;padding:11px;border-radius:9px;background:var(--ink);color:#fff;font-size:14px;font-weight:600;cursor:pointer" style-hover="background:var(--accent)">Select this auction &rarr;</div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- SCREEN: AUCTION LOTS (today's catalog + wishlist) -->
+  <sc-if value="{{ isAuctionLots }}" hint-placeholder-val="{{ false }}">
+    <div style="max-width:1180px;margin:0 auto;padding:24px 40px 120px">
+      <div onClick="{{ goAuctions }}" style="font-size:13px;color:var(--muted);cursor:pointer;margin-bottom:18px">&larr; Back to auctions</div>
+      <div style="font-size:30px;font-weight:800;letter-spacing:-0.01em;margin-bottom:8px">Cars in today's auction</div>
+      <div style="font-size:15px;color:var(--muted);max-width:660px;margin-bottom:8px">{{ selectedAuction.house }} &middot; {{ selectedAuction.day }} {{ selectedAuction.jst }} JST. Browse the lots {{ selectedAgent.name }} can bid on for you, and wishlist the ones you want them to watch.</div>
+      <div style="font-size:13px;color:var(--dim);margin-bottom:20px">{{ selectedAuction.matches }} matching lots &middot; {{ wishlistCount }} wishlisted</div>
+
+      <div onClick="{{ goTelecast }}" style="display:flex;align-items:center;justify-content:space-between;gap:16px;border:1px solid rgba(var(--accent-rgb),0.4);border-radius:14px;padding:15px 20px;margin-bottom:24px;background:linear-gradient(90deg,rgba(var(--accent-rgb),0.12),var(--card-bg));cursor:pointer" style-hover="border-color:var(--accent)">
+        <div style="display:flex;align-items:center;gap:14px">
+          <div style="display:flex;align-items:center;gap:7px;background:#c1442d;color:#fff;font-size:11px;font-weight:800;letter-spacing:0.04em;padding:5px 10px;border-radius:6px"><div style="width:7px;height:7px;border-radius:50%;background:#fff;animation:pulseDot 1.4s ease-in-out infinite"></div> LIVE</div>
+          <div>
+            <div style="font-size:15px;font-weight:700">Watch the live auction telecast</div>
+            <div style="font-size:12.5px;color:var(--muted)">{{ selectedAuction.house }} is on air now &middot; {{ telecastViewers }} watching</div>
+          </div>
+        </div>
+        <div style="font-size:13px;font-weight:700;color:var(--accent);white-space:nowrap">Watch now &rarr;</div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px">
+        <sc-for list="{{ auctionLots }}" as="lot" hint-placeholder-count="6">
+          <div style="border:1px solid var(--border);border-radius:16px;background:var(--card-bg);overflow:hidden">
+            <div style="position:relative;height:130px;background:repeating-linear-gradient(135deg,#efece3,#efece3 10px,var(--border) 10px,var(--border) 20px);display:flex;align-items:center;justify-content:center">
+              <div style="font-family:ui-monospace,monospace;font-size:11px;color:#8a8577">lot photo</div>
+              <div style="position:absolute;top:10px;left:10px;font-size:10.5px;font-weight:700;background:var(--ink);color:#fff;padding:3px 8px;border-radius:6px">Lot {{ lot.lot }}</div>
+              <div onClick="{{ lot.toggle }}" style="position:absolute;top:8px;right:8px;width:34px;height:34px;border-radius:50%;background:{{ lot.wishBg }};color:{{ lot.wishColor }};border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,0.12)">{{ lot.wishLabel }}</div>
+            </div>
+            <div style="padding:16px">
+              <div style="font-size:15px;font-weight:700;margin-bottom:4px">{{ lot.year }} {{ lot.make }} {{ lot.model }}</div>
+              <div style="font-size:13px;color:var(--muted);margin-bottom:10px">{{ lot.km }} km &middot; Grade {{ lot.grade }}</div>
+              <div style="font-size:14px;font-weight:800;color:var(--accent)">Est. {{ lot.est }}</div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="position:fixed;bottom:0;left:0;right:0;background:var(--card-bg);border-top:1px solid var(--border);padding:16px 40px;display:flex;align-items:center;justify-content:space-between;gap:16px;z-index:10">
+      <div style="font-size:13px;color:var(--muted)"><span style="font-weight:700;color:var(--text)">{{ wishlistCount }}</span> wishlisted for this session</div>
+      <div style="position:relative;display:inline-block">
+        <div style="position:absolute;inset:-6px;border-radius:999px;border:1.5px solid rgba(var(--accent-rgb),0.5);animation:ringExpand 2.4s ease-out infinite;pointer-events:none"></div>
+        <div onClick="{{ joinAuction }}" style="position:relative;padding:13px 30px;border-radius:11px;background:var(--accent);color:var(--on-accent);font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(var(--accent-rgb),0.3)" style-hover="background:var(--accent-hover)">Join live auction &rarr;</div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- SCREEN: LIVE TELECAST (customer) -->
+  <sc-if value="{{ isTelecast }}" hint-placeholder-val="{{ false }}">
+    <div style="max-width:1180px;margin:0 auto;padding:24px 40px 80px">
+      <div onClick="{{ goAuctionLots }}" style="font-size:13px;color:var(--muted);cursor:pointer;margin-bottom:18px">&larr; Back to lots</div>
+      <div style="font-size:30px;font-weight:800;letter-spacing:-0.01em;margin-bottom:6px">Live auction telecast</div>
+      <div style="font-size:14px;color:var(--muted);margin-bottom:22px">{{ selectedAuction.house }} &middot; {{ selectedAuction.day }} {{ selectedAuction.jst }} JST &middot; broadcast via {{ selectedAgent.name }}</div>
+
+      <div style="display:grid;grid-template-columns:1.6fr 1fr;gap:20px;align-items:start">
+
+        <!-- BROADCAST FRAME -->
+        <div>
+          <div style="position:relative;border-radius:16px 16px 0 0;overflow:hidden;background:#0f0d0a;height:400px;border:1px solid var(--border)">
+            <div style="position:absolute;inset:0;background:radial-gradient(circle at 50% 42%,rgba(var(--accent-rgb),0.14),transparent 62%)"></div>
+            <div style="position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(255,255,255,0.02),rgba(255,255,255,0.02) 2px,transparent 2px,transparent 4px)"></div>
+
+            <div style="position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:14px 16px;z-index:2">
+              <div style="display:flex;align-items:center;gap:8px;background:#c1442d;color:#fff;font-size:11px;font-weight:800;letter-spacing:0.04em;padding:5px 11px;border-radius:6px">
+                <div style="width:7px;height:7px;border-radius:50%;background:#fff;animation:pulseDot 1.4s ease-in-out infinite"></div> LIVE
+              </div>
+              <div style="background:rgba(0,0,0,0.45);color:#fff;font-size:12px;font-weight:600;padding:5px 11px;border-radius:6px">{{ telecastViewers }} watching</div>
+            </div>
+
+            <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px">
+              <div style="font-size:11px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:var(--accent);margin-bottom:12px">Now on the block</div>
+              <div style="font-size:25px;font-weight:800;color:#fff;margin-bottom:6px">Toyota Harrier Hybrid &mdash; 2019</div>
+              <div style="font-size:13px;color:#c9c4ba;margin-bottom:22px">Lot A-8842 &middot; Grade 4.5B &middot; 32,400 km</div>
+              <div style="font-size:44px;font-weight:800;color:#fff;font-variant-numeric:tabular-nums;line-height:1">¥{{ bidJPYFormatted }}</div>
+              <div style="font-size:14px;color:var(--accent);font-weight:700;margin-top:6px">৳{{ bidBDTFormatted }} equivalent</div>
+            </div>
+
+            <div style="position:absolute;bottom:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:14px 16px;background:linear-gradient(0deg,rgba(0,0,0,0.65),transparent);z-index:2">
+              <div style="font-size:12.5px;color:#e2e0d9">Hammer falls in <span style="font-weight:700;color:#fff">{{ timerFormatted }}</span></div>
+              <div style="display:flex;align-items:center;gap:8px">
+                <div style="font-size:11px;color:#c9c4ba">1080p</div>
+                <div style="width:30px;height:16px;border-radius:3px;background:rgba(255,255,255,0.22)"></div>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex;align-items:center;justify-content:space-between;border:1px solid var(--border);border-top:none;border-radius:0 0 16px 16px;padding:14px 18px;background:var(--card-bg)">
+            <div style="font-size:13px;color:var(--muted)">{{ activeBidders }} active bidders &middot; 1 JPY &asymp; {{ exchangeRateFormatted }} BDT</div>
+            <div onClick="{{ joinAuction }}" style="padding:10px 22px;border-radius:9px;background:var(--accent);color:var(--on-accent);font-size:13.5px;font-weight:700;cursor:pointer">Join live auction &rarr;</div>
+          </div>
+        </div>
+
+        <!-- LIVE BID FEED -->
+        <div style="display:grid;gap:16px">
+          <div style="border:1px solid var(--border);border-radius:16px;background:var(--card-bg);padding:20px">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+              <div style="width:8px;height:8px;border-radius:50%;background:#c1442d;animation:pulseDot 1.4s ease-in-out infinite"></div>
+              <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:var(--dim)">Live bid feed</div>
+            </div>
+            <sc-for list="{{ telecastFeed }}" as="b" hint-placeholder-count="4">
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--track-bg)">
+                <div style="font-size:13px;color:{{ b.color }};font-weight:{{ b.weight }}">{{ b.who }}</div>
+                <div style="font-size:14px;font-weight:700;font-variant-numeric:tabular-nums;color:{{ b.color }}">{{ b.bid }}</div>
+              </div>
+            </sc-for>
+            <div style="font-size:12px;color:var(--dim);margin-top:12px">Updated live as bids land at {{ selectedAuction.house }}.</div>
+          </div>
+
+          <div style="border:1px solid var(--border);border-radius:16px;background:var(--card-bg);padding:20px">
+            <div style="font-size:14px;font-weight:700;margin-bottom:6px">Ready to bid?</div>
+            <div style="font-size:13px;color:var(--muted);line-height:1.55;margin-bottom:14px">Join the live room to chat with {{ selectedAgent.name }} and place bids in real time.</div>
+            <div onClick="{{ joinAuction }}" style="text-align:center;padding:12px;border-radius:10px;background:var(--ink);color:#fff;font-size:14px;font-weight:700;cursor:pointer" style-hover="background:var(--accent)">Join live auction &rarr;</div>
+          </div>
+        </div>
+
       </div>
     </div>
   </sc-if>
@@ -634,9 +911,11 @@
   <sc-if value="{{ isBidding }}" hint-placeholder-val="{{ false }}">
     <div style="max-width:1280px;margin:0 auto;padding:24px 40px 80px">
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
-        <div onClick="{{ goProfile }}" style="font-size:13px;color:var(--muted);cursor:pointer">&larr; Back</div>
+        <div onClick="{{ goAuctionLots }}" style="font-size:13px;color:var(--muted);cursor:pointer">&larr; Back</div>
         <div style="width:1px;height:14px;background:var(--border)"></div>
         <div style="font-size:13px;color:var(--muted)">Agent: <span style="font-weight:700;color:var(--text)">{{ selectedAgent.name }}</span></div>
+        <div style="width:1px;height:14px;background:var(--border)"></div>
+        <div style="font-size:13px;color:var(--muted)">Auction: <span style="font-weight:700;color:var(--text)">{{ selectedAuction.house }} &middot; {{ selectedAuction.day }} {{ selectedAuction.jst }} JST</span></div>
         <div style="display:flex;align-items:center;gap:6px;margin-left:auto;background:var(--accent-tint);color:var(--accent);font-size:12px;font-weight:700;padding:6px 12px;border-radius:20px">
           <div style="width:7px;height:7px;border-radius:50%;background:var(--accent);animation:pulseDot 1.4s ease-in-out infinite"></div>
           Live Auction
@@ -733,7 +1012,7 @@
 
           <div style="border:1px solid #cfe3d6;border-radius:16px;background:#f4f9f6;padding:20px;margin-bottom:16px">
             <div style="font-size:13px;font-weight:700;color:#2f8f5f;margin-bottom:8px">Container Pooling</div>
-            <div style="font-size:13.5px;color:var(--text);line-height:1.5;margin-bottom:14px">3 open slots on a Yokohama&rarr;Chattogram container departing in 11 days. Join to cut shipping by ~30%.</div>
+            <div style="font-size:13.5px;color:#1e4632;line-height:1.5;margin-bottom:14px">3 open slots on a Yokohama&rarr;Chattogram container departing in 11 days. Join to cut shipping by ~30%.</div>
             <div onClick="{{ togglePool }}" style="text-align:center;padding:10px;border-radius:9px;background:{{ poolButtonBg }};color:{{ poolButtonColor }};font-size:13px;font-weight:700;cursor:pointer;border:1px solid #2f8f5f">{{ poolButtonLabel }}</div>
           </div>
 
@@ -762,8 +1041,8 @@
       </div>
 
       <div style="display:flex;gap:10px;margin-bottom:20px">
-        <div style="flex:1;text-align:center;padding:13px;border-radius:10px;border:1px solid var(--border);font-size:13px;font-weight:700;background:#ffffff">bKash</div>
-        <div style="flex:1;text-align:center;padding:13px;border-radius:10px;border:1px solid var(--border);font-size:13px;font-weight:700;background:#ffffff">SSLCommerz</div>
+        <div style="flex:1;text-align:center;padding:13px;border-radius:10px;border:1px solid var(--border);font-size:13px;font-weight:700;background:var(--card-bg)">bKash</div>
+        <div style="flex:1;text-align:center;padding:13px;border-radius:10px;border:1px solid var(--border);font-size:13px;font-weight:700;background:var(--card-bg)">SSLCommerz</div>
       </div>
 
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
@@ -811,6 +1090,16 @@
           <div onClick="{{ goRating }}" style="flex:1;text-align:center;padding:12px;border-radius:9px;background:var(--accent);color:#fff;font-size:13px;font-weight:700;cursor:pointer">Delivered — rate your agent &rarr;</div>
         </sc-if>
       </div>
+
+      <sc-if value="{{ shipmentComplete }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:16px;border:1px solid rgba(var(--accent-rgb),0.4);border-radius:14px;padding:16px 20px;background:linear-gradient(90deg,rgba(var(--accent-rgb),0.12),var(--card-bg))">
+          <div>
+            <div style="font-size:15px;font-weight:700;margin-bottom:2px">Your car has arrived — make it yours</div>
+            <div style="font-size:13px;color:var(--muted)">Customize paint, wheels &amp; spoiler in the 3D Modification Studio, then place your order.</div>
+          </div>
+          <div onClick="{{ goModStudio }}" style="white-space:nowrap;padding:11px 20px;border-radius:10px;background:var(--accent);color:var(--on-accent);font-size:13.5px;font-weight:700;cursor:pointer">Customize your car &rarr;</div>
+        </div>
+      </sc-if>
     </div>
   </sc-if>
 
@@ -835,7 +1124,10 @@
 
       <sc-if value="{{ ratingSubmitted }}" hint-placeholder-val="{{ false }}">
         <div style="padding:16px;background:#f4f9f6;border:1px solid #cfe3d6;border-radius:12px;color:#2f8f5f;font-size:14px;font-weight:600;margin-bottom:16px">Thanks — your rating is now reflected on {{ selectedAgent.name }}'s public profile.</div>
-        <div onClick="{{ goHome }}" style="text-align:center;padding:13px;border-radius:10px;background:var(--ink);color:#fff;font-size:14px;font-weight:700;cursor:pointer">Back to home</div>
+        <div style="display:flex;gap:10px">
+          <div onClick="{{ goModStudio }}" style="flex:1;text-align:center;padding:13px;border-radius:10px;background:var(--accent);color:var(--on-accent);font-size:14px;font-weight:700;cursor:pointer">Customize your new car &rarr;</div>
+          <div onClick="{{ goHome }}" style="flex:1;text-align:center;padding:13px;border-radius:10px;background:var(--ink);color:#fff;font-size:14px;font-weight:700;cursor:pointer">Back to home</div>
+        </div>
       </sc-if>
 
       <sc-if value="{{ disputeOpen }}" hint-placeholder-val="{{ false }}">
@@ -846,7 +1138,7 @@
             <div onClick="{{ submitDispute }}" style="text-align:center;padding:12px;border-radius:9px;background:#a3701c;color:#fff;font-size:13.5px;font-weight:700;cursor:pointer">Submit to admin for review</div>
           </sc-if>
           <sc-if value="{{ disputeSubmitted }}" hint-placeholder-val="{{ false }}">
-            <div style="font-size:13.5px;color:var(--text)">Dispute filed. Admin will review with full access to the chat and bid log.</div>
+            <div style="font-size:13.5px;color:#6b4e12">Dispute filed. Admin will review with full access to the chat and bid log.</div>
           </sc-if>
         </div>
       </sc-if>
@@ -874,6 +1166,31 @@ const AGENTS = [
   { id: 'nagoya', name: 'Nagoya Fleet Partners', years: 4, rating: '4.4', reviews: 97, imports: 310, turnaround: 52, feeLabel: '4% of bid', license: 'JP-BD-0521',
     about: 'A newer agent on the platform, Nagoya Fleet Partners is building track record with a focus on kei cars and small hatchbacks.',
     testimonials: [ { quote: 'Smaller agent, but very responsive for a first-timer like me.', comm: 5, grading: 4, timeliness: 4 } ] }
+];
+
+const AUCTIONS = [
+  { id: 'uss-yokohama', house: 'USS Yokohama', location: 'Yokohama, Kanagawa', day: 'Today', jst: '14:00', bst: '11:00', lots: 1280, matches: 42, status: 'live' },
+  { id: 'taa-kanto', house: 'TAA Kanto', location: 'Sagamihara, Kanagawa', day: 'Tomorrow', jst: '10:30', bst: '07:30', lots: 940, matches: 28, status: 'upcoming' },
+  { id: 'uss-nagoya', house: 'USS Nagoya', location: 'Toyoake, Aichi', day: 'Thu', jst: '09:00', bst: '06:00', lots: 1610, matches: 55, status: 'upcoming' },
+  { id: 'arai-bay', house: 'Arai Bay Auction', location: 'Kisarazu, Chiba', day: 'Fri', jst: '11:00', bst: '08:00', lots: 720, matches: 19, status: 'upcoming' },
+  { id: 'ju-gifu', house: 'JU Gifu', location: 'Gifu', day: 'Sat', jst: '13:30', bst: '10:30', lots: 1050, matches: 33, status: 'upcoming' }
+];
+
+const AUCTION_LOTS = [
+  { id: 'lot-8842', make: 'Toyota', model: 'Harrier Hybrid', year: 2019, km: '32,400', grade: '4.5B', est: '¥680k – 760k', lot: 'A-8842' },
+  { id: 'lot-8851', make: 'Honda', model: 'Vezel Hybrid Z', year: 2018, km: '48,900', grade: '4B', est: '¥510k – 590k', lot: 'A-8851' },
+  { id: 'lot-8863', make: 'Mazda', model: 'CX-5 XD', year: 2017, km: '61,200', grade: '4B', est: '¥620k – 700k', lot: 'A-8863' },
+  { id: 'lot-8870', make: 'Toyota', model: 'Corolla Axio', year: 2016, km: '75,500', grade: '3.5C', est: '¥330k – 400k', lot: 'A-8870' },
+  { id: 'lot-8881', make: 'Nissan', model: 'X-Trail 20X', year: 2017, km: '58,100', grade: '4B', est: '¥480k – 560k', lot: 'A-8881' },
+  { id: 'lot-8894', make: 'Toyota', model: 'Premio 1.5F', year: 2018, km: '41,700', grade: '4.5B', est: '¥470k – 540k', lot: 'A-8894' }
+];
+
+const ORG_NAME = 'Osaka Bridge Auto';
+
+const ORG_HIRES = [
+  { id: 'h1', customer: 'Rafiul H.', location: 'Dhaka', car: 'Toyota Harrier Hybrid · 2018–2020', budget: '৳55L ceiling', timing: 'USS Yokohama · Today 14:00 JST', status: 'new' },
+  { id: 'h2', customer: 'Nusrat J.', location: 'Chattogram', car: 'Honda Vezel · 2019+, ≤ 40k km', budget: '৳45L ceiling', timing: 'TAA Kanto · Tomorrow 10:30 JST', status: 'active' },
+  { id: 'h3', customer: 'Tanvir A.', location: 'Sylhet', car: 'Mazda CX-5 diesel · grade 4+', budget: '৳60L ceiling', timing: 'USS Nagoya · Thu 09:00 JST', status: 'new' }
 ];
 
 const NEW_CARS = [
@@ -965,6 +1282,11 @@ class Component extends DCLogic {
     theme: 'light',
     screen: 'login',
     selectedAgentId: null,
+    selectedAuctionId: null,
+    wishlist: [],
+    authMode: 'login',
+    userRole: null,
+    orgChatInput: '',
     bidJPY: 685000,
     timerSeconds: 272,
     activeBidders: 4,
@@ -1068,7 +1390,12 @@ class Component extends DCLogic {
   goRating = () => this.setState({ screen: 'rating' });
 
   selectAgentAndProfile(id) { this.setState({ screen: 'profile', selectedAgentId: id }); }
-  startBidding = () => this.setState({ screen: 'bidding' });
+  goAuctions = () => this.setState({ screen: 'auction-select' });
+  goAuctionLots = () => this.setState({ screen: 'auction-lots' });
+  goTelecast = () => this.setState({ screen: 'telecast' });
+  pickAuction(id) { this.setState({ screen: 'auction-lots', selectedAuctionId: id }); }
+  toggleWishlist(id) { this.setState(s => ({ wishlist: s.wishlist.includes(id) ? s.wishlist.filter(x => x !== id) : s.wishlist.concat(id) })); }
+  joinAuction = () => this.setState({ screen: 'bidding' });
   togglePool = () => this.setState(s => ({ poolJoined: !s.poolJoined }));
 
   quickBidSmall = () => {
@@ -1091,9 +1418,29 @@ class Component extends DCLogic {
   setRoleBuyer = () => this.setState({ regRole: 'buyer' });
   setRoleOrg = () => this.setState({ regRole: 'org' });
   setRoleAdmin = () => this.setState({ regRole: 'admin' });
+  setAuthLogin = () => this.setState({ authMode: 'login' });
+  setAuthRegister = () => this.setState({ authMode: 'register' });
+  routeAfterAuth(role) {
+    if (role === 'org') return { mode: 'org', loggedIn: true, userRole: 'org', pendingScreen: null };
+    if (role === 'admin') return { mode: 'admin', screen: 'home', loggedIn: true, userRole: 'admin', pendingScreen: null };
+    return { mode: 'buyer', loggedIn: true, userRole: 'buyer', pendingScreen: null };
+  }
+  submitLogin = () => {
+    const r = this.routeAfterAuth(this.state.regRole);
+    if (r.mode === 'buyer') this.setState(s => ({ ...r, screen: s.pendingScreen || 'home' }));
+    else this.setState(r);
+  };
   submitRegistration = () => {
-    if (this.state.regRole === 'admin') { this.setState({ mode: 'admin', screen: 'home', loggedIn: true, pendingScreen: null }); }
-    else { this.setState(s => ({ screen: s.pendingScreen || 'home', mode: 'buyer', loggedIn: true, pendingScreen: null })); }
+    const r = this.routeAfterAuth(this.state.regRole);
+    if (r.mode === 'buyer') this.setState(s => ({ ...r, screen: s.pendingScreen || 'home' }));
+    else this.setState(r);
+  };
+  exitOrg = () => this.setState({ mode: 'buyer', screen: 'login', loggedIn: false, userRole: null, authMode: 'login' });
+  setOrgChatInput = (e) => this.setState({ orgChatInput: e.target.value });
+  sendOrgChat = () => {
+    const t = (this.state.orgChatInput || '').trim();
+    if (!t) return;
+    this.setState(s => ({ chatMessages: s.chatMessages.concat([{ from: 'agent', text: t }]).slice(-8), orgChatInput: '' }));
   };
 
   submitInquiry = () => this.setState({ inquirySubmitted: true });
@@ -1153,6 +1500,25 @@ class Component extends DCLogic {
 
     const agents = AGENTS.map(a => ({ ...a, viewProfile: () => this.selectAgentAndProfile(a.id) }));
     const selectedAgent = AGENTS.find(a => a.id === this.state.selectedAgentId) || AGENTS[0];
+
+    const auctions = AUCTIONS.map(a => ({
+      ...a,
+      statusLabel: a.status === 'live' ? 'Live now' : 'Upcoming',
+      statusBg: a.status === 'live' ? 'var(--accent-tint)' : 'var(--chip-bg)',
+      statusColor: a.status === 'live' ? 'var(--accent)' : 'var(--muted)',
+      select: () => this.pickAuction(a.id)
+    }));
+    const selectedAuction = AUCTIONS.find(a => a.id === this.state.selectedAuctionId) || AUCTIONS[0];
+
+    const auctionLots = AUCTION_LOTS.map(l => ({
+      ...l,
+      wished: this.state.wishlist.includes(l.id),
+      wishLabel: this.state.wishlist.includes(l.id) ? '♥' : '♡',
+      wishBg: this.state.wishlist.includes(l.id) ? 'var(--accent)' : '#ffffff',
+      wishColor: this.state.wishlist.includes(l.id) ? '#ffffff' : 'var(--muted)',
+      toggle: () => this.toggleWishlist(l.id)
+    }));
+    const wishlistCount = this.state.wishlist.length;
 
     const bidJPY = this.state.bidJPY;
     const rate = this.state.exchangeRate;
@@ -1244,16 +1610,40 @@ class Component extends DCLogic {
     const adminPendingApps = this.state.adminPendingApps.map(a => ({ ...a, approve: () => this.approveApp(a.name), reject: () => this.rejectApp(a.name) }));
     const T = THEMES[this.state.theme];
 
-    const nav = (name) => this.navStyle(screen === name || (name === 'newcars' && screen === 'newcar-detail') || (name === 'usedcars' && (screen === 'usedcars' || screen === 'usedcar-detail' || screen === 'seller-dashboard')) || (name === 'agents' && (screen === 'agents' || screen === 'profile' || screen === 'bidding' || screen === 'escrow' || screen === 'shipment' || screen === 'rating')) || (name === 'research' && (screen === 'research' || screen === 'research-detail')));
+    const nav = (name) => this.navStyle(screen === name || (name === 'newcars' && screen === 'newcar-detail') || (name === 'usedcars' && (screen === 'usedcars' || screen === 'usedcar-detail' || screen === 'seller-dashboard')) || (name === 'agents' && (screen === 'agents' || screen === 'profile' || screen === 'auction-select' || screen === 'auction-lots' || screen === 'telecast' || screen === 'bidding' || screen === 'escrow' || screen === 'shipment' || screen === 'rating')) || (name === 'research' && (screen === 'research' || screen === 'research-detail')));
     const newCarsNav = nav('newcars'); const usedCarsNav = nav('usedcars'); const reconNav = nav('agents'); const modNav = nav('modstudio'); const researchNav = nav('research');
 
     const breadcrumbMap = {
-      login: 'Create account', newcars: 'New Cars', 'newcar-detail': selectedNewCar.model,
+      login: this.state.authMode === 'login' ? 'Log in' : 'Create account', newcars: 'New Cars', 'newcar-detail': selectedNewCar.model,
       usedcars: 'Used Cars', 'usedcar-detail': selectedUsedCar.title, 'seller-dashboard': 'Seller Dashboard',
       research: 'Research Hub', 'research-detail': selectedResearchModel.name, ai: 'AI Assistant',
       modstudio: 'Modification Studio', agents: 'Reconditioned Import', profile: selectedAgent.name,
-      bidding: 'Live Bidding', escrow: 'Escrow Payment', shipment: 'Shipment Tracker', rating: 'Rate Your Agent'
+      'auction-select': 'Select Auction', 'auction-lots': "Today's Lots", telecast: 'Live Telecast', bidding: 'Live Bidding', escrow: 'Escrow Payment', shipment: 'Shipment Tracker', rating: 'Rate Your Agent'
     };
+
+    const orgHires = ORG_HIRES.map(h => ({
+      ...h,
+      statusLabel: h.status === 'new' ? 'New' : 'Active',
+      statusBg: h.status === 'new' ? 'var(--accent-tint)' : '#f4f9f6',
+      statusColor: h.status === 'new' ? 'var(--accent)' : '#2f8f5f'
+    }));
+    const orgChatMessages = this.state.chatMessages.map(m => ({
+      text: m.text,
+      justify: m.from === 'agent' ? 'flex-end' : 'flex-start',
+      bg: m.from === 'agent' ? '#211d18' : '#f2efe8',
+      color: m.from === 'agent' ? '#ffffff' : '#211d18'
+    }));
+    const roleLabel = this.state.regRole === 'org' ? 'Bidding Org' : (this.state.regRole === 'admin' ? 'Admin' : 'Buyer');
+    const authIsLogin = this.state.authMode === 'login';
+
+    const tfBid = this.state.bidJPY;
+    const telecastViewers = (1180 + this.state.activeBidders * 13).toLocaleString('en-US');
+    const telecastFeed = [
+      { who: ORG_NAME + ' (you)', bid: '¥' + this.fmt(tfBid), me: true },
+      { who: 'Bidder #44', bid: '¥' + this.fmt(tfBid - 10000), me: false },
+      { who: 'Bidder #12', bid: '¥' + this.fmt(tfBid - 25000), me: false },
+      { who: 'Bidder #07', bid: '¥' + this.fmt(tfBid - 40000), me: false }
+    ].map(b => ({ ...b, color: b.me ? 'var(--accent)' : 'var(--text)', weight: b.me ? '800' : '600' }));
 
     return {
       cBg: T.bg, cText: T.text, cMuted: T.muted, cDim: T.dim, cBorder: T.border,
@@ -1264,7 +1654,27 @@ class Component extends DCLogic {
 
       isBuyerMode: mode === 'buyer',
       isAdminMode: mode === 'admin',
+      isOrgMode: mode === 'org',
+      isAdminUser: this.state.userRole === 'admin',
       exitAdmin: this.exitAdmin,
+
+      userInitial: this.state.userRole === 'admin' ? 'A' : (this.state.userRole === 'org' ? 'O' : 'R'),
+      userLabel: this.state.userRole === 'admin' ? 'Admin' : (this.state.userRole === 'org' ? 'Organization' : 'Buyer'),
+
+      setAuthLogin: this.setAuthLogin, setAuthRegister: this.setAuthRegister, submitLogin: this.submitLogin,
+      isAuthLogin: authIsLogin, isAuthRegister: !authIsLogin, roleLabel,
+      authLoginBg: authIsLogin ? '#ffffff' : 'transparent', authLoginColor: authIsLogin ? '#211d18' : '#6f6a60',
+      authRegisterBg: !authIsLogin ? '#ffffff' : 'transparent', authRegisterColor: !authIsLogin ? '#211d18' : '#6f6a60',
+      authHeadline: authIsLogin ? 'Welcome back.' : 'Join AutoBD.',
+      authSub: authIsLogin ? 'Sign in to track your imports, bids, and shipments in one place.' : 'Create an account to buy new, used, or reconditioned cars with transparent costs.',
+      roleBuyerBorder: this.state.regRole === 'buyer' ? '#211d18' : 'var(--border)',
+      roleOrgBorder: this.state.regRole === 'org' ? '#211d18' : 'var(--border)',
+      roleAdminBorder: this.state.regRole === 'admin' ? '#211d18' : 'var(--border)',
+
+      orgName: ORG_NAME, orgHires, orgHireCount: orgHires.length, orgChatMessages,
+      orgRating: '4.9', orgImports: '2,100', orgResponse: '~4 min',
+      chatCustomer: 'Rafiul H.', orgChatInput: this.state.orgChatInput,
+      setOrgChatInput: this.setOrgChatInput, sendOrgChat: this.sendOrgChat, exitOrg: this.exitOrg,
       revenueRows: [
         { label: 'Dealership referral commissions', pct: 62, value: '৳18.4L' },
         { label: 'Listing fees', pct: 34, value: '৳9.1L' },
@@ -1284,7 +1694,7 @@ class Component extends DCLogic {
       goNewCars: this.goNewCars, goUsedCars: this.goUsedCars, goModStudio: this.goModStudio,
       goResearch: this.goResearch, goAI: this.goAI, goLogin: this.goLogin, goSellerDashboard: this.goSellerDashboard,
       goAdmin: this.goAdmin, goShipment: this.goShipment, goRating: this.goRating,
-      startBidding: this.startBidding, togglePool: this.togglePool, quickBidSmall: this.quickBidSmall, quickBidCeiling: this.quickBidCeiling,
+      goAuctions: this.goAuctions, goAuctionLots: this.goAuctionLots, goTelecast: this.goTelecast, joinAuction: this.joinAuction, togglePool: this.togglePool, quickBidSmall: this.quickBidSmall, quickBidCeiling: this.quickBidCeiling,
       winLot: this.winLot, payEscrow: this.payEscrow, advanceShipment: this.advanceShipment,
       submitInquiry: this.submitInquiry, setOfferAmount: this.setOfferAmount, submitOffer: this.submitOffer,
       setMonthlyKm: this.setMonthlyKm, toggleFitmentFilter: this.toggleFitmentFilter,
@@ -1304,6 +1714,9 @@ class Component extends DCLogic {
       isModStudio: mode === 'buyer' && screen === 'modstudio',
       isAgents: mode === 'buyer' && screen === 'agents',
       isProfile: mode === 'buyer' && screen === 'profile',
+      isAuctionSelect: mode === 'buyer' && screen === 'auction-select',
+      isAuctionLots: mode === 'buyer' && screen === 'auction-lots',
+      isTelecast: mode === 'buyer' && screen === 'telecast',
       isBidding: mode === 'buyer' && screen === 'bidding',
       isEscrow: mode === 'buyer' && screen === 'escrow',
       isShipment: mode === 'buyer' && screen === 'shipment',
@@ -1325,7 +1738,7 @@ class Component extends DCLogic {
       roleAdminBg: this.state.regRole === 'admin' ? '#211d18' : 'transparent', roleAdminColor: this.state.regRole === 'admin' ? '#fff' : '#6f6a60',
       regRoleBuyer: this.state.regRole === 'buyer', regRoleOrg: this.state.regRole === 'org', regRoleAdmin: this.state.regRole === 'admin',
 
-      agents, selectedAgent,
+      agents, selectedAgent, auctions, selectedAuction, auctionLots, wishlistCount, telecastViewers, telecastFeed,
       bidJPYFormatted: this.fmt(bidJPY), bidBDTFormatted: this.fmt(bidBDT), dutyFormatted: this.fmt(duty),
       shippingFormatted: this.fmt(shipping), agentFeeFormatted: this.fmt(agentFee), portFormatted: this.fmt(portHandling),
       totalFormatted: this.fmt(total), exchangeRateFormatted: rate.toFixed(4),
