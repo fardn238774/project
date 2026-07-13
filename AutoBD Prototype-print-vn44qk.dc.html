@@ -1,0 +1,1801 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style data-omelette-print-defaults>
+@media print {
+  @page { margin: 0.5in; }
+  h1, h2, h3, h4, h5, h6 { break-after: avoid; }
+  figure, table, pre, blockquote, img, svg, tr, [class~="card" i] { break-inside: avoid; }
+  img, svg { max-width: 100%; }
+  p { orphans: 3; widows: 3; }
+}
+</style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+<template id="__bundler_thumbnail" data-bg-color="#f7f4ee">
+  <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+    <rect width="1200" height="800" fill="#f7f4ee"/>
+    <circle cx="600" cy="400" r="180" fill="#c1442d"/>
+    <text x="600" y="420" font-family="Helvetica, Arial, sans-serif" font-size="120" font-weight="800" fill="#ffffff" text-anchor="middle">BD</text>
+  </svg>
+</template>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<style>
+  @keyframes pulseDot { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+  @keyframes zoomPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.012); } }
+  @keyframes ringExpand { 0% { transform: scale(0.9); opacity: 0.6; } 100% { transform: scale(1.5); opacity: 0; } }
+  @keyframes bubbleRise {
+    0% { transform: translateY(0) scale(0.6); opacity: 0; }
+    12% { opacity: 0.5; }
+    85% { opacity: 0.2; }
+    100% { transform: translateY(-140px) scale(1.25); opacity: 0; }
+  }
+  .bubble { position: absolute; border-radius: 50%; background: radial-gradient(circle at 35% 30%, rgba(var(--accent-rgb),0.5), rgba(var(--accent-rgb),0.05)); pointer-events: none; animation: bubbleRise linear infinite; }
+  * { box-sizing: border-box; }
+  body { margin: 0; }
+  input[type="range"] { accent-color: var(--accent); }
+  .theme-toggle { transition: background 0.3s ease; }
+  .theme-toggle:hover .toggle-knob { filter: brightness(1.08); }
+</style>
+</helmet>
+
+<div style="min-height:100vh;--bg:{{ cBg }};--text:{{ cText }};--muted:{{ cMuted }};--dim:{{ cDim }};--border:{{ cBorder }};--card-bg:{{ cCardBg }};--track-bg:{{ cTrackBg }};--chip-bg:{{ cChipBg }};--accent:{{ cAccent }};--accent-hover:{{ cAccentHover }};--accent-rgb:{{ cAccentRgb }};--accent-tint:{{ cAccentTint }};--on-accent:{{ cOnAccent }};--ink:#1a0d0d;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;color:var(--text);transition:background 0.4s ease,color 0.4s ease">
+
+  <!-- ADMIN MODE -->
+  <sc-if value="{{ isAdminMode }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 40px;background:var(--ink);border-bottom:1px solid #211d18">
+      <div style="display:flex;align-items:center;gap:20px">
+        <div style="font-size:22px;font-weight:800;letter-spacing:-0.02em;color:#fff">Auto<span style="color:#e2765f">BD</span> <span style="font-size:13px;font-weight:600;color:var(--dim);margin-left:6px">Admin</span></div>
+      </div>
+      <div onClick="{{ exitAdmin }}" style="font-size:13px;color:#e2e0d9;cursor:pointer;padding:8px 14px;border-radius:8px;background:var(--ink)">&larr; Exit admin, back to buyer view</div>
+    </div>
+
+    <div style="max-width:1180px;margin:0 auto;padding:32px 40px 80px">
+      <div style="font-size:26px;font-weight:800;margin-bottom:24px">Platform Analytics &amp; Revenue</div>
+
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:28px">
+        <div style="border:1px solid var(--border);border-radius:14px;padding:18px;background:#ffffff">
+          <div style="font-size:24px;font-weight:800">4,812</div>
+          <div style="font-size:12px;color:var(--dim)">Total active listings</div>
+        </div>
+        <div style="border:1px solid var(--border);border-radius:14px;padding:18px;background:#ffffff">
+          <div style="font-size:24px;font-weight:800">9,340</div>
+          <div style="font-size:12px;color:var(--dim)">Bids placed &middot; 68% win rate</div>
+        </div>
+        <div style="border:1px solid var(--border);border-radius:14px;padding:18px;background:#ffffff">
+          <div style="font-size:24px;font-weight:800">2,610</div>
+          <div style="font-size:12px;color:var(--dim)">Successful imports</div>
+        </div>
+        <div style="border:1px solid var(--border);border-radius:14px;padding:18px;background:#ffffff">
+          <div style="font-size:24px;font-weight:800">41%</div>
+          <div style="font-size:12px;color:var(--dim)">Container pooling match rate</div>
+        </div>
+      </div>
+
+      <div style="border:1px solid var(--border);border-radius:16px;background:var(--card-bg);padding:22px;margin-bottom:24px">
+        <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:var(--dim);margin-bottom:16px">Revenue by source</div>
+        <sc-for list="{{ revenueRows }}" as="row" hint-placeholder-count="4">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+            <div style="width:170px;font-size:13px;color:var(--text)">{{ row.label }}</div>
+            <div style="flex:1;height:10px;background:var(--track-bg);border-radius:5px;overflow:hidden"><div style="height:100%;width:{{ row.pct }}%;background:var(--accent);border-radius:5px"></div></div>
+            <div style="width:90px;text-align:right;font-size:13px;font-weight:700">{{ row.value }}</div>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:20px">
+        <div style="border:1px solid var(--border);border-radius:16px;background:var(--card-bg);padding:22px">
+          <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:var(--dim);margin-bottom:14px">Pending bidding organization applications</div>
+          <sc-for list="{{ adminPendingApps }}" as="app" hint-placeholder-count="2">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--track-bg)">
+              <div>
+                <div style="font-size:14px;font-weight:700">{{ app.name }}</div>
+                <div style="font-size:12px;color:var(--dim)">License {{ app.license }} &middot; {{ app.years }} yrs track record</div>
+              </div>
+              <div style="display:flex;gap:8px">
+                <div onClick="{{ app.approve }}" style="padding:7px 12px;border-radius:8px;background:#2f8f5f;color:#fff;font-size:12px;font-weight:700;cursor:pointer">Approve</div>
+                <div onClick="{{ app.reject }}" style="padding:7px 12px;border-radius:8px;background:var(--chip-bg);color:var(--muted);font-size:12px;font-weight:700;cursor:pointer">Reject</div>
+              </div>
+            </div>
+          </sc-for>
+          <sc-if value="{{ noPendingApps }}" hint-placeholder-val="{{ false }}">
+            <div style="font-size:13px;color:var(--dim);padding:12px 0">No pending applications.</div>
+          </sc-if>
+
+          <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:var(--dim);margin:22px 0 14px">Active disputes</div>
+          <sc-for list="{{ adminDisputes }}" as="d" hint-placeholder-count="1">
+            <div style="padding:12px 0;border-bottom:1px solid var(--track-bg)">
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <div style="font-size:14px;font-weight:700">{{ d.title }}</div>
+                <div style="font-size:11px;padding:3px 8px;border-radius:6px;background:#fdf1de;color:#a3701c">{{ d.status }}</div>
+              </div>
+              <div style="font-size:12px;color:var(--muted);margin-top:4px">{{ d.detail }}</div>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="border:1px solid var(--border);border-radius:16px;background:var(--card-bg);padding:22px">
+          <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:var(--dim);margin-bottom:14px">NBR duty rate table</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;font-size:12px;color:var(--dim);padding-bottom:8px;border-bottom:1px solid var(--track-bg)">
+            <div>Engine size</div><div style="text-align:right">Duty rate</div>
+          </div>
+          <sc-for list="{{ dutyTable }}" as="row" hint-placeholder-count="4">
+            <div style="display:grid;grid-template-columns:1fr 1fr;font-size:13px;padding:9px 0;border-bottom:1px solid #f7f4ee">
+              <div>{{ row.cc }}</div><div style="text-align:right;font-weight:700">{{ row.rate }}</div>
+            </div>
+          </sc-for>
+          <div style="font-size:11px;color:var(--dim);margin-top:10px">Updated each national budget cycle.</div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- BUYER MODE -->
+  <sc-if value="{{ isBuyerMode }}" hint-placeholder-val="{{ true }}">
+
+  <!-- HEADER -->
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 40px;background:var(--card-bg);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10">
+    <div style="display:flex;align-items:center;gap:30px">
+      <div onClick="{{ goHome }}" style="font-size:22px;font-weight:800;letter-spacing:-0.02em;cursor:pointer;color:var(--text)">Auto<span style="color:var(--accent)">BD</span></div>
+      <a href="./AutoBD Landing.dc.html" style="font-size:12.5px;color:var(--dim);text-decoration:none;display:flex;align-items:center;gap:4px;white-space:nowrap" style-hover="color:var(--accent)">&larr; Back to site</a>
+      <div style="display:flex;gap:4px;flex-wrap:wrap">
+        <div onClick="{{ goNewCars }}" style="padding:8px 12px;border-radius:8px;font-size:13.5px;color:{{ newCarsNavColor }};background:{{ newCarsNavBg }};cursor:pointer;font-weight:{{ newCarsNavWeight }}">New Cars</div>
+        <div onClick="{{ goUsedCars }}" style="padding:8px 12px;border-radius:8px;font-size:13.5px;color:{{ usedCarsNavColor }};background:{{ usedCarsNavBg }};cursor:pointer;font-weight:{{ usedCarsNavWeight }}">Used Cars</div>
+        <div onClick="{{ goAgents }}" style="padding:8px 12px;border-radius:8px;font-size:13.5px;color:{{ reconNavColor }};background:{{ reconNavBg }};cursor:pointer;font-weight:{{ reconNavWeight }}">Reconditioned Import</div>
+        <div onClick="{{ goModStudio }}" style="padding:8px 12px;border-radius:8px;font-size:13.5px;color:{{ modNavColor }};background:{{ modNavBg }};cursor:pointer;font-weight:{{ modNavWeight }}">Modifications</div>
+        <div onClick="{{ goResearch }}" style="padding:8px 12px;border-radius:8px;font-size:13.5px;color:{{ researchNavColor }};background:{{ researchNavBg }};cursor:pointer;font-weight:{{ researchNavWeight }}">Research Hub</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:14px">
+      <div onClick="{{ goAI }}" style="font-size:13px;font-weight:700;color:var(--accent);cursor:pointer">AI Assistant</div>
+      <sc-if value="{{ isLoggedOut }}" hint-placeholder-val="{{ false }}">
+        <div onClick="{{ goLogin }}" style="padding:8px 16px;border-radius:8px;background:var(--ink);color:#fff;font-size:13px;font-weight:600;cursor:pointer">Log in</div>
+      </sc-if>
+      <sc-if value="{{ isLoggedIn }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex;align-items:center;gap:8px;padding:6px 12px 6px 6px;border-radius:20px;background:var(--chip-bg)">
+          <div style="width:26px;height:26px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">R</div>
+          <div style="font-size:13px;font-weight:600">Buyer</div>
+        </div>
+      </sc-if>
+      <div class="theme-toggle" onClick="{{ toggleTheme }}" style="position:relative;width:52px;height:27px;border-radius:999px;background:linear-gradient(90deg,#0a0a0a 50%,#f3f2ee 50%);cursor:pointer;flex-shrink:0;border:1px solid rgba(120,120,120,0.3)">
+        <div class="toggle-knob" style="position:absolute;top:2px;left:{{ knobLeft }};width:21px;height:21px;border-radius:50%;background:var(--accent);box-shadow:0 2px 6px rgba(0,0,0,0.35);transition:left 0.32s cubic-bezier(0.16,1,0.3,1)"></div>
+      </div>
+      <div onClick="{{ goAdmin }}" style="font-size:12px;color:var(--dim);cursor:pointer">Admin view</div>
+    </div>
+  </div>
+
+  <!-- BREADCRUMB -->
+  <sc-if value="{{ showBreadcrumb }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;align-items:center;gap:8px;padding:16px 40px 0;font-size:13px;color:var(--muted)">
+      <span onClick="{{ goHome }}" style="cursor:pointer">Home</span>
+      <span>/</span>
+      <span style="color:var(--text);font-weight:600">{{ breadcrumbLabel }}</span>
+    </div>
+  </sc-if>
+
+  <!-- SCREEN: LOGIN -->
+  <sc-if value="{{ isLogin }}" hint-placeholder-val="{{ false }}">
+    <div style="max-width:460px;margin:0 auto;padding:48px 40px 100px">
+      <div style="font-size:26px;font-weight:800;margin-bottom:6px">Create your account</div>
+      <div style="font-size:14px;color:var(--muted);margin-bottom:24px">Choose your role to continue.</div>
+      <div style="display:flex;gap:6px;margin-bottom:24px;background:var(--chip-bg);padding:4px;border-radius:10px">
+        <div onClick="{{ setRoleBuyer }}" style="flex:1;text-align:center;padding:9px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;background:{{ roleBuyerBg }};color:{{ roleBuyerColor }}">Buyer</div>
+        <div onClick="{{ setRoleOrg }}" style="flex:1;text-align:center;padding:9px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;background:{{ roleOrgBg }};color:{{ roleOrgColor }}">Bidding Organization</div>
+        <div onClick="{{ setRoleAdmin }}" style="flex:1;text-align:center;padding:9px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;background:{{ roleAdminBg }};color:{{ roleAdminColor }}">Admin</div>
+      </div>
+
+      <sc-if value="{{ regRoleBuyer }}" hint-placeholder-val="{{ true }}">
+        <div style="display:grid;gap:12px">
+          <input placeholder="Full name" style="padding:12px 14px;border:1px solid var(--border);border-radius:9px;font-size:14px" />
+          <input placeholder="Email" style="padding:12px 14px;border:1px solid var(--border);border-radius:9px;font-size:14px" />
+          <input placeholder="Phone" style="padding:12px 14px;border:1px solid var(--border);border-radius:9px;font-size:14px" />
+          <input placeholder="Password" type="password" style="padding:12px 14px;border:1px solid var(--border);border-radius:9px;font-size:14px" />
+        </div>
+      </sc-if>
+      <sc-if value="{{ regRoleOrg }}" hint-placeholder-val="{{ false }}">
+        <div style="display:grid;gap:12px">
+          <div style="font-size:12px;color:var(--dim)">Step 1 of 3 &middot; Company details</div>
+          <input placeholder="Company name" style="padding:12px 14px;border:1px solid var(--border);border-radius:9px;font-size:14px" />
+          <input placeholder="License number" style="padding:12px 14px;border:1px solid var(--border);border-radius:9px;font-size:14px" />
+          <input placeholder="Years of track record" style="padding:12px 14px;border:1px solid var(--border);border-radius:9px;font-size:14px" />
+          <input placeholder="Proposed fee structure" style="padding:12px 14px;border:1px solid var(--border);border-radius:9px;font-size:14px" />
+          <div style="font-size:12px;color:var(--dim)">Account stays inactive until admin approval.</div>
+        </div>
+      </sc-if>
+      <sc-if value="{{ regRoleAdmin }}" hint-placeholder-val="{{ false }}">
+        <div style="font-size:14px;color:var(--muted);padding:16px;background:var(--chip-bg);border-radius:10px">Admin accounts are provisioned internally and cannot self-register.</div>
+      </sc-if>
+
+      <div onClick="{{ submitRegistration }}" style="margin-top:20px;text-align:center;padding:13px;border-radius:10px;background:var(--accent);color:#fff;font-size:14px;font-weight:700;cursor:pointer">Create account &amp; continue</div>
+    </div>
+  </sc-if>
+
+  <!-- SCREEN: HOME -->
+  <sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+    <div style="max-width:1180px;margin:0 auto;padding:64px 40px 80px">
+      <div style="max-width:680px;margin-bottom:36px">
+        <div style="font-size:13px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--accent);margin-bottom:10px">Four ways to your next car</div>
+        <div style="font-size:28px;font-weight:800;line-height:1.15;letter-spacing:-0.02em">Choose how you'd like to buy to get started.</div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-bottom:64px">
+        <div onClick="{{ goNewCars }}" style="border:1px solid var(--border);border-radius:16px;padding:22px;background:var(--card-bg);cursor:pointer" style-hover="box-shadow:0 6px 18px rgba(0,0,0,0.06);transform:translateY(-2px)">
+          <div style="font-size:12px;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:10px">Pillar 01</div>
+          <div style="font-size:18px;font-weight:700;margin-bottom:8px">Brand New Cars</div>
+          <div style="font-size:13px;color:var(--muted);line-height:1.5">Dealer listings, trims &amp; warranty terms.</div>
+        </div>
+        <div onClick="{{ goUsedCars }}" style="border:1px solid var(--border);border-radius:16px;padding:22px;background:var(--card-bg);cursor:pointer" style-hover="box-shadow:0 6px 18px rgba(0,0,0,0.06);transform:translateY(-2px)">
+          <div style="font-size:12px;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:10px">Pillar 02</div>
+          <div style="font-size:18px;font-weight:700;margin-bottom:8px">Used Car P2P</div>
+          <div style="font-size:13px;color:var(--muted);line-height:1.5">Verified ownership, direct offers.</div>
+        </div>
+        <div onClick="{{ goAgents }}" style="border:1px solid var(--accent);border-radius:16px;padding:22px;background:var(--accent-tint);cursor:pointer;position:relative" style-hover="box-shadow:0 6px 18px rgba(193,68,45,0.18);transform:translateY(-2px)">
+          <div style="position:absolute;top:16px;right:16px;font-size:10px;font-weight:800;letter-spacing:0.04em;text-transform:uppercase;background:var(--accent);color:#fff;padding:4px 8px;border-radius:6px">Core</div>
+          <div style="font-size:12px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:10px">Pillar 03</div>
+          <div style="font-size:18px;font-weight:700;margin-bottom:8px">Reconditioned Import</div>
+          <div style="font-size:13px;color:var(--accent);line-height:1.5">Choose an agent, bid live in Japan.</div>
+        </div>
+        <div onClick="{{ goModStudio }}" style="border:1px solid var(--border);border-radius:16px;padding:22px;background:var(--card-bg);cursor:pointer" style-hover="box-shadow:0 6px 18px rgba(0,0,0,0.06);transform:translateY(-2px)">
+          <div style="font-size:12px;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:10px">Pillar 04</div>
+          <div style="font-size:18px;font-weight:700;margin-bottom:8px">Modification Studio</div>
+          <div style="font-size:13px;color:var(--muted);line-height:1.5">Fitment-checked parts &amp; kits.</div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
+        <div onClick="{{ goResearch }}" style="border:1px solid var(--border);border-radius:16px;padding:24px;background:var(--card-bg);cursor:pointer">
+          <div style="font-size:13px;font-weight:700;color:#2f8f5f;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:8px">Dream Car Research Hub</div>
+          <div style="font-size:15px;color:var(--text);line-height:1.5">Specs, reliability data, and a Bangladesh-specific total cost of ownership calculator.</div>
+        </div>
+        <div style="border:1px solid var(--border);border-radius:16px;padding:24px;background:var(--card-bg)">
+          <div style="font-size:13px;font-weight:700;color:#2f8f5f;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:8px">Container Pooling &amp; BRTA Tracker</div>
+          <div style="font-size:15px;color:var(--text);line-height:1.5">Shared shipping to cut freight ~30%, plus visibility into registration paper resale value.</div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- SCREEN: NEW CARS LIST -->
+  <sc-if value="{{ isNewCars }}" hint-placeholder-val="{{ false }}">
+    <div style="max-width:1180px;margin:0 auto;padding:24px 40px 80px">
+      <div style="font-size:30px;font-weight:800;letter-spacing:-0.01em;margin-bottom:8px">Brand new car listings</div>
+      <div style="font-size:15px;color:var(--muted);margin-bottom:28px;max-width:640px">Browse official dealership inventory by manufacturer. AutoBD is a lead &amp; booking layer — dealer partners fulfil every order.</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <sc-for list="{{ newCars }}" as="car" hint-placeholder-count="4">
+          <div onClick="{{ car.view }}" style="border:1px solid var(--border);border-radius:16px;padding:20px;background:var(--card-bg);cursor:pointer" style-hover="box-shadow:0 6px 18px rgba(0,0,0,0.06)">
+            <div style="height:120px;border-radius:10px;background:repeating-linear-gradient(135deg,#efece3,#efece3 10px,var(--border) 10px,var(--border) 20px);display:flex;align-items:center;justify-content:center;margin-bottom:14px">
+              <div style="font-family:ui-monospace,monospace;font-size:11px;color:#8a8577">product photo</div>
+            </div>
+            <div style="font-size:12px;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:0.03em">{{ car.brand }}</div>
+            <div style="font-size:17px;font-weight:700;margin-bottom:6px">{{ car.model }}</div>
+            <div style="font-size:14px;color:var(--muted);margin-bottom:10px">{{ car.priceRange }} &middot; {{ car.warranty }} warranty</div>
+            <div style="font-size:13px;font-weight:700;color:var(--accent)">View variants &amp; specs &rarr;</div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- SCREEN: NEW CAR DETAIL -->
+  <sc-if value="{{ isNewCarDetail }}" hint-placeholder-val="{{ false }}">
+    <div style="max-width:900px;margin:0 auto;padding:24px 40px 80px">
+      <div onClick="{{ goNewCars }}" style="font-size:13px;color:var(--muted);cursor:pointer;margin-bottom:18px">&larr; Back to new cars</div>
+      <div style="font-size:12px;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:0.03em">{{ selectedNewCar.brand }}</div>
+      <div style="font-size:30px;font-weight:800;margin-bottom:20px">{{ selectedNewCar.model }}</div>
+
+      <div style="display:flex;gap:8px;margin-bottom:20px">
+        <sc-for list="{{ variants }}" as="v" hint-placeholder-count="3">
+          <div onClick="{{ v.select }}" style="padding:10px 16px;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;border:1px solid {{ v.borderColor }};background:{{ v.bg }};color:{{ v.color }}">{{ v.name }} &middot; {{ v.price }}</div>
+        </sc-for>
+      </div>
+
+      <div style="border:1px solid var(--border);border-radius:16px;background:var(--card-bg);padding:22px;margin-bottom:18px">
+        <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:var(--dim);margin-bottom:14px">Specifications — {{ selectedVariantObj.name }}</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:14px">
+          <div><span style="color:var(--dim)">Engine</span> &middot; {{ selectedVariantObj.engine }}</div>
+          <div><span style="color:var(--dim)">Transmission</span> &middot; {{ selectedVariantObj.trans }}</div>
+          <div><span style="color:var(--dim)">Fuel economy</span> &middot; {{ selectedVariantObj.economy }}</div>
+          <div><span style="color:var(--dim)">Warranty</span> &middot; {{ selectedNewCar.warranty }}, {{ selectedNewCar.warrantyKm }}</div>
+        </div>
+      </div>
+
+      <div style="border:1px solid var(--border);border-radius:16px;background:var(--card-bg);padding:22px;margin-bottom:18px">
+        <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:var(--dim);margin-bottom:10px">Nearest authorised service center</div>
+        <div style="height:120px;border-radius:10px;background:repeating-linear-gradient(135deg,#eef2ee,#eef2ee 10px,#e2ebe4 10px,#e2ebe4 20px);display:flex;align-items:center;justify-content:center">
+          <div style="font-family:ui-monospace,monospace;font-size:11px;color:#7a8a7d">Google Maps — service center locator</div>
+        </div>
+      </div>
+
+      <sc-if value="{{ inquirySubmitted }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:16px;background:#f4f9f6;border:1px solid #cfe3d6;border-radius:12px;color:#2f8f5f;font-size:14px;font-weight:600">Inquiry sent to your nearest {{ selectedNewCar.brand }} dealer partner. They'll contact you within 24 hours.</div>
+      </sc-if>
+      <sc-if value="{{ inquiryNotSubmitted }}" hint-placeholder-val="{{ true }}">
+        <div onClick="{{ submitInquiry }}" style="text-align:center;padding:14px;border-radius:11px;background:var(--accent);color:#fff;font-size:15px;font-weight:700;cursor:pointer">Submit dealer inquiry for {{ selectedVariantObj.name }}</div>
+      </sc-if>
+    </div>
+  </sc-if>
+
+  <!-- SCREEN: USED CARS LIST -->
+  <sc-if value="{{ isUsedCars }}" hint-placeholder-val="{{ false }}">
+    <div style="max-width:1180px;margin:0 auto;padding:24px 40px 80px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:28px">
+        <div>
+          <div style="font-size:30px;font-weight:800;letter-spacing:-0.01em;margin-bottom:8px">Used car marketplace</div>
+          <div style="font-size:15px;color:var(--muted);max-width:560px">Peer-to-peer listings, verified where sellers have submitted BRTA ownership documents.</div>
+        </div>
+        <div onClick="{{ goSellerDashboard }}" style="font-size:13px;font-weight:700;color:var(--accent);cursor:pointer;white-space:nowrap">My seller dashboard &rarr;</div>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:20px">
+        <div style="padding:8px 14px;border-radius:20px;background:var(--ink);color:#fff;font-size:13px;font-weight:600">All</div>
+        <div style="padding:8px 14px;border-radius:20px;background:var(--card-bg);border:1px solid var(--border);color:var(--muted);font-size:13px">By make/model</div>
+        <div style="padding:8px 14px;border-radius:20px;background:var(--card-bg);border:1px solid var(--border);color:var(--muted);font-size:13px">By price</div>
+        <div style="padding:8px 14px;border-radius:20px;background:var(--card-bg);border:1px solid var(--border);color:var(--muted);font-size:13px">By location</div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px">
+        <sc-for list="{{ usedCars }}" as="car" hint-placeholder-count="3">
+          <div onClick="{{ car.view }}" style="border:1px solid var(--border);border-radius:16px;background:var(--card-bg);overflow:hidden;cursor:pointer" style-hover="box-shadow:0 6px 18px rgba(0,0,0,0.06)">
+            <div style="height:110px;background:repeating-linear-gradient(135deg,#efece3,#efece3 10px,var(--border) 10px,var(--border) 20px);display:flex;align-items:center;justify-content:center">
+              <div style="font-family:ui-monospace,monospace;font-size:11px;color:#8a8577">listing photo</div>
+            </div>
+            <div style="padding:16px">
+              <div style="font-size:15px;font-weight:700;margin-bottom:4px">{{ car.title }}</div>
+              <div style="font-size:13px;color:var(--muted);margin-bottom:10px">{{ car.mileage }} km &middot; {{ car.location }}</div>
+              <div style="font-size:16px;font-weight:800;color:var(--accent);margin-bottom:10px">{{ car.price }}</div>
+              <div style="display:flex;gap:6px;flex-wrap:wrap">
+                <div style="font-size:10.5px;padding:3px 7px;border-radius:6px;background:{{ car.verifiedBg }};color:{{ car.verifiedColor }}">{{ car.verifiedLabel }}</div>
+                <div style="font-size:10.5px;padding:3px 7px;border-radius:6px;background:{{ car.accidentBg }};color:{{ car.accidentColor }}">{{ car.accidentLabel }}</div>
+              </div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- SCREEN: USED CAR DETAIL -->
+  <sc-if value="{{ isUsedCarDetail }}" hint-placeholder-val="{{ false }}">
+    <div style="max-width:900px;margin:0 auto;padding:24px 40px 100px">
+      <div onClick="{{ goUsedCars }}" style="font-size:13px;color:var(--muted);cursor:pointer;margin-bottom:18px">&larr; Back to used cars</div>
+      <div style="height:220px;border-radius:14px;background:repeating-linear-gradient(135deg,#efece3,#efece3 10px,var(--border) 10px,var(--border) 20px);display:flex;align-items:center;justify-content:center;margin-bottom:18px">
+        <div style="font-family:ui-monospace,monospace;font-size:12px;color:#8a8577">listing photos — 6</div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px">
+        <div>
+          <div style="font-size:26px;font-weight:800;margin-bottom:4px">{{ selectedUsedCar.title }}</div>
+          <div style="font-size:14px;color:var(--muted)">{{ selectedUsedCar.mileage }} km &middot; {{ selectedUsedCar.location }} &middot; Seller: {{ selectedUsedCar.seller }}</div>
+        </div>
+        <div style="font-size:24px;font-weight:800;color:var(--accent)">{{ selectedUsedCar.price }}</div>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:20px">
+        <div style="font-size:12px;padding:5px 10px;border-radius:7px;background:{{ selectedUsedCar.verifiedBg }};color:{{ selectedUsedCar.verifiedColor }}">{{ selectedUsedCar.verifiedLabel }}</div>
+        <div style="font-size:12px;padding:5px 10px;border-radius:7px;background:{{ selectedUsedCar.accidentBg }};color:{{ selectedUsedCar.accidentColor }}">{{ selectedUsedCar.accidentLabel }}</div>
+      </div>
+
+      <div style="border:1px solid var(--border);border-radius:16px;background:var(--card-bg);padding:22px;margin-bottom:16px">
+        <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:var(--dim);margin-bottom:10px">Condition notes</div>
+        <div style="font-size:14px;line-height:1.6;color:var(--text);margin-bottom:14px">{{ selectedUsedCar.condition }}</div>
+        <div style="font-size:13px;color:var(--muted)">Inspection report: {{ selectedUsedCar.inspection }}</div>
+      </div>
+
+      <div style="border:1px solid var(--border);border-radius:16px;background:var(--card-bg);padding:22px;margin-bottom:16px">
+        <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:var(--dim);margin-bottom:10px">BRTA registration paper value</div>
+        <div style="font-size:14px;color:var(--text);margin-bottom:10px">{{ selectedUsedCar.brtaYears }} years import-eligible registration life remaining</div>
+        <div style="height:8px;border-radius:4px;background:var(--track-bg);overflow:hidden"><div style="height:100%;width:{{ selectedUsedCar.brtaPct }}%;background:var(--accent);border-radius:4px"></div></div>
+      </div>
+
+      <sc-if value="{{ offerSubmitted }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:16px;background:#f4f9f6;border:1px solid #cfe3d6;border-radius:12px;color:#2f8f5f;font-size:14px;font-weight:600">Offer of {{ offerAmount }} sent to seller. If accepted, funds move to escrow automatically.</div>
+      </sc-if>
+      <sc-if value="{{ offerNotSubmitted }}" hint-placeholder-val="{{ true }}">
+        <div style="border:1px solid var(--border);border-radius:16px;background:var(--card-bg);padding:22px">
+          <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:var(--dim);margin-bottom:12px">Make an offer</div>
+          <div style="display:flex;gap:10px">
+            <input value="{{ offerAmount }}" onChange="{{ setOfferAmount }}" placeholder="e.g. ৳20,50,000" style="flex:1;padding:12px 14px;border:1px solid var(--border);border-radius:9px;font-size:14px" />
+            <div onClick="{{ submitOffer }}" style="padding:12px 22px;border-radius:9px;background:var(--accent);color:#fff;font-size:14px;font-weight:700;cursor:pointer">Submit offer</div>
+          </div>
+        </div>
+      </sc-if>
+    </div>
+  </sc-if>
+
+  <!-- SCREEN: SELLER DASHBOARD -->
+  <sc-if value="{{ isSellerDashboard }}" hint-placeholder-val="{{ false }}">
+    <div style="max-width:900px;margin:0 auto;padding:24px 40px 80px">
+      <div onClick="{{ goUsedCars }}" style="font-size:13px;color:var(--muted);cursor:pointer;margin-bottom:18px">&larr; Back to marketplace</div>
+      <div style="font-size:26px;font-weight:800;margin-bottom:22px">Seller dashboard</div>
+      <div style="border:1px solid var(--border);border-radius:16px;background:var(--card-bg);overflow:hidden">
+        <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr;padding:14px 20px;font-size:12px;color:var(--dim);text-transform:uppercase;border-bottom:1px solid var(--track-bg)">
+          <div>Listing</div><div>Status</div><div>Offers</div><div>Price</div>
+        </div>
+        <sc-for list="{{ myListings }}" as="l" hint-placeholder-count="3">
+          <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr;padding:16px 20px;font-size:14px;border-bottom:1px solid #f7f4ee;align-items:center">
+            <div style="font-weight:600">{{ l.title }}</div>
+            <div><span style="font-size:11px;padding:3px 8px;border-radius:6px;background:{{ l.statusBg }};color:{{ l.statusColor }}">{{ l.status }}</span></div>
+            <div>{{ l.offers }}</div>
+            <div style="font-weight:700">{{ l.price }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- SCREEN: RESEARCH HUB LIST -->
+  <sc-if value="{{ isResearch }}" hint-placeholder-val="{{ false }}">
+    <div style="max-width:1180px;margin:0 auto;padding:24px 40px 80px">
+      <div style="font-size:30px;font-weight:800;margin-bottom:8px">Dream Car Research Hub</div>
+      <div style="font-size:15px;color:var(--muted);margin-bottom:28px;max-width:640px">Specs, reliability data, and Bangladesh-specific total cost of ownership for popular JDM and BD-market models.</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px">
+        <sc-for list="{{ researchModels }}" as="m" hint-placeholder-count="4">
+          <div onClick="{{ m.view }}" style="border:1px solid var(--border);border-radius:16px;padding:18px;background:var(--card-bg);cursor:pointer" style-hover="box-shadow:0 6px 18px rgba(0,0,0,0.06)">
+            <div style="height:90px;border-radius:9px;background:repeating-linear-gradient(135deg,#efece3,#efece3 10px,var(--border) 10px,var(--border) 20px);margin-bottom:12px"></div>
+            <div style="font-size:15px;font-weight:700">{{ m.name }}</div>
+            <div style="font-size:12px;color:var(--muted)">{{ m.tagline }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- SCREEN: RESEARCH DETAIL -->
+  <sc-if value="{{ isResearchDetail }}" hint-placeholder-val="{{ false }}">
+    <div style="max-width:900px;margin:0 auto;padding:24px 40px 80px">
+      <div onClick="{{ goResearch }}" style="font-size:13px;color:var(--muted);cursor:pointer;margin-bottom:18px">&larr; Back to research hub</div>
+      <div style="font-size:30px;font-weight:800;margin-bottom:20px">{{ selectedResearchModel.name }}</div>
+
+      <div style="border:1px solid var(--border);border-radius:16px;background:var(--card-bg);padding:22px;margin-bottom:16px">
+        <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:var(--dim);margin-bottom:12px">Generations &amp; specs</div>
+        <div style="font-size:14px;line-height:1.7;color:var(--text)">{{ selectedResearchModel.specs }}</div>
+      </div>
+
+      <div style="border:1px solid var(--border);border-radius:16px;background:var(--card-bg);padding:22px;margin-bottom:16px">
+        <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:var(--dim);margin-bottom:12px">Common reliability issues</div>
+        <div style="display:grid;gap:8px">
+          <sc-for list="{{ selectedResearchModel.issues }}" as="issue" hint-placeholder-count="3">
+            <div style="font-size:13.5px;color:var(--text);padding:9px 12px;background:var(--chip-bg);border-radius:9px">{{ issue }}</div>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="border:1px solid var(--border);border-radius:16px;background:var(--card-bg);padding:22px">
+        <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:var(--dim);margin-bottom:14px">Total cost of ownership — Bangladesh</div>
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px">
+          <div style="font-size:13px;color:var(--muted);white-space:nowrap">Monthly driving: {{ monthlyKm }} km</div>
+          <input type="range" min="300" max="3000" step="100" value="{{ monthlyKm }}" onChange="{{ setMonthlyKm }}" style="flex:1" />
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:14px">
+          <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--track-bg)"><span style="color:var(--muted)">Registration tax</span><span style="font-weight:700">{{ selectedResearchModel.regTax }}</span></div>
+          <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--track-bg)"><span style="color:var(--muted)">Annual BRTA token tax</span><span style="font-weight:700">{{ selectedResearchModel.tokenTax }}</span></div>
+          <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--track-bg)"><span style="color:var(--muted)">Est. monthly fuel cost</span><span style="font-weight:700">{{ fuelCostFormatted }}</span></div>
+          <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--track-bg)"><span style="color:var(--muted)">Insurance estimate</span><span style="font-weight:700">{{ selectedResearchModel.insurance }}</span></div>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:18px">
+          <div onClick="{{ goAgents }}" style="flex:1;text-align:center;padding:11px;border-radius:9px;background:var(--ink);color:#fff;font-size:13px;font-weight:600;cursor:pointer">See auction listings</div>
+          <div onClick="{{ goUsedCars }}" style="flex:1;text-align:center;padding:11px;border-radius:9px;background:var(--chip-bg);color:var(--text);font-size:13px;font-weight:600;cursor:pointer">See used listings</div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- SCREEN: AI ASSISTANT -->
+  <sc-if value="{{ isAI }}" hint-placeholder-val="{{ false }}">
+    <div style="max-width:760px;margin:0 auto;padding:24px 40px 80px">
+      <div style="font-size:26px;font-weight:800;margin-bottom:6px">AI car recommendation assistant</div>
+      <div style="font-size:14px;color:var(--muted);margin-bottom:22px">Describe what you need in plain language — spanning new, used, and reconditioned listings.</div>
+      <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:16px">
+        <sc-for list="{{ aiMessages }}" as="m" hint-placeholder-count="2">
+          <div style="display:flex;justify-content:{{ m.justify }}">
+            <div style="max-width:80%;padding:12px 16px;border-radius:14px;background:{{ m.bg }};color:{{ m.color }};font-size:14px;line-height:1.55">{{ m.text }}</div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <sc-for list="{{ aiSuggestions }}" as="s" hint-placeholder-count="2">
+          <div onClick="{{ s.ask }}" style="padding:9px 14px;border-radius:20px;background:var(--card-bg);border:1px solid var(--border);font-size:13px;color:var(--text);cursor:pointer" style-hover="border-color:var(--accent)">{{ s.label }}</div>
+        </sc-for>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- SCREEN: MOD STUDIO -->
+  <sc-if value="{{ isModStudio }}" hint-placeholder-val="{{ false }}">
+    <div style="max-width:1100px;margin:0 auto;padding:24px 40px 80px">
+      <div style="font-size:30px;font-weight:800;margin-bottom:8px">Modification Studio &amp; fitment checker</div>
+      <div style="font-size:15px;color:var(--muted);margin-bottom:22px;max-width:640px">BRTA-legal parts, filtered to what actually fits your car.</div>
+
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:14px 18px">
+        <div style="font-size:13px;color:var(--muted)">Your garage:</div>
+        <div style="font-size:14px;font-weight:700">Toyota Harrier 2.0L Hybrid (2019) &middot; chassis AVU65</div>
+        <div onClick="{{ toggleFitmentFilter }}" style="margin-left:auto;font-size:13px;font-weight:700;color:var(--accent);cursor:pointer">{{ fitmentToggleLabel }}</div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px">
+        <sc-for list="{{ displayedParts }}" as="p" hint-placeholder-count="3">
+          <div style="border:1px solid var(--border);border-radius:16px;background:var(--card-bg);padding:18px">
+            <div style="height:90px;border-radius:9px;background:repeating-linear-gradient(135deg,#efece3,#efece3 10px,var(--border) 10px,var(--border) 20px);margin-bottom:12px"></div>
+            <div style="font-size:14px;font-weight:700;margin-bottom:4px">{{ p.name }}</div>
+            <div style="font-size:12px;color:var(--muted);margin-bottom:10px">{{ p.category }} &middot; {{ p.price }}</div>
+            <div style="font-size:11px;padding:3px 8px;border-radius:6px;display:inline-block;margin-bottom:10px;background:{{ p.fitBg }};color:{{ p.fitColor }}">{{ p.fitLabel }}</div>
+            <div onClick="{{ p.add }}" style="text-align:center;padding:9px;border-radius:8px;background:{{ p.addBg }};color:{{ p.addColor }};font-size:13px;font-weight:700;cursor:pointer">{{ p.addLabel }}</div>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="border:1px solid var(--border);border-radius:16px;background:var(--card-bg);padding:20px">
+        <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:var(--dim);margin-bottom:10px">Modification bundle ({{ modBundleCount }})</div>
+        <div style="font-size:13.5px;color:var(--text)">{{ modBundleSummary }}</div>
+        <div style="font-size:12px;color:var(--dim);margin-top:8px">Bundle through your bidding organization for combined shipping and pre-installation before delivery.</div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- SCREEN: AGENTS -->
+  <sc-if value="{{ isAgents }}" hint-placeholder-val="{{ false }}">
+    <div style="max-width:1180px;margin:0 auto;padding:24px 40px 80px">
+      <div style="font-size:30px;font-weight:800;letter-spacing:-0.01em;margin-bottom:8px">Choose a licensed bidding organization</div>
+      <div style="font-size:15px;color:var(--muted);margin-bottom:28px;max-width:640px">Every agent below is admin-approved and license-verified. Compare track record, fees, and turnaround before you commit to one for your auction search.</div>
+
+      <div style="display:flex;gap:8px;margin-bottom:24px">
+        <div style="padding:8px 14px;border-radius:20px;background:var(--ink);color:#fff;font-size:13px;font-weight:600;cursor:default">Sort: Rating</div>
+        <div style="padding:8px 14px;border-radius:20px;background:var(--card-bg);border:1px solid var(--border);color:var(--muted);font-size:13px;cursor:default">Turnaround</div>
+        <div style="padding:8px 14px;border-radius:20px;background:var(--card-bg);border:1px solid var(--border);color:var(--muted);font-size:13px;cursor:default">Fee</div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <sc-for list="{{ agents }}" as="agent" hint-placeholder-count="4">
+          <div style="border:1px solid var(--border);border-radius:16px;padding:22px;background:#ffffff">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px">
+              <div>
+                <div style="font-size:17px;font-weight:700;margin-bottom:4px">{{ agent.name }}</div>
+                <div style="font-size:12px;font-weight:700;color:#2f8f5f;display:flex;align-items:center;gap:4px">Licensed &amp; Verified</div>
+              </div>
+              <div style="text-align:right">
+                <div style="font-size:15px;font-weight:700">★ {{ agent.rating }}</div>
+                <div style="font-size:12px;color:var(--dim)">{{ agent.reviews }} reviews</div>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:14px 0;border-top:1px solid var(--track-bg);border-bottom:1px solid var(--track-bg);margin-bottom:14px">
+              <div>
+                <div style="font-size:16px;font-weight:700">{{ agent.imports }}</div>
+                <div style="font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:0.03em">Imports</div>
+              </div>
+              <div>
+                <div style="font-size:16px;font-weight:700">{{ agent.turnaround }}d</div>
+                <div style="font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:0.03em">Avg turnaround</div>
+              </div>
+              <div>
+                <div style="font-size:16px;font-weight:700">{{ agent.feeLabel }}</div>
+                <div style="font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:0.03em">Agent fee</div>
+              </div>
+            </div>
+            <div onClick="{{ agent.viewProfile }}" style="text-align:center;padding:11px;border-radius:9px;background:var(--ink);color:#fff;font-size:14px;font-weight:600;cursor:pointer" style-hover="background:var(--accent)">View Profile</div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- SCREEN: PROFILE -->
+  <sc-if value="{{ isProfile }}" hint-placeholder-val="{{ false }}">
+    <div style="max-width:900px;margin:0 auto;padding:24px 40px 120px">
+      <div onClick="{{ goAgents }}" style="font-size:13px;color:var(--muted);cursor:pointer;margin-bottom:18px">&larr; Back to all agents</div>
+
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:24px">
+        <div style="flex:1;min-width:0">
+          <div style="font-size:30px;font-weight:800;margin-bottom:6px;line-height:1.2">{{ selectedAgent.name }}</div>
+          <div style="font-size:13px;font-weight:700;color:#2f8f5f">Licensed &amp; Verified &middot; {{ selectedAgent.years }} years in operation</div>
+        </div>
+        <div style="text-align:right;flex-shrink:0">
+          <div style="font-size:26px;font-weight:800">★ {{ selectedAgent.rating }}</div>
+          <div style="font-size:12px;color:var(--dim)">{{ selectedAgent.reviews }} verified reviews</div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px">
+        <div style="border:1px solid var(--border);border-radius:12px;padding:16px;background:#ffffff">
+          <div style="font-size:20px;font-weight:800">{{ selectedAgent.imports }}</div>
+          <div style="font-size:11px;color:var(--dim);text-transform:uppercase">Successful imports</div>
+        </div>
+        <div style="border:1px solid var(--border);border-radius:12px;padding:16px;background:#ffffff">
+          <div style="font-size:20px;font-weight:800">{{ selectedAgent.turnaround }} days</div>
+          <div style="font-size:11px;color:var(--dim);text-transform:uppercase">Avg turnaround</div>
+        </div>
+        <div style="border:1px solid var(--border);border-radius:12px;padding:16px;background:#ffffff">
+          <div style="font-size:20px;font-weight:800">{{ selectedAgent.feeLabel }}</div>
+          <div style="font-size:11px;color:var(--dim);text-transform:uppercase">Fee structure</div>
+        </div>
+        <div style="border:1px solid var(--border);border-radius:12px;padding:16px;background:#ffffff">
+          <div style="font-size:20px;font-weight:800">{{ selectedAgent.license }}</div>
+          <div style="font-size:11px;color:var(--dim);text-transform:uppercase">License no.</div>
+        </div>
+      </div>
+
+      <div style="font-size:15px;line-height:1.7;color:var(--text);margin-bottom:28px">{{ selectedAgent.about }}</div>
+
+      <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:var(--dim);margin-bottom:12px">Recent buyer ratings</div>
+      <div style="display:grid;gap:10px;margin-bottom:100px">
+        <sc-for list="{{ selectedAgent.testimonials }}" as="t" hint-placeholder-count="2">
+          <div style="border:1px solid var(--border);border-radius:12px;padding:16px;background:#ffffff">
+            <div style="font-size:14px;color:var(--text);margin-bottom:8px;line-height:1.5">"{{ t.quote }}"</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <div style="font-size:11px;padding:3px 8px;border-radius:6px;background:var(--chip-bg);color:var(--muted)">Communication ★{{ t.comm }}</div>
+              <div style="font-size:11px;padding:3px 8px;border-radius:6px;background:var(--chip-bg);color:var(--muted)">Grading accuracy ★{{ t.grading }}</div>
+              <div style="font-size:11px;padding:3px 8px;border-radius:6px;background:var(--chip-bg);color:var(--muted)">Timeliness ★{{ t.timeliness }}</div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="position:fixed;bottom:0;left:0;right:0;background:var(--card-bg);border-top:1px solid var(--border);padding:16px 40px;display:flex;justify-content:center">
+        <div style="position:relative;display:inline-block">
+          <div style="position:absolute;inset:-6px;border-radius:999px;border:1.5px solid rgba(var(--accent-rgb),0.5);animation:ringExpand 2.4s ease-out infinite;pointer-events:none"></div>
+          <div style="position:absolute;inset:-6px;border-radius:999px;border:1.5px solid rgba(var(--accent-rgb),0.5);animation:ringExpand 2.4s ease-out infinite;animation-delay:1.2s;pointer-events:none"></div>
+          <div onClick="{{ startBidding }}" style="position:relative;padding:14px 32px;border-radius:11px;background:var(--accent);color:var(--on-accent);font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(var(--accent-rgb),0.3)" style-hover="background:var(--accent-hover)">Select {{ selectedAgent.name }} &amp; start bidding &rarr;</div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- SCREEN: BIDDING -->
+  <sc-if value="{{ isBidding }}" hint-placeholder-val="{{ false }}">
+    <div style="max-width:1280px;margin:0 auto;padding:24px 40px 80px">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
+        <div onClick="{{ goProfile }}" style="font-size:13px;color:var(--muted);cursor:pointer">&larr; Back</div>
+        <div style="width:1px;height:14px;background:var(--border)"></div>
+        <div style="font-size:13px;color:var(--muted)">Agent: <span style="font-weight:700;color:var(--text)">{{ selectedAgent.name }}</span></div>
+        <div style="display:flex;align-items:center;gap:6px;margin-left:auto;background:var(--accent-tint);color:var(--accent);font-size:12px;font-weight:700;padding:6px 12px;border-radius:20px">
+          <div style="width:7px;height:7px;border-radius:50%;background:var(--accent);animation:pulseDot 1.4s ease-in-out infinite"></div>
+          Live Auction
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1.5fr 1fr;gap:24px;align-items:start">
+
+        <div>
+          <div style="border:1px solid var(--border);border-radius:16px;background:var(--card-bg);overflow:hidden;margin-bottom:16px">
+            <div style="height:220px;background:repeating-linear-gradient(135deg,#efece3,#efece3 10px,var(--border) 10px,var(--border) 20px);display:flex;align-items:center;justify-content:center">
+              <div style="font-family:ui-monospace,monospace;font-size:12px;color:#8a8577;background:#ffffffcc;padding:6px 12px;border-radius:6px">auction lot photo — 4 angles</div>
+            </div>
+            <div style="padding:20px">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+                <div>
+                  <div style="font-size:20px;font-weight:800">Toyota Harrier 2.0L Hybrid — 2019</div>
+                  <div style="font-size:13px;color:var(--muted)">32,400 km &middot; Yokohama Auction House</div>
+                </div>
+                <div style="font-size:22px;font-weight:800;background:var(--ink);color:#fff;padding:6px 14px;border-radius:10px">4.5B</div>
+              </div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <div style="font-size:12px;padding:6px 10px;border-radius:8px;background:var(--chip-bg);color:var(--text)">Exterior: minor scratches (A3)</div>
+                <div style="font-size:12px;padding:6px 10px;border-radius:8px;background:var(--chip-bg);color:var(--text)">Interior: clean, no odor</div>
+                <div style="font-size:12px;padding:6px 10px;border-radius:8px;background:var(--chip-bg);color:var(--text)">Mechanical: no notes recorded</div>
+              </div>
+            </div>
+          </div>
+
+          <div style="position:relative;overflow:hidden;border:1px solid var(--border);border-radius:16px;background:var(--card-bg);padding:24px;margin-bottom:16px;animation:zoomPulse 7s ease-in-out infinite">
+            <div class="bubble" style="width:14px;height:14px;left:10%;bottom:4%;animation-duration:6s;animation-delay:0.3s"></div>
+            <div class="bubble" style="width:9px;height:9px;left:20%;bottom:10%;animation-duration:5s;animation-delay:1.8s"></div>
+            <div class="bubble" style="width:12px;height:12px;right:14%;bottom:6%;animation-duration:6.4s;animation-delay:1s"></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:16px;margin-bottom:8px">
+              <div>
+                <div style="font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:0.03em;margin-bottom:4px">Current bid (JPY)</div>
+                <div style="font-size:28px;font-weight:800;font-variant-numeric:tabular-nums">¥{{ bidJPYFormatted }}</div>
+              </div>
+              <div>
+                <div style="font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:0.03em;margin-bottom:4px">Live BDT equivalent</div>
+                <div style="font-size:28px;font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums">৳{{ bidBDTFormatted }}</div>
+              </div>
+              <div>
+                <div style="font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:0.03em;margin-bottom:4px">Time remaining</div>
+                <div style="font-size:28px;font-weight:800;font-variant-numeric:tabular-nums">{{ timerFormatted }}</div>
+              </div>
+              <div>
+                <div style="font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:0.03em;margin-bottom:4px">Active bidders</div>
+                <div style="font-size:28px;font-weight:800;font-variant-numeric:tabular-nums">{{ activeBidders }}</div>
+              </div>
+            </div>
+            <div style="font-size:11px;color:var(--dim)">Rate: 1 JPY &asymp; {{ exchangeRateFormatted }} BDT &middot; updates live</div>
+          </div>
+
+          <div style="border:1px solid var(--border);border-radius:16px;background:var(--card-bg);padding:20px">
+            <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:var(--dim);margin-bottom:14px">Chat with {{ selectedAgent.name }}</div>
+            <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;max-height:220px;overflow-y:auto">
+              <sc-for list="{{ chatMessages }}" as="msg" hint-placeholder-count="3">
+                <div style="display:flex;justify-content:{{ msg.justify }}">
+                  <div style="max-width:70%;padding:10px 14px;border-radius:12px;background:{{ msg.bg }};color:{{ msg.color }};font-size:13.5px;line-height:1.4">{{ msg.text }}</div>
+                </div>
+              </sc-for>
+            </div>
+            <div style="display:flex;gap:8px;margin-bottom:14px">
+              <div onClick="{{ quickBidSmall }}" style="padding:10px 16px;border-radius:9px;background:var(--chip-bg);color:var(--text);font-size:13px;font-weight:600;cursor:pointer" style-hover="background:var(--border)">+ ¥25,000</div>
+              <div onClick="{{ quickBidCeiling }}" style="padding:10px 16px;border-radius:9px;background:var(--ink);color:#fff;font-size:13px;font-weight:600;cursor:pointer" style-hover="background:var(--accent)">Set ceiling ¥800,000</div>
+            </div>
+            <div onClick="{{ winLot }}" style="text-align:center;padding:12px;border-radius:9px;background:#2f8f5f;color:#fff;font-size:13.5px;font-weight:700;cursor:pointer">Simulate: win this lot &amp; proceed to payment &rarr;</div>
+          </div>
+        </div>
+
+        <div>
+          <div style="border:1px solid var(--border);border-radius:16px;background:var(--card-bg);padding:22px;margin-bottom:16px">
+            <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:var(--dim);margin-bottom:16px">Unified landed cost</div>
+            <div style="display:flex;justify-content:space-between;padding:9px 0;font-size:14px;border-bottom:1px solid var(--track-bg)">
+              <span style="color:var(--muted)">Bid price</span><span style="font-weight:600;font-variant-numeric:tabular-nums">৳{{ bidBDTFormatted }}</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:9px 0;font-size:14px;border-bottom:1px solid var(--track-bg)">
+              <span style="color:var(--muted)">NBR import duty</span><span style="font-weight:600;font-variant-numeric:tabular-nums">৳{{ dutyFormatted }}</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:9px 0;font-size:14px;border-bottom:1px solid var(--track-bg)">
+              <span style="color:var(--muted)">Shipping{{ poolTag }}</span><span style="font-weight:600;font-variant-numeric:tabular-nums">৳{{ shippingFormatted }}</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:9px 0;font-size:14px;border-bottom:1px solid var(--track-bg)">
+              <span style="color:var(--muted)">Agent fee (3%)</span><span style="font-weight:600;font-variant-numeric:tabular-nums">৳{{ agentFeeFormatted }}</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:9px 0;font-size:14px;border-bottom:1px solid var(--track-bg)">
+              <span style="color:var(--muted)">Port handling</span><span style="font-weight:600;font-variant-numeric:tabular-nums">৳{{ portFormatted }}</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:14px 0 0;font-size:16px">
+              <span style="font-weight:800">Total landed cost</span><span style="font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums">৳{{ totalFormatted }}</span>
+            </div>
+          </div>
+
+          <div style="border:1px solid #cfe3d6;border-radius:16px;background:#f4f9f6;padding:20px;margin-bottom:16px">
+            <div style="font-size:13px;font-weight:700;color:#2f8f5f;margin-bottom:8px">Container Pooling</div>
+            <div style="font-size:13.5px;color:var(--text);line-height:1.5;margin-bottom:14px">3 open slots on a Yokohama&rarr;Chattogram container departing in 11 days. Join to cut shipping by ~30%.</div>
+            <div onClick="{{ togglePool }}" style="text-align:center;padding:10px;border-radius:9px;background:{{ poolButtonBg }};color:{{ poolButtonColor }};font-size:13px;font-weight:700;cursor:pointer;border:1px solid #2f8f5f">{{ poolButtonLabel }}</div>
+          </div>
+
+          <div style="border:1px solid var(--border);border-radius:16px;background:var(--card-bg);padding:20px">
+            <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:var(--dim);margin-bottom:10px">BRTA paper value</div>
+            <div style="font-size:14px;color:var(--text);margin-bottom:10px">5.8 years import-eligible registration life remaining</div>
+            <div style="height:8px;border-radius:4px;background:var(--track-bg);overflow:hidden">
+              <div style="height:100%;width:58%;background:var(--accent);border-radius:4px"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- SCREEN: ESCROW -->
+  <sc-if value="{{ isEscrow }}" hint-placeholder-val="{{ false }}">
+    <div style="max-width:640px;margin:0 auto;padding:24px 40px 80px">
+      <div style="font-size:26px;font-weight:800;margin-bottom:6px">Escrow payment</div>
+      <div style="font-size:14px;color:var(--muted);margin-bottom:22px">Funds are held by AutoBD's escrow gateway and only released to {{ selectedAgent.name }} after you confirm delivery.</div>
+
+      <div style="border:1px solid var(--border);border-radius:16px;background:var(--card-bg);padding:22px;margin-bottom:16px">
+        <div style="display:flex;justify-content:space-between;padding:9px 0;font-size:14px;border-bottom:1px solid var(--track-bg)"><span style="color:var(--muted)">Winning bid + duty + shipping</span><span style="font-weight:600">৳{{ totalFormatted }}</span></div>
+        <div style="display:flex;justify-content:space-between;padding:9px 0;font-size:14px;border-bottom:1px solid var(--track-bg)"><span style="color:var(--muted)">Agent fee</span><span style="font-weight:600">৳{{ agentFeeFormatted }}</span></div>
+        <div style="display:flex;justify-content:space-between;padding:14px 0 0;font-size:16px"><span style="font-weight:800">Due now</span><span style="font-weight:800;color:var(--accent)">৳{{ totalFormatted }}</span></div>
+      </div>
+
+      <div style="display:flex;gap:10px;margin-bottom:20px">
+        <div style="flex:1;text-align:center;padding:13px;border-radius:10px;border:1px solid var(--border);font-size:13px;font-weight:700;background:#ffffff">bKash</div>
+        <div style="flex:1;text-align:center;padding:13px;border-radius:10px;border:1px solid var(--border);font-size:13px;font-weight:700;background:#ffffff">SSLCommerz</div>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
+        <div style="width:10px;height:10px;border-radius:50%;background:{{ escrowDotColor }}"></div>
+        <div style="font-size:13px;font-weight:700">{{ escrowStatusLabel }}</div>
+      </div>
+
+      <sc-if value="{{ escrowHeld }}" hint-placeholder-val="{{ true }}">
+        <div onClick="{{ payEscrow }}" style="text-align:center;padding:14px;border-radius:11px;background:var(--accent);color:#fff;font-size:15px;font-weight:700;cursor:pointer">Pay ৳{{ totalFormatted }} into escrow</div>
+      </sc-if>
+      <sc-if value="{{ escrowPaid }}" hint-placeholder-val="{{ false }}">
+        <div onClick="{{ goShipment }}" style="text-align:center;padding:14px;border-radius:11px;background:var(--ink);color:#fff;font-size:15px;font-weight:700;cursor:pointer">Track shipment &rarr;</div>
+      </sc-if>
+    </div>
+  </sc-if>
+
+  <!-- SCREEN: SHIPMENT TRACKER -->
+  <sc-if value="{{ isShipment }}" hint-placeholder-val="{{ false }}">
+    <div style="max-width:760px;margin:0 auto;padding:24px 40px 80px">
+      <div style="font-size:26px;font-weight:800;margin-bottom:6px">Shipment &amp; import status</div>
+      <div style="font-size:14px;color:var(--muted);margin-bottom:24px">Toyota Harrier 2.0L Hybrid — 2019 &middot; {{ selectedAgent.name }}</div>
+
+      <div style="display:grid;gap:0;margin-bottom:22px">
+        <sc-for list="{{ shipmentStages }}" as="st" hint-placeholder-count="8">
+          <div style="display:flex;gap:14px">
+            <div style="display:flex;flex-direction:column;align-items:center">
+              <div style="width:14px;height:14px;border-radius:50%;background:{{ st.dotColor }};flex-shrink:0"></div>
+              <sc-if value="{{ st.showLine }}" hint-placeholder-val="{{ true }}"><div style="width:2px;flex:1;background:{{ st.lineColor }};min-height:24px"></div></sc-if>
+            </div>
+            <div style="padding-bottom:22px">
+              <div style="font-size:14.5px;font-weight:{{ st.weight }};color:{{ st.textColor }}">{{ st.label }}</div>
+              <div style="font-size:12px;color:var(--dim)">{{ st.timestamp }}</div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="height:130px;border-radius:14px;background:repeating-linear-gradient(135deg,#eef2ee,#eef2ee 10px,#e2ebe4 10px,#e2ebe4 20px);display:flex;align-items:center;justify-content:center;margin-bottom:18px">
+        <div style="font-family:ui-monospace,monospace;font-size:11px;color:#7a8a7d">Google Maps — live vessel position</div>
+      </div>
+
+      <div style="display:flex;gap:10px">
+        <div onClick="{{ advanceShipment }}" style="flex:1;text-align:center;padding:12px;border-radius:9px;background:var(--chip-bg);color:var(--text);font-size:13px;font-weight:700;cursor:pointer">Simulate: advance stage</div>
+        <sc-if value="{{ shipmentComplete }}" hint-placeholder-val="{{ false }}">
+          <div onClick="{{ goRating }}" style="flex:1;text-align:center;padding:12px;border-radius:9px;background:var(--accent);color:#fff;font-size:13px;font-weight:700;cursor:pointer">Delivered — rate your agent &rarr;</div>
+        </sc-if>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- SCREEN: RATING & DISPUTE -->
+  <sc-if value="{{ isRating }}" hint-placeholder-val="{{ false }}">
+    <div style="max-width:640px;margin:0 auto;padding:24px 40px 80px">
+      <div style="font-size:26px;font-weight:800;margin-bottom:6px">Rate {{ selectedAgent.name }}</div>
+      <div style="font-size:14px;color:var(--muted);margin-bottom:22px">Your import is complete. Ratings feed the agent's public profile score.</div>
+
+      <sc-if value="{{ ratingNotSubmitted }}" hint-placeholder-val="{{ true }}">
+        <div style="border:1px solid var(--border);border-radius:16px;background:var(--card-bg);padding:22px;margin-bottom:16px">
+          <sc-for list="{{ ratingDims }}" as="dim" hint-placeholder-count="4">
+            <div style="margin-bottom:16px">
+              <div style="display:flex;justify-content:space-between;font-size:13.5px;margin-bottom:8px"><span>{{ dim.label }}</span><span style="font-weight:700">{{ dim.value }} / 5</span></div>
+              <input type="range" min="1" max="5" step="1" value="{{ dim.value }}" onChange="{{ dim.set }}" style="width:100%" />
+            </div>
+          </sc-for>
+          <div onClick="{{ submitRating }}" style="text-align:center;padding:13px;border-radius:10px;background:var(--accent);color:#fff;font-size:14px;font-weight:700;cursor:pointer;margin-top:6px">Submit rating</div>
+        </div>
+        <div onClick="{{ openDispute }}" style="font-size:13px;color:#a3701c;text-align:center;cursor:pointer">Something wrong with this transaction? File a dispute</div>
+      </sc-if>
+
+      <sc-if value="{{ ratingSubmitted }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:16px;background:#f4f9f6;border:1px solid #cfe3d6;border-radius:12px;color:#2f8f5f;font-size:14px;font-weight:600;margin-bottom:16px">Thanks — your rating is now reflected on {{ selectedAgent.name }}'s public profile.</div>
+        <div onClick="{{ goHome }}" style="text-align:center;padding:13px;border-radius:10px;background:var(--ink);color:#fff;font-size:14px;font-weight:700;cursor:pointer">Back to home</div>
+      </sc-if>
+
+      <sc-if value="{{ disputeOpen }}" hint-placeholder-val="{{ false }}">
+        <div style="border:1px solid #f0dcb8;border-radius:16px;background:#fdf7ec;padding:20px;margin-top:16px">
+          <div style="font-size:13px;font-weight:700;color:#a3701c;margin-bottom:12px">File a dispute</div>
+          <sc-if value="{{ disputeNotSubmitted }}" hint-placeholder-val="{{ true }}">
+            <textarea placeholder="e.g. Car condition significantly differs from described grade..." style="width:100%;min-height:80px;padding:12px;border:1px solid #e6d9b8;border-radius:9px;font-size:14px;font-family:inherit;margin-bottom:12px"></textarea>
+            <div onClick="{{ submitDispute }}" style="text-align:center;padding:12px;border-radius:9px;background:#a3701c;color:#fff;font-size:13.5px;font-weight:700;cursor:pointer">Submit to admin for review</div>
+          </sc-if>
+          <sc-if value="{{ disputeSubmitted }}" hint-placeholder-val="{{ false }}">
+            <div style="font-size:13.5px;color:var(--text)">Dispute filed. Admin will review with full access to the chat and bid log.</div>
+          </sc-if>
+        </div>
+      </sc-if>
+    </div>
+  </sc-if>
+
+  </sc-if>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const AGENTS = [
+  { id: 'osaka', name: 'Osaka Bridge Auto', years: 11, rating: '4.9', reviews: 521, imports: 2100, turnaround: 33, feeLabel: '3% of bid', license: 'JP-BD-0442',
+    about: 'Osaka Bridge Auto has run BD-facing auction sourcing since 2015, specializing in hybrid SUVs and sedans from Kansai-region auction houses. Their in-house translators produce a fully translated auction sheet before any bid is placed, and they carry the lowest dispute rate on the platform.',
+    testimonials: [
+      { quote: 'Grading matched the car exactly when it arrived. No surprises.', comm: 5, grading: 5, timeliness: 4 },
+      { quote: 'Fast replies during the live bid — felt like they were right there with me.', comm: 5, grading: 4, timeliness: 5 }
+    ] },
+  { id: 'yokohama', name: 'Yokohama Direct Trading', years: 8, rating: '4.8', reviews: 312, imports: 1240, turnaround: 38, feeLabel: '3.5% of bid', license: 'JP-BD-0198',
+    about: 'Yokohama Direct Trading focuses on volume imports of compact and mid-size sedans, with direct relationships at three Kanto-area auction houses.',
+    testimonials: [ { quote: 'Good value agent, communicative throughout.', comm: 4, grading: 4, timeliness: 4 } ] },
+  { id: 'tokyoline', name: 'TokyoLine Motors BD', years: 6, rating: '4.6', reviews: 198, imports: 860, turnaround: 45, feeLabel: '৳45,000 flat', license: 'JP-BD-0367',
+    about: 'TokyoLine Motors BD offers a flat-fee model, useful for buyers targeting higher-value lots where a percentage fee would run high.',
+    testimonials: [ { quote: 'Flat fee saved me money on a higher-bid lot.', comm: 4, grading: 5, timeliness: 3 } ] },
+  { id: 'nagoya', name: 'Nagoya Fleet Partners', years: 4, rating: '4.4', reviews: 97, imports: 310, turnaround: 52, feeLabel: '4% of bid', license: 'JP-BD-0521',
+    about: 'A newer agent on the platform, Nagoya Fleet Partners is building track record with a focus on kei cars and small hatchbacks.',
+    testimonials: [ { quote: 'Smaller agent, but very responsive for a first-timer like me.', comm: 5, grading: 4, timeliness: 4 } ] }
+];
+
+const NEW_CARS = [
+  { id: 'corolla-cross', brand: 'Toyota', model: 'Corolla Cross Hybrid', priceRange: '৳48L – 58L', warranty: '5-year', warrantyKm: '100,000 km',
+    variants: [
+      { name: 'X', price: '৳48L', engine: '1.8L Hybrid', trans: 'CVT', economy: '23 km/l' },
+      { name: 'G', price: '৳53L', engine: '1.8L Hybrid', trans: 'CVT', economy: '22 km/l' },
+      { name: 'Z', price: '৳58L', engine: '1.8L Hybrid', trans: 'CVT', economy: '21 km/l' }
+    ] },
+  { id: 'city-hev', brand: 'Honda', model: 'City e:HEV', priceRange: '৳42L – 46L', warranty: '3-year', warrantyKm: '100,000 km',
+    variants: [
+      { name: 'EL', price: '৳42L', engine: '1.5L e:HEV', trans: 'e-CVT', economy: '27 km/l' },
+      { name: 'SV', price: '৳46L', engine: '1.5L e:HEV', trans: 'e-CVT', economy: '26 km/l' }
+    ] },
+  { id: 'xpander', brand: 'Mitsubishi', model: 'Xpander', priceRange: '৳38L – 43L', warranty: '5-year', warrantyKm: '100,000 km',
+    variants: [
+      { name: 'GLS', price: '৳38L', engine: '1.5L Petrol', trans: '4AT', economy: '14 km/l' },
+      { name: 'Ultimate', price: '৳43L', engine: '1.5L Petrol', trans: '4AT', economy: '14 km/l' }
+    ] },
+  { id: 'swift', brand: 'Suzuki', model: 'Swift', priceRange: '৳29L – 33L', warranty: '3-year', warrantyKm: '100,000 km',
+    variants: [
+      { name: 'GL', price: '৳29L', engine: '1.2L Petrol', trans: '5MT', economy: '20 km/l' },
+      { name: 'GLX', price: '৳33L', engine: '1.2L Petrol', trans: 'CVT', economy: '19 km/l' }
+    ] }
+];
+
+const USED_CARS = [
+  { id: 'axio', title: 'Toyota Axio 2016', mileage: '92,000', location: 'Dhaka', price: '৳13.5L', seller: 'M. Rahman',
+    verified: true, verifiedLabel: 'Verified Ownership', accident: 'none', accidentLabel: 'Accident: None Found',
+    condition: 'Well-maintained, single owner. Minor bumper touch-up documented. Full service history available.',
+    inspection: 'Third-party inspection completed via partner garage, report attached.', brtaYears: '6.4', brtaPct: 64 },
+  { id: 'vezel', title: 'Honda Vezel 2017', mileage: '65,000', location: 'Chattogram', price: '৳21L', seller: 'S. Islam',
+    verified: true, verifiedLabel: 'Verified Ownership', accident: 'one', accidentLabel: '1 Incident Recorded',
+    condition: 'Rear-end collision in 2020, professionally repaired. Drives well, cosmetic panel replaced.',
+    inspection: 'Inspection report on file, visible on all future relistings.', brtaYears: '5.1', brtaPct: 51 },
+  { id: 'xtrail', title: 'Nissan X-Trail 2015', mileage: '110,000', location: 'Sylhet', price: '৳18L', seller: 'A. Karim',
+    verified: false, verifiedLabel: 'Verification Pending', accident: 'unknown', accidentLabel: 'Accident: Not Checked',
+    condition: 'Seller-reported good condition. Ownership documents under BRTA verification review.',
+    inspection: 'Not yet requested by buyer.', brtaYears: '3.8', brtaPct: 38 }
+];
+
+const RESEARCH_MODELS = [
+  { id: 'harrier', name: 'Toyota Harrier', tagline: '60/80 series, hybrid & petrol',
+    specs: '60-series (2013–2020): 2.0L petrol / 2.0L hybrid, FWD/AWD. 80-series (2020–): redesigned platform, 2.0L hybrid standard, more advanced safety suite.',
+    issues: ['CVT judder reported on early 60-series petrol variants', 'Hybrid battery degradation after 120,000km on high-mileage imports', 'Panel gaps on aftermarket bumper replacements'],
+    regTax: '৳85,000', tokenTax: '৳12,000 / yr', insurance: '৳28,000 / yr', fuelPricePerL: 125, kmPerL: 14 },
+  { id: 'vezel', name: 'Honda Vezel', tagline: 'Compact hybrid crossover',
+    specs: 'Gen 1 (2013–2018): 1.5L hybrid, well-suited to city driving. Gen 2 (2021–): larger footprint, upgraded hybrid system, more BD imports arriving.',
+    issues: ['Gen 1 hybrid IPU cooling fan wear', 'Squeaky rear suspension on high-mileage units', 'Infotainment unit failures in humid climates'],
+    regTax: '৳62,000', tokenTax: '৳9,000 / yr', insurance: '৳21,000 / yr', fuelPricePerL: 125, kmPerL: 18 },
+  { id: 'cx5', name: 'Mazda CX-5', tagline: 'Petrol/diesel mid-size SUV',
+    specs: 'KE (2012–2016) and KF (2017–) generations. SkyActiv petrol dominant in BD imports; diesel rare due to parts availability.',
+    issues: ['Timing chain rattle on early SkyActiv-G engines', 'Infotainment dial (Mazda Connect) failures', 'Rust on rear wheel arches in coastal-import units'],
+    regTax: '৳95,000', tokenTax: '৳14,000 / yr', insurance: '৳31,000 / yr', fuelPricePerL: 125, kmPerL: 12 },
+  { id: 'premio', name: 'Toyota Premio', tagline: 'Sedan, strong resale value',
+    specs: 'T260 generation (2007–2021), 1.5L/1.8L petrol. Long production run means excellent parts availability in BD.', 
+    issues: ['Oil consumption on high-mileage 1.8L units', 'Power window regulator wear', 'AC compressor clutch failure common past 100,000km'],
+    regTax: '৳58,000', tokenTax: '৳8,000 / yr', insurance: '৳19,000 / yr', fuelPricePerL: 125, kmPerL: 16 }
+];
+
+const MOD_PARTS = [
+  { id: 'rays', name: 'Rays TE37 18"', category: 'Wheels', price: '৳1,85,000', compatible: true },
+  { id: 'rocketbunny', name: 'Rocket Bunny Body Kit', category: 'Body kit', price: '৳3,20,000', compatible: true },
+  { id: 'led', name: 'LED Headlight Kit', category: 'Lighting', price: '৳45,000', compatible: true },
+  { id: 'bbs', name: 'BBS LM 19"', category: 'Wheels', price: '৳2,40,000', compatible: false },
+  { id: 'kuhl', name: 'Kuhl Racing Kit', category: 'Body kit', price: '৳4,10,000', compatible: false }
+];
+
+const EXCHANGE_RATE = 0.79;
+
+const THEMES = {
+  light: {
+    bg: '#f7f4ee', text: '#211d18', muted: '#6f6a60', dim: '#a39d90',
+    border: '#e6e1d6', cardBg: '#ffffff', trackBg: '#f0ede5', chipBg: '#f2efe8',
+    accent: '#c1442d', accentHover: '#9c3520', accentRgb: '193,68,45', onAccent: '#ffffff',
+    accentTint: '#fbeeea'
+  },
+  dark: {
+    bg: '#0a0a0a', text: '#f3f2ee', muted: '#a9a49a', dim: '#7d786f',
+    border: 'rgba(255,255,255,0.1)', cardBg: '#1c1812', trackBg: 'rgba(255,255,255,0.08)', chipBg: 'rgba(255,255,255,0.06)',
+    accent: '#e3f23a', accentHover: '#eef874', accentRgb: '227,242,58', onAccent: '#0a0a0a',
+    accentTint: 'rgba(227,242,58,0.14)'
+  }
+};
+
+class Component extends DCLogic {
+  state = {
+    mode: 'buyer',
+    theme: 'light',
+    screen: 'login',
+    selectedAgentId: null,
+    bidJPY: 685000,
+    timerSeconds: 272,
+    activeBidders: 4,
+    poolJoined: false,
+    exchangeRate: EXCHANGE_RATE,
+    chatMessages: [
+      { from: 'agent', text: 'Lot confirmed — Harrier Hybrid, grade 4.5B. Bidding opens now.' },
+      { from: 'buyer', text: 'Looks good, keep me updated.' }
+    ],
+    regRole: 'buyer',
+    loggedIn: false,
+    pendingScreen: null,
+    newCarId: 'corolla-cross',
+    variantIndex: 0,
+    inquirySubmitted: false,
+    usedCarId: 'axio',
+    offerAmount: '',
+    offerSubmitted: false,
+    myListings: [
+      { title: 'Toyota Axio 2016', status: 'Active', statusBg: '#f2efe8', statusColor: '#3d3830', offers: 2, price: '৳13.5L' },
+      { title: 'Honda Fit 2014', status: 'Offer Received', statusBg: '#fdf1de', statusColor: '#a3701c', offers: 1, price: '৳9.2L' },
+      { title: 'Toyota Allion 2012', status: 'Sold', statusBg: '#f4f9f6', statusColor: '#2f8f5f', offers: 4, price: '৳7.8L' }
+    ],
+    researchId: 'harrier',
+    monthlyKm: 1200,
+    aiMessages: [
+      { from: 'buyer', text: 'I want a fuel-efficient family car under 25 lakh taka, preferably Japanese, good for Dhaka traffic.' },
+      { from: 'ai', text: 'Based on that, here are three ranked options: 1) Used Honda Vezel 2017 (৳21L) — best fuel economy in city stop-go traffic, but carries 1 recorded incident. 2) Used Toyota Axio 2016 (৳13.5L) — lower upfront cost, clean accident history, less cabin space. 3) Reconditioned Toyota Corolla Axio via auction — potential for lower landed cost if you can wait ~35 days for import. Trade-off: the Vezel has lower fuel cost but higher parts cost in BD versus the Axio.' }
+    ],
+    fitmentFilter: true,
+    modBundle: [],
+    escrowStatus: 'held',
+    shipmentStageIndex: 2,
+    ratingDims: { comm: 4, grading: 4, timeliness: 4, value: 4 },
+    ratingSubmitted: false,
+    disputeOpen: false,
+    disputeSubmitted: false,
+    adminPendingApps: [
+      { name: 'Chattogram Auction Partners', license: 'JP-BD-0610', years: 2 },
+      { name: 'Sylhet Import Alliance', license: 'JP-BD-0625', years: 1 }
+    ]
+  };
+
+  componentDidMount() {
+    try {
+      const saved = localStorage.getItem('autobd-app-theme');
+      if (saved === 'dark' || saved === 'light') this.setState({ theme: saved });
+    } catch (e) {}
+
+    this._tick = setInterval(() => {
+      this.setState(s => {
+        let timerSeconds = s.timerSeconds - 1;
+        let bidJPY = s.bidJPY;
+        let activeBidders = s.activeBidders;
+        let chatMessages = s.chatMessages;
+        let exchangeRate = +(EXCHANGE_RATE + (Math.random() - 0.5) * 0.004).toFixed(4);
+
+        if (timerSeconds <= 0) {
+          timerSeconds = 240 + Math.floor(Math.random() * 60);
+          bidJPY = bidJPY + (15000 + Math.floor(Math.random() * 25000));
+          chatMessages = chatMessages.concat([{ from: 'agent', text: 'Bid now at ¥' + bidJPY.toLocaleString('en-US') + ' — still within range?' }]).slice(-6);
+        }
+        if (Math.random() < 0.3) {
+          activeBidders = Math.max(3, Math.min(7, activeBidders + (Math.random() < 0.5 ? -1 : 1)));
+        }
+        return { timerSeconds, bidJPY, activeBidders, exchangeRate, chatMessages };
+      });
+    }, 1000);
+  }
+
+  componentWillUnmount() {
+    clearInterval(this._tick);
+  }
+
+  toggleTheme = () => {
+    this.setState(s => {
+      const next = s.theme === 'dark' ? 'light' : 'dark';
+      try { localStorage.setItem('autobd-app-theme', next); } catch (e) {}
+      return { theme: next };
+    });
+  };
+
+  go = (screen) => this.setState({ screen });
+  goHome = () => this.setState({ screen: 'home', mode: 'buyer' });
+  goProfile = () => this.setState({ screen: 'profile' });
+  gated = (screen) => () => {
+    if (this.state.loggedIn) this.setState({ screen });
+    else this.setState({ screen: 'login', pendingScreen: screen });
+  };
+  goAgents = this.gated('agents');
+  goNewCars = this.gated('newcars');
+  goUsedCars = this.gated('usedcars');
+  goModStudio = this.gated('modstudio');
+  goResearch = () => this.setState({ screen: 'research' });
+  goAI = () => this.setState({ screen: 'ai' });
+  goLogin = () => this.setState({ screen: 'login' });
+  goSellerDashboard = () => this.setState({ screen: 'seller-dashboard' });
+  goAdmin = () => this.setState({ mode: 'admin' });
+  exitAdmin = () => this.setState({ mode: 'buyer', screen: 'home' });
+  goShipment = () => this.setState({ screen: 'shipment' });
+  goRating = () => this.setState({ screen: 'rating' });
+
+  selectAgentAndProfile(id) { this.setState({ screen: 'profile', selectedAgentId: id }); }
+  startBidding = () => this.setState({ screen: 'bidding' });
+  togglePool = () => this.setState(s => ({ poolJoined: !s.poolJoined }));
+
+  quickBidSmall = () => {
+    this.setState(s => ({
+      bidJPY: s.bidJPY + 25000,
+      chatMessages: s.chatMessages.concat([{ from: 'buyer', text: 'Go ahead, +¥25,000.' }, { from: 'agent', text: 'Bidding it now.' }]).slice(-6)
+    }));
+  };
+  quickBidCeiling = () => {
+    this.setState(s => ({
+      bidJPY: Math.max(s.bidJPY, 800000),
+      chatMessages: s.chatMessages.concat([{ from: 'buyer', text: 'Go up to ¥800,000 if needed.' }, { from: 'agent', text: 'Understood — ceiling set at ¥800,000.' }]).slice(-6)
+    }));
+  };
+  winLot = () => this.setState({ screen: 'escrow', escrowStatus: 'held' });
+  payEscrow = () => this.setState({ escrowStatus: 'paid' });
+
+  advanceShipment = () => this.setState(s => ({ shipmentStageIndex: Math.min(7, s.shipmentStageIndex + 1) }));
+
+  setRoleBuyer = () => this.setState({ regRole: 'buyer' });
+  setRoleOrg = () => this.setState({ regRole: 'org' });
+  setRoleAdmin = () => this.setState({ regRole: 'admin' });
+  submitRegistration = () => {
+    if (this.state.regRole === 'admin') { this.setState({ mode: 'admin', screen: 'home', loggedIn: true, pendingScreen: null }); }
+    else { this.setState(s => ({ screen: s.pendingScreen || 'home', mode: 'buyer', loggedIn: true, pendingScreen: null })); }
+  };
+
+  submitInquiry = () => this.setState({ inquirySubmitted: true });
+  selectVariant(i) { this.setState({ variantIndex: i }); }
+
+  setOfferAmount = (e) => this.setState({ offerAmount: e.target.value });
+  submitOffer = () => this.setState({ offerSubmitted: true });
+
+  setMonthlyKm = (e) => this.setState({ monthlyKm: +e.target.value });
+
+  toggleFitmentFilter = () => this.setState(s => ({ fitmentFilter: !s.fitmentFilter }));
+  toggleModBundle(id) {
+    this.setState(s => ({
+      modBundle: s.modBundle.includes(id) ? s.modBundle.filter(x => x !== id) : s.modBundle.concat(id)
+    }));
+  }
+
+  askAI(topic) {
+    const responses = {
+      family: 'For a growing family, prioritize the Xpander (7-seat, ৳38L new) or a used Honda Vezel for city efficiency. Both fit your budget with room for the landed-cost calculator to confirm total on-road price.',
+      cheapest: 'Lowest total cost of ownership in your range is the used Toyota Axio 2016 at ৳13.5L — clean accident history, strong parts availability, and lower annual token tax than the SUV options.'
+    };
+    this.setState(s => ({
+      aiMessages: s.aiMessages.concat([
+        { from: 'buyer', text: topic === 'family' ? 'What about something bigger for a family of 5?' : 'Which option has the lowest total cost of ownership?' },
+        { from: 'ai', text: responses[topic] }
+      ])
+    }));
+  }
+
+  setRatingDim(key, val) {
+    this.setState(s => ({ ratingDims: { ...s.ratingDims, [key]: val } }));
+  }
+  submitRating = () => this.setState({ ratingSubmitted: true });
+  openDispute = () => this.setState({ disputeOpen: true });
+  submitDispute = () => this.setState({ disputeSubmitted: true });
+
+  approveApp(name) {
+    this.setState(s => ({ adminPendingApps: s.adminPendingApps.filter(a => a.name !== name) }));
+  }
+  rejectApp(name) {
+    this.setState(s => ({ adminPendingApps: s.adminPendingApps.filter(a => a.name !== name) }));
+  }
+
+  fmt(n) { return Math.round(n).toLocaleString('en-US'); }
+  formatTimer(s) { const m = Math.floor(s / 60); const sec = s % 60; return m + ':' + (sec < 10 ? '0' : '') + sec; }
+
+  navStyle(active) {
+    return active
+      ? { color: '#c1442d', bg: '#fbeeea', weight: '700' }
+      : { color: '#3d3830', bg: 'transparent', weight: '400' };
+  }
+
+  renderVals() {
+    const mode = this.state.mode;
+    const screen = this.state.screen;
+
+    const agents = AGENTS.map(a => ({ ...a, viewProfile: () => this.selectAgentAndProfile(a.id) }));
+    const selectedAgent = AGENTS.find(a => a.id === this.state.selectedAgentId) || AGENTS[0];
+
+    const bidJPY = this.state.bidJPY;
+    const rate = this.state.exchangeRate;
+    const bidBDT = bidJPY * rate;
+    const duty = bidBDT * 1.10;
+    const shippingBase = 195000;
+    const shipping = this.state.poolJoined ? shippingBase * 0.7 : shippingBase;
+    const agentFee = bidBDT * 0.03;
+    const portHandling = 42000;
+    const total = bidBDT + duty + shipping + agentFee + portHandling;
+
+    const chatMessages = this.state.chatMessages.map(m => ({
+      text: m.text,
+      justify: m.from === 'buyer' ? 'flex-end' : 'flex-start',
+      bg: m.from === 'buyer' ? '#211d18' : '#f2efe8',
+      color: m.from === 'buyer' ? '#ffffff' : '#211d18'
+    }));
+
+    const newCars = NEW_CARS.map(c => ({ ...c, view: () => this.setState({ screen: 'newcar-detail', newCarId: c.id, variantIndex: 0, inquirySubmitted: false }) }));
+    const selectedNewCar = NEW_CARS.find(c => c.id === this.state.newCarId) || NEW_CARS[0];
+    const variants = selectedNewCar.variants.map((v, i) => ({
+      name: v.name, price: v.price,
+      select: () => this.selectVariant(i),
+      bg: i === this.state.variantIndex ? '#211d18' : '#ffffff',
+      color: i === this.state.variantIndex ? '#ffffff' : '#3d3830',
+      borderColor: i === this.state.variantIndex ? '#211d18' : '#e6e1d6'
+    }));
+    const selectedVariantObj = selectedNewCar.variants[this.state.variantIndex];
+
+    const usedCars = USED_CARS.map(c => ({
+      ...c,
+      view: () => this.setState({ screen: 'usedcar-detail', usedCarId: c.id, offerSubmitted: false, offerAmount: '' }),
+      verifiedBg: c.verified ? '#f4f9f6' : '#fdf1de', verifiedColor: c.verified ? '#2f8f5f' : '#a3701c',
+      accidentBg: c.accident === 'none' ? '#f4f9f6' : (c.accident === 'one' ? '#fdf1de' : '#f2efe8'),
+      accidentColor: c.accident === 'none' ? '#2f8f5f' : (c.accident === 'one' ? '#a3701c' : '#6f6a60')
+    }));
+    const selectedUsedCarRaw = USED_CARS.find(c => c.id === this.state.usedCarId) || USED_CARS[0];
+    const selectedUsedCar = {
+      ...selectedUsedCarRaw,
+      verifiedBg: selectedUsedCarRaw.verified ? '#f4f9f6' : '#fdf1de', verifiedColor: selectedUsedCarRaw.verified ? '#2f8f5f' : '#a3701c',
+      accidentBg: selectedUsedCarRaw.accident === 'none' ? '#f4f9f6' : (selectedUsedCarRaw.accident === 'one' ? '#fdf1de' : '#f2efe8'),
+      accidentColor: selectedUsedCarRaw.accident === 'none' ? '#2f8f5f' : (selectedUsedCarRaw.accident === 'one' ? '#a3701c' : '#6f6a60')
+    };
+
+    const researchModels = RESEARCH_MODELS.map(m => ({ ...m, view: () => this.setState({ screen: 'research-detail', researchId: m.id }) }));
+    const selectedResearchModel = RESEARCH_MODELS.find(m => m.id === this.state.researchId) || RESEARCH_MODELS[0];
+    const fuelCostMonthly = (this.state.monthlyKm / selectedResearchModel.kmPerL) * selectedResearchModel.fuelPricePerL;
+
+    const aiMessages = this.state.aiMessages.map(m => ({
+      text: m.text, justify: m.from === 'buyer' ? 'flex-end' : 'flex-start',
+      bg: m.from === 'buyer' ? '#211d18' : '#f2efe8', color: m.from === 'buyer' ? '#ffffff' : '#211d18'
+    }));
+    const aiSuggestions = [
+      { label: 'What about something bigger for a family of 5?', ask: () => this.askAI('family') },
+      { label: 'Lowest total cost of ownership?', ask: () => this.askAI('cheapest') }
+    ];
+
+    const displayedParts = MOD_PARTS.filter(p => this.state.fitmentFilter ? p.compatible : true).map(p => ({
+      ...p,
+      fitLabel: p.compatible ? 'Fits your Harrier' : 'Not compatible',
+      fitBg: p.compatible ? '#f4f9f6' : '#fdf1de', fitColor: p.compatible ? '#2f8f5f' : '#a3701c',
+      addLabel: this.state.modBundle.includes(p.id) ? 'Added to bundle ✓' : 'Add to bundle',
+      addBg: this.state.modBundle.includes(p.id) ? '#2f8f5f' : '#f2efe8',
+      addColor: this.state.modBundle.includes(p.id) ? '#ffffff' : '#211d18',
+      add: () => this.toggleModBundle(p.id)
+    }));
+    const modBundleCount = this.state.modBundle.length;
+    const modBundleSummary = modBundleCount === 0 ? 'No parts added yet.' : MOD_PARTS.filter(p => this.state.modBundle.includes(p.id)).map(p => p.name).join(', ');
+
+    const STAGE_LABELS = ['Auction win confirmed', 'Payment received', 'Vehicle collected at Japanese port', 'Vessel departed', 'Vessel in transit', 'Arrived at Chattogram port', 'Customs clearance', 'Ready for delivery'];
+    const stageIdx = this.state.shipmentStageIndex;
+    const shipmentStages = STAGE_LABELS.map((label, i) => ({
+      label,
+      timestamp: i <= stageIdx ? ('Day ' + (i * 4 + 1)) : 'Pending',
+      dotColor: i < stageIdx ? '#2f8f5f' : (i === stageIdx ? '#c1442d' : '#e6e1d6'),
+      lineColor: i < stageIdx ? '#2f8f5f' : '#e6e1d6',
+      textColor: i <= stageIdx ? '#211d18' : '#a39d90',
+      weight: i === stageIdx ? '800' : '600',
+      showLine: i < STAGE_LABELS.length - 1
+    }));
+
+    const ratingDims = [
+      { label: 'Communication quality', value: this.state.ratingDims.comm, set: (e) => this.setRatingDim('comm', +e.target.value) },
+      { label: 'Auction sheet grading accuracy', value: this.state.ratingDims.grading, set: (e) => this.setRatingDim('grading', +e.target.value) },
+      { label: 'Delivery timeline adherence', value: this.state.ratingDims.timeliness, set: (e) => this.setRatingDim('timeliness', +e.target.value) },
+      { label: 'Overall value', value: this.state.ratingDims.value, set: (e) => this.setRatingDim('value', +e.target.value) }
+    ];
+
+    const adminPendingApps = this.state.adminPendingApps.map(a => ({ ...a, approve: () => this.approveApp(a.name), reject: () => this.rejectApp(a.name) }));
+    const T = THEMES[this.state.theme];
+
+    const nav = (name) => this.navStyle(screen === name || (name === 'newcars' && screen === 'newcar-detail') || (name === 'usedcars' && (screen === 'usedcars' || screen === 'usedcar-detail' || screen === 'seller-dashboard')) || (name === 'agents' && (screen === 'agents' || screen === 'profile' || screen === 'bidding' || screen === 'escrow' || screen === 'shipment' || screen === 'rating')) || (name === 'research' && (screen === 'research' || screen === 'research-detail')));
+    const newCarsNav = nav('newcars'); const usedCarsNav = nav('usedcars'); const reconNav = nav('agents'); const modNav = nav('modstudio'); const researchNav = nav('research');
+
+    const breadcrumbMap = {
+      login: 'Create account', newcars: 'New Cars', 'newcar-detail': selectedNewCar.model,
+      usedcars: 'Used Cars', 'usedcar-detail': selectedUsedCar.title, 'seller-dashboard': 'Seller Dashboard',
+      research: 'Research Hub', 'research-detail': selectedResearchModel.name, ai: 'AI Assistant',
+      modstudio: 'Modification Studio', agents: 'Reconditioned Import', profile: selectedAgent.name,
+      bidding: 'Live Bidding', escrow: 'Escrow Payment', shipment: 'Shipment Tracker', rating: 'Rate Your Agent'
+    };
+
+    return {
+      cBg: T.bg, cText: T.text, cMuted: T.muted, cDim: T.dim, cBorder: T.border,
+      cCardBg: T.cardBg, cTrackBg: T.trackBg, cChipBg: T.chipBg,
+      cAccent: T.accent, cAccentHover: T.accentHover, cAccentRgb: T.accentRgb, cOnAccent: T.onAccent, cAccentTint: T.accentTint,
+      toggleTheme: this.toggleTheme,
+      knobLeft: this.state.theme === 'dark' ? '3px' : '28px',
+
+      isBuyerMode: mode === 'buyer',
+      isAdminMode: mode === 'admin',
+      exitAdmin: this.exitAdmin,
+      revenueRows: [
+        { label: 'Dealership referral commissions', pct: 62, value: '৳18.4L' },
+        { label: 'Listing fees', pct: 34, value: '৳9.1L' },
+        { label: 'Agent placement commissions', pct: 100, value: '৳31.2L' },
+        { label: 'Modification sourcing margin', pct: 28, value: '৳6.7L' }
+      ],
+      adminPendingApps, noPendingApps: adminPendingApps.length === 0,
+      adminDisputes: [
+        { title: 'Dispute #4471 — Yokohama Direct Trading', status: 'Under review', detail: 'Buyer claims auction sheet grade overstated; admin reviewing chat and bid log.' }
+      ],
+      dutyTable: [
+        { cc: 'Up to 1500cc', rate: '89%' }, { cc: '1501–2000cc', rate: '110%' },
+        { cc: '2001–2750cc', rate: '145%' }, { cc: 'Above 2750cc', rate: '220%' }
+      ],
+
+      goHome: this.goHome, goAgents: this.goAgents, goProfile: this.goProfile,
+      goNewCars: this.goNewCars, goUsedCars: this.goUsedCars, goModStudio: this.goModStudio,
+      goResearch: this.goResearch, goAI: this.goAI, goLogin: this.goLogin, goSellerDashboard: this.goSellerDashboard,
+      goAdmin: this.goAdmin, goShipment: this.goShipment, goRating: this.goRating,
+      startBidding: this.startBidding, togglePool: this.togglePool, quickBidSmall: this.quickBidSmall, quickBidCeiling: this.quickBidCeiling,
+      winLot: this.winLot, payEscrow: this.payEscrow, advanceShipment: this.advanceShipment,
+      submitInquiry: this.submitInquiry, setOfferAmount: this.setOfferAmount, submitOffer: this.submitOffer,
+      setMonthlyKm: this.setMonthlyKm, toggleFitmentFilter: this.toggleFitmentFilter,
+      setRoleBuyer: this.setRoleBuyer, setRoleOrg: this.setRoleOrg, setRoleAdmin: this.setRoleAdmin, submitRegistration: this.submitRegistration,
+      submitRating: this.submitRating, openDispute: this.openDispute, submitDispute: this.submitDispute,
+
+      isHome: mode === 'buyer' && screen === 'home',
+      isLogin: mode === 'buyer' && screen === 'login',
+      isNewCars: mode === 'buyer' && screen === 'newcars',
+      isNewCarDetail: mode === 'buyer' && screen === 'newcar-detail',
+      isUsedCars: mode === 'buyer' && screen === 'usedcars',
+      isUsedCarDetail: mode === 'buyer' && screen === 'usedcar-detail',
+      isSellerDashboard: mode === 'buyer' && screen === 'seller-dashboard',
+      isResearch: mode === 'buyer' && screen === 'research',
+      isResearchDetail: mode === 'buyer' && screen === 'research-detail',
+      isAI: mode === 'buyer' && screen === 'ai',
+      isModStudio: mode === 'buyer' && screen === 'modstudio',
+      isAgents: mode === 'buyer' && screen === 'agents',
+      isProfile: mode === 'buyer' && screen === 'profile',
+      isBidding: mode === 'buyer' && screen === 'bidding',
+      isEscrow: mode === 'buyer' && screen === 'escrow',
+      isShipment: mode === 'buyer' && screen === 'shipment',
+      isRating: mode === 'buyer' && screen === 'rating',
+
+      showBreadcrumb: mode === 'buyer' && screen !== 'home',
+      breadcrumbLabel: breadcrumbMap[screen] || '',
+      isLoggedOut: !this.state.loggedIn,
+      isLoggedIn: this.state.loggedIn,
+
+      newCarsNavColor: newCarsNav.color, newCarsNavBg: newCarsNav.bg, newCarsNavWeight: newCarsNav.weight,
+      usedCarsNavColor: usedCarsNav.color, usedCarsNavBg: usedCarsNav.bg, usedCarsNavWeight: usedCarsNav.weight,
+      reconNavColor: reconNav.color, reconNavBg: reconNav.bg, reconNavWeight: reconNav.weight,
+      modNavColor: modNav.color, modNavBg: modNav.bg, modNavWeight: modNav.weight,
+      researchNavColor: researchNav.color, researchNavBg: researchNav.bg, researchNavWeight: researchNav.weight,
+
+      roleBuyerBg: this.state.regRole === 'buyer' ? '#211d18' : 'transparent', roleBuyerColor: this.state.regRole === 'buyer' ? '#fff' : '#6f6a60',
+      roleOrgBg: this.state.regRole === 'org' ? '#211d18' : 'transparent', roleOrgColor: this.state.regRole === 'org' ? '#fff' : '#6f6a60',
+      roleAdminBg: this.state.regRole === 'admin' ? '#211d18' : 'transparent', roleAdminColor: this.state.regRole === 'admin' ? '#fff' : '#6f6a60',
+      regRoleBuyer: this.state.regRole === 'buyer', regRoleOrg: this.state.regRole === 'org', regRoleAdmin: this.state.regRole === 'admin',
+
+      agents, selectedAgent,
+      bidJPYFormatted: this.fmt(bidJPY), bidBDTFormatted: this.fmt(bidBDT), dutyFormatted: this.fmt(duty),
+      shippingFormatted: this.fmt(shipping), agentFeeFormatted: this.fmt(agentFee), portFormatted: this.fmt(portHandling),
+      totalFormatted: this.fmt(total), exchangeRateFormatted: rate.toFixed(4),
+      timerFormatted: this.formatTimer(Math.max(0, this.state.timerSeconds)), activeBidders: this.state.activeBidders,
+      poolTag: this.state.poolJoined ? ' (pooled)' : '', poolButtonLabel: this.state.poolJoined ? 'Joined ✓' : 'Join pool',
+      poolButtonBg: this.state.poolJoined ? '#2f8f5f' : '#ffffff', poolButtonColor: this.state.poolJoined ? '#ffffff' : '#2f8f5f',
+      chatMessages,
+
+      newCars, selectedNewCar, variants, selectedVariantObj,
+      inquirySubmitted: this.state.inquirySubmitted, inquiryNotSubmitted: !this.state.inquirySubmitted,
+
+      usedCars, selectedUsedCar,
+      offerAmount: this.state.offerAmount, offerSubmitted: this.state.offerSubmitted, offerNotSubmitted: !this.state.offerSubmitted,
+      myListings: this.state.myListings,
+
+      researchModels, selectedResearchModel, monthlyKm: this.state.monthlyKm, fuelCostFormatted: '৳' + this.fmt(fuelCostMonthly),
+
+      aiMessages, aiSuggestions,
+
+      fitmentToggleLabel: this.state.fitmentFilter ? 'Show all parts' : 'Show compatible only',
+      displayedParts, modBundleCount, modBundleSummary,
+
+      escrowHeld: this.state.escrowStatus === 'held', escrowPaid: this.state.escrowStatus === 'paid',
+      escrowDotColor: this.state.escrowStatus === 'paid' ? '#2f8f5f' : '#c1442d',
+      escrowStatusLabel: this.state.escrowStatus === 'paid' ? 'Funds held in escrow — released after delivery confirmation' : 'Awaiting payment',
+
+      shipmentStages, shipmentComplete: stageIdx >= 7,
+
+      ratingDims, ratingSubmitted: this.state.ratingSubmitted, ratingNotSubmitted: !this.state.ratingSubmitted,
+      disputeOpen: this.state.disputeOpen, disputeNotSubmitted: !this.state.disputeSubmitted, disputeSubmitted: this.state.disputeSubmitted
+    };
+  }
+}
+
+</script>
+<script>
+(async () => {
+  if (!document.title || !document.title.trim()) document.title = "AutoBD Prototype";
+  // Prepend so page-supplied @page / break rules (deck-stage's margin:0,
+  // author CSS) keep source-order precedence over the baseline.
+  const baseCss = document.createElement('style');
+  baseCss.textContent = "@media print {\n  figure, table { break-inside: avoid; }\n  *, *::before, *::after {\n    print-color-adjust: exact; -webkit-print-color-adjust: exact;\n    backdrop-filter: none !important; -webkit-backdrop-filter: none !important;\n    animation-delay: -99s !important; animation-duration: .001s !important;\n    animation-iteration-count: 1 !important; animation-fill-mode: both !important;\n    animation-play-state: running !important; transition-duration: 0s !important;\n  }\n}";
+  document.head.prepend(baseCss);
+  if (document.readyState === 'loading') {
+    await new Promise((r) => document.addEventListener('DOMContentLoaded', r, { once: true }));
+  }
+  let ds = document.querySelector('deck-stage');
+  // whenDefined never resolves when nothing registers the element, so only
+  // await it when a <deck-stage> tag exists (and race a timeout regardless).
+  if (ds && !customElements.get('deck-stage')) {
+    try {
+      await Promise.race([
+        customElements.whenDefined('deck-stage'),
+        new Promise((r) => setTimeout(r, 3000)),
+      ]);
+    } catch (e) {}
+    ds = document.querySelector('deck-stage');
+  }
+  // dc-runtime assigns window.DCLogic at init and mounts into #dc-root on
+  // DOMContentLoaded; settle on that subtree so React has rendered before
+  // print(). Non-DC pages fall through to weighing body.
+  const isDc = !ds && 'DCLogic' in window;
+  const settleRoot = ds || (isDc ? document.getElementById('dc-root') : null) || document.body;
+  if (settleRoot) {
+    // Weigh only content children — skip script/style/template so inline
+    // Babel/CSS doesn't register as stable "content" before the framework
+    // has mounted anything.
+    const MEDIA = 'img,svg,canvas,video,picture,iframe,embed,object';
+    const weigh = () => {
+      let text = 0, media = 0;
+      for (const c of settleRoot.children) {
+        const t = c.tagName;
+        if (t === 'SCRIPT' || t === 'STYLE' || t === 'TEMPLATE') continue;
+        text += (c.textContent || '').trim().length;
+        media += c.querySelectorAll(MEDIA).length + (c.matches(MEDIA) ? 1 : 0);
+      }
+      return text + media * 100;
+    };
+    // "Non-zero and stable" alone is not sufficient to mean rendered: generic
+    // body can carry a static shell while async main content is pending, and
+    // #dc-root can carry the root DC's static text while child refs are still
+    // .sc-placeholder boxes. Gate generic on readyState 'complete', and never
+    // accept stability while a dc-runtime placeholder is present.
+    const isGeneric = settleRoot === document.body;
+    const deadline = Date.now() + 15000;
+    let last = -1, stable = 0;
+    while (Date.now() < deadline) {
+      const n = weigh();
+      const ready =
+        (!isGeneric || document.readyState === 'complete') &&
+        !settleRoot.querySelector('.sc-placeholder');
+      if (n > 0 && n === last && ready) { if (++stable >= 2) break; } else { stable = 0; }
+      last = n;
+      await new Promise((r) => setTimeout(r, 250));
+    }
+  }
+  // Project support.js may predate runtime default-seeding; push via bridge.
+  if (isDc && window.__dcSetProps && window.__dcRootName) {
+    try {
+      const dpEl = document.querySelector('script[data-dc-script]');
+      const meta = JSON.parse((dpEl && dpEl.getAttribute('data-props')) || '{}');
+      const bag = {};
+      for (const k in meta)
+        if (k[0] !== '$' && meta[k] && meta[k].default !== undefined)
+          bag[k] = meta[k].default;
+      if (Object.keys(bag).length) {
+        window.__dcSetProps(window.__dcRootName(), bag);
+        await new Promise((r) => setTimeout(r, 50));
+      }
+    } catch (e) {}
+  }
+  // Reveal content gated on scroll or visibility before printing. Lazy <img>,
+  // IntersectionObserver fade-ins, and collapsed <details> don't render while
+  // off-screen, so a long page would print with them blank or closed. Open
+  // every <details>, force native-lazy images eager, and scroll the document
+  // through its full height to trip lazy-load + IO; then wait (bounded) for the
+  // newly-triggered images. Inert for deck-stage (slides aren't scroll-gated).
+  try {
+    for (const d of document.querySelectorAll('details')) d.open = true;
+    for (const img of document.querySelectorAll('img[loading="lazy"]'))
+      img.loading = 'eager';
+    const scroller = document.scrollingElement || document.documentElement;
+    const full = Math.max(scroller.scrollHeight, document.body.scrollHeight);
+    const step = window.innerHeight || 800;
+    for (let y = 0; y <= full; y += step) {
+      window.scrollTo(0, y);
+      await new Promise((r) => requestAnimationFrame(r));
+    }
+    window.scrollTo(0, 0);
+    await Promise.race([
+      Promise.all(
+        [...document.images].map((img) =>
+          img.complete
+            ? null
+            : new Promise((res) => {
+                img.addEventListener('load', res, { once: true });
+                img.addEventListener('error', res, { once: true });
+              })
+        )
+      ),
+      new Promise((r) => setTimeout(r, 4000)),
+    ]);
+  } catch (e) {}
+  try { await document.fonts.ready; } catch (e) {}
+  // Jump every animation to its end state so print() never captures a slide
+  // mid-entrance. Ordering matters: the 0s-transition style must be live
+  // BEFORE data-deck-active is set so attribute-keyed transitions don't
+  // start a (now-0s) run from the pre-active base.
+  const st = document.createElement('style');
+  st.textContent = '*,*::before,*::after{animation-delay:-99s !important;animation-duration:.001s !important;animation-iteration-count:1 !important;animation-fill-mode:both !important;animation-play-state:running !important;transition-duration:0s !important}';
+  document.head.appendChild(st);
+  for (const d of document.querySelectorAll('deck-stage')) {
+    for (const c of d.children) {
+      const t = c.tagName;
+      if (t === 'SCRIPT' || t === 'STYLE' || t === 'TEMPLATE') continue;
+      c.setAttribute('data-deck-active', '');
+    }
+  }
+  // Re-append deck-stage's @page last so no author @page can add a margin and
+  // spill each full-bleed slide onto two sheets. Backstop for old copies.
+  if (ds) {
+    let pg = document.getElementById('deck-stage-print-page');
+    if (!pg) {
+      pg = document.createElement('style');
+      pg.textContent = '@page{size:' + (+ds.getAttribute('width') || 1920) +
+        'px ' + (+ds.getAttribute('height') || 1080) + 'px;margin:0}';
+    }
+    document.body.appendChild(pg);
+  }
+  try {
+    const sweep = () => {
+      for (const a of document.getAnimations()) {
+        try { a.finish(); } catch (e) {
+          try { a.currentTime = (a.effect && a.effect.getComputedTiming().duration) || 0; a.pause(); } catch (e2) {}
+        }
+      }
+    };
+    sweep();
+    await new Promise((r) => requestAnimationFrame(r));
+    sweep();
+    await new Promise((r) => requestAnimationFrame(r));
+  } catch (e) {}
+  // A document that owns its print CSS (the doc-page starter injects the
+  // meta at runtime; hand-rolled print designs author it) gets no automatic
+  // page geometry and keeps its forced breaks: strip the injected default
+  // @page — write time cannot see a runtime-injected meta — skip the frame
+  // override below, and skip the fakepage-flattening further down. What
+  // still applies: the print baseline and break-hygiene defaults (no @page
+  // in either; low specificity, so the document's own print CSS wins) and
+  // the break-inside relaxation on >page elements (avoid on those cannot
+  // be honored whoever authored it).
+  var ownsPrint = !!document.querySelector('meta[name="omelette-owns-print" i]');
+  if (ownsPrint) {
+    var dst = document.querySelector('style[data-omelette-print-defaults]');
+    if (dst && dst.textContent) {
+      dst.textContent = dst.textContent.replace(/@page\b[^{}]*\{[^}]*\}/, '');
+    }
+  }
+  // Size the PDF page to the rendered design unless the file opted into
+  // standard paper via @page{size:letter|A4|…} or declared print ownership
+  // via the meta above. Decks own their own @page.
+  // Wrappers (body, …) lose padding+margin so the frame sits at (0,0); the
+  // frame itself loses only margin — its padding is INSIDE the measured
+  // rect and must stay, or content shifts and leaves a gap at bottom/right.
+  var __m = null;
+  try { __m = (() => {
+  var STAMP = true;
+  var docEl = document.documentElement;
+  var doc = { width: docEl.scrollWidth, height: docEl.scrollHeight };
+  // Name-presence check, case-insensitive — the same contract as the
+  // instant-PDF path's runtime check in deck-stage-export.ts. The name is
+  // a string literal here because that file interpolates this script into
+  // its print script, so importing a shared constant from it would be a
+  // cycle; measure.test.ts pins the literal so the two cannot drift apart
+  // silently.
+  var ownsPrint = !!document.querySelector('meta[name="omelette-owns-print" i]');
+
+  var ds = document.querySelector('deck-stage');
+  if (ds) {
+    var dw = Number(ds.getAttribute('width')) || 1920;
+    var dh = Number(ds.getAttribute('height')) || 1080;
+    var n = typeof ds.length === 'number' ? ds.length : ds.children.length;
+    var idx = typeof ds.index === 'number' ? ds.index : 0;
+    var frames = [];
+    for (var i = 0; i < n; i++) frames.push({ left: 0, top: 0, width: dw, height: dh });
+    return { kind: 'deck', source: 'declared', doc: doc, frames: frames,
+      authored: frames.map(function(){return{width:true,height:true}}),
+      deck: { width: dw, height: dh, slideCount: n, index: idx },
+      signals: { paperPage: false, pxPage: false, ownsPrint: ownsPrint } };
+  }
+
+  // Declared kind: a doc-page tag names the kind outright, so no signal
+  // heuristics run (like the deck branch above, signals report false —
+  // they describe inferred classifications only). The tag alone is not
+  // trusted: the element must have upgraded (shadowRoot present), so a
+  // leftover tag whose script was deleted falls through to the heuristics
+  // that handle plain markup.
+  var stageSx = window.scrollX || 0, stageSy = window.scrollY || 0;
+  var dp = document.querySelector('doc-page');
+  if (dp && dp.shadowRoot) {
+    // Crop to the sheet, not the host — the desk around it is screen-only
+    // chrome that must not land in PNG exports.
+    var sheet = dp.shadowRoot.querySelector('.sheet');
+    var sr = (sheet || dp).getBoundingClientRect();
+    return { kind: 'paper-doc', source: 'declared', doc: doc,
+      frames: [{ left: sr.left + stageSx, top: sr.top + stageSy,
+        width: sr.width, height: sr.height }],
+      authored: [{ width: false, height: false }],
+      signals: { paperPage: false, pxPage: false, ownsPrint: ownsPrint } };
+  }
+  var paperPage = false, pxPage = false;
+  var eachRule = function (fn) {
+    for (var s = 0; s < document.styleSheets.length; s++) {
+      var rs; try { rs = document.styleSheets[s].cssRules; } catch (e) { continue; }
+      for (var r = 0; r < rs.length; r++) {
+        fn(rs[r]);
+        if (rs[r].cssRules) for (var n = 0; n < rs[r].cssRules.length; n++) fn(rs[r].cssRules[n]);
+      }
+    }
+  };
+  eachRule(function (r) {
+    if (r.type !== 6) return;
+    var m = /\bsize\s*:\s*([^;}]+)/i.exec(r.cssText || '');
+    if (!m) return;
+    if (/\b(letter|a[3-5]|legal|ledger)\b/i.test(m[1])) paperPage = true;
+    if (/\d+(?:\.\d+)?px\b/i.test(m[1])) pxPage = true;
+  });
+  var signals = { paperPage: paperPage, pxPage: pxPage, ownsPrint: ownsPrint };
+
+  var pxVal = function (v) {
+    var m = /^(\d+(?:\.\d+)?)px$/.exec(v || ''); return m ? +m[1] : 0;
+  };
+  var authoredPx = function (el, prop) {
+    if (pxVal(el.style[prop])) return true;
+    var attr = el.getAttribute(prop);
+    if (attr && /^\d+$/.test(attr)) return true;
+    var hit = false;
+    eachRule(function (r) {
+      if (hit || r.type !== 1 || !r.style) return;
+      try { if (el.matches(r.selectorText) && pxVal(r.style[prop])) hit = true; } catch (e) {}
+    });
+    return hit;
+  };
+
+  var el = document.body, rootPxW = false;
+  for (;;) {
+    var kids = [];
+    for (var c = 0; c < el.children.length; c++) {
+      var t = el.children[c].tagName;
+      if (t !== 'SCRIPT' && t !== 'STYLE' && t !== 'TEMPLATE') kids.push(el.children[c]);
+    }
+    if (kids.length !== 1 || !(kids[0] instanceof HTMLElement)) break;
+    if (STAMP) el.setAttribute('data-om-frame-wrap', '');
+    el = kids[0];
+    rootPxW = authoredPx(el, 'width');
+    if (rootPxW) break;
+  }
+  if (!rootPxW) rootPxW = authoredPx(el, 'width');
+
+  // @page{size:letter} alone is a flowing doc; with a px-width root it's a
+  // fixed sheet pretending to be paper — fall through and size to render.
+  if (paperPage && !rootPxW) {
+    return { kind: 'paper-doc', source: 'inferred', doc: doc, signals: signals,
+      frames: [{ left: 0, top: 0, width: doc.width, height: doc.height }],
+      authored: [{ width: false, height: false }] };
+  }
+
+  var sx = window.scrollX || 0, sy = window.scrollY || 0;
+  var rectOf = function (e) {
+    var r = e.getBoundingClientRect();
+    var oy; try { oy = getComputedStyle(e).overflowY; } catch (err) {}
+    var h = oy === 'visible' ? Math.max(r.height, e.scrollHeight || 0) : r.height;
+    return { left: r.left + sx, top: r.top + sy, width: r.width, height: h };
+  };
+
+  // Multi-frame: off unless the page opts in via data-om-multi-frame on the
+  // stop element — the explicit opt-in is what guards against card grids
+  // and pricing tables that match the geometry but aren't separate
+  // canvases. Two ways to name the frames, explicit first:
+  // 1. Descendants marked data-om-frame-export (the social-frames starter
+  //    marks each asset frame; shells/panels around them are presentation,
+  //    so nesting is expected). Document order.
+  // 2. Fallback, no marked descendants: direct children with an authored px
+  //    width AND height (the original geometry heuristic).
+  // Frames may be different sizes (a gallery mixes 1080×1920 stories with
+  // 728×90 banners); data-om-frame-label rides along for export filenames.
+  if (el.hasAttribute('data-om-multi-frame')) {
+    var visOk = function (e) {
+      var cs; try { cs = getComputedStyle(e); } catch (err) { return false; }
+      return cs.display !== 'none' && cs.visibility !== 'hidden' && cs.position !== 'fixed';
+    };
+    // A frame's crop is its VISUAL box — never the scrollHeight-inflated
+    // rect that rectOf computes for page roots. Shadow-DOM hover controls
+    // (image-slot's Replace bar parks 29px below its host) and similar
+    // escaping UI contribute scrollable overflow to the frame, and the
+    // inflated height both squashes the nominal-size resize and drags
+    // content below the frame into the crop. Zoom-independent; bit every
+    // slot-bearing frame.
+    var frameRectOf = function (e) {
+      var r = e.getBoundingClientRect();
+      return { left: r.left + sx, top: r.top + sy, width: r.width, height: r.height };
+    };
+    var pushCand = function (list, e) {
+      if (!visOk(e)) return;
+      var rc = frameRectOf(e);
+      if (rc.width < 2 || rc.height < 2) return;
+      var lbl = e.getAttribute('data-om-frame-label');
+      if (lbl) rc.label = lbl;
+      list.push(rc);
+    };
+    var cands = [];
+    var marked = el.querySelectorAll('[data-om-frame-export]');
+    if (marked.length) {
+      for (var mk = 0; mk < marked.length; mk++) pushCand(cands, marked[mk]);
+    } else {
+      for (var k = 0; k < el.children.length; k++) {
+        var ch = el.children[k];
+        if (!authoredPx(ch, 'width') || !authoredPx(ch, 'height')) continue;
+        pushCand(cands, ch);
+      }
+    }
+    if (cands.length >= 2) {
+      return { kind: 'multi-frame', source: 'inferred', doc: doc, signals: signals,
+        frames: cands, authored: cands.map(function(){return{width:true,height:true}}) };
+    }
+  }
+
+  if (STAMP) el.setAttribute('data-om-frame', '');
+  return { kind: 'single-canvas', source: 'inferred', doc: doc, signals: signals,
+    frames: [rectOf(el)],
+    authored: [{ width: rootPxW, height: authoredPx(el, 'height') }] };
+})(); } catch (e) {}
+  var frame = null;
+  if (!ownsPrint && __m && __m.kind === 'single-canvas') {
+    var f = __m.frames && __m.frames[0];
+    if (f && f.width >= 200 && f.height >= 200) {
+      frame = f;
+      var fst = document.createElement('style');
+      fst.textContent = '@media print{@page{size:' + Math.ceil(f.width) + 'px ' +
+        Math.ceil(f.height) + 'px;margin:0}' +
+        'html,body,[data-om-frame-wrap]{padding:0!important;margin:0!important;background:none!important}' +
+        '[data-om-frame]{margin:0!important}}';
+      document.body.appendChild(fst);
+    }
+  }
+  // Relax break-inside on oversized elements. An element taller than a
+  // printable page can't honor break-inside: avoid — browsers either overflow
+  // it or push it whole to the next page, leaving a blank gap, then break it
+  // anyway at an arbitrary point. After the final layout (content revealed,
+  // animations jumped), find elements taller than a page that still compute
+  // break-inside: avoid and reset them to auto, so the browser breaks them at
+  // their children's boundaries instead (children keep their own avoid). PAGE_PX
+  // is a conservative portrait estimate at 96 CSS px/in — Letter/A4 usable
+  // height minus our 0.5in margins — so only clearly-oversized elements are
+  // touched and under-page elements still stay whole. Skipped for decks (slides
+  // are sized to the page) and for fixed-size canvases (frame set, or an author
+  // px-based @page) — runs as before for flowing docs on letter/A4.
+  try {
+    if (!ds && !frame && !(__m && __m.signals && __m.signals.pxPage)) {
+      const PAGE_PX = 1024;
+      // Our print defaults add a real @page margin only when the source has
+      // no @page of its own; computed style can't tell us (it reports screen
+      // media), so read the injected rule directly.
+      const defaults = document.querySelector('style[data-omelette-print-defaults]');
+      const pageInset = /@page\s*\{[^}]*margin/.test(defaults ? defaults.textContent || '' : '');
+      const SEL = 'section,article,figure,table,pre,blockquote,[class~="card" i],[class~="page" i],[class~="sheet" i]';
+      for (const el of document.body.querySelectorAll(SEL)) {
+        if (el instanceof HTMLElement && el.offsetHeight > PAGE_PX) {
+          el.setAttribute('data-om-oversized', '');
+          // Fake-paged docs simulate sheets with over-tall break-after:page
+          // boxes; honoring the break spills half-blank pages and ends a
+          // colored box mid-sheet. Flow them, and (only when we own the page
+          // inset) drop the redundant padding/background via the rule below.
+          const cs = getComputedStyle(el);
+          // An owns-print doc's forced breaks are intentional sheet
+          // boundaries, never fake-paged simulation — don't strip them.
+          // The break-inside relaxation above still applies: avoid on a
+          // >page element is impossible to honor whoever authored it.
+          if (
+            !ownsPrint &&
+            (cs.breakAfter === 'page' || cs.pageBreakAfter === 'always')
+          ) {
+            el.setAttribute('data-om-fakepage', '');
+          }
+        }
+      }
+      const ost = document.createElement('style');
+      ost.textContent = '@media print{' +
+        '[data-om-oversized]{break-inside:auto !important;page-break-inside:auto !important}' +
+        '[data-om-fakepage]{break-after:auto !important;page-break-after:auto !important}' +
+        (pageInset ? '[data-om-fakepage]{padding:0 !important;background:none !important}' : '') +
+        '}';
+      document.head.appendChild(ost);
+    }
+  } catch (e) {}
+  // macOS Preview renders Skia-PDF Luminosity soft-masks as opaque grey boxes;
+  // swap the CSS that triggers them for Preview-safe forms.
+  try {
+    for (const el of document.body.querySelectorAll('*')) {
+      const cs = getComputedStyle(el);
+
+      if (cs.boxShadow !== 'none' && cs.filter === 'none') {
+        const outs = [], kept = [];
+        for (const s of cs.boxShadow.split(/,(?![^(]*[)])/)) {
+          const t = s.trim();
+          const m = t.match(/^(rgba?[(][^)]+[)]) (-?[0-9.]+px) (-?[0-9.]+px) ([0-9.]+px) -?[0-9.]+px$/);
+          if (m && parseFloat(m[4]) > 0) outs.push('drop-shadow(' + m[2] + ' ' + m[3] + ' ' + m[4] + ' ' + m[1] + ')');
+          else kept.push(t);
+        }
+        if (outs.length) {
+          el.style.setProperty('filter', outs.join(' '), 'important');
+          el.style.setProperty('box-shadow', kept.join(', ') || 'none', 'important');
+        }
+      }
+
+      const mask = cs.maskImage && cs.maskImage !== 'none' ? cs.maskImage : cs.webkitMaskImage;
+      if (mask && mask !== 'none' && cs.filter === 'none') el.style.setProperty('filter', 'opacity(1)', 'important');
+    }
+  } catch (e) {}
+  setTimeout(() => { try { window.print(); } catch (e) {} }, 200);
+})();
+</script>
+</body>
+</html>

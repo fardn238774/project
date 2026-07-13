@@ -1,0 +1,373 @@
+CSE471: System Analysis and Design
+Assignment on Functional Requirements
+Proposed Project Title: AutoBD — Multi-Pillar Car Marketplace &
+Reconditioned Import Platform
+Group No: ##, CSE471 Lab Section: ##,
+[Semester] [Year]
+SL 	ID 	Name
+1 	22201398 	Zarin Tasnim
+2 	22201485 	Md Fardin Alam
+3 	22201749 	Arani Annesha
+4 	23201480 	Sayeda Ariyan Fairooz
+Submission Date:
+
+-- 1 of 8 --
+
+Project Overview
+AutoBD is a comprehensive web platform unifying the four ways Bangladeshi buyers acquire
+cars — brand-new dealership purchases, peer-to-peer used car transactions, Japanese
+reconditioned vehicle imports via auction, and aftermarket modification sourcing — into a single
+trusted marketplace with a consistent, transparent cost calculation engine running across all four
+pillars.
+The platform's core differentiator is its Reconditioned Auction section, which operates as a
+marketplace of competing licensed bidding organizations rather than a single in-house import
+team. Buyers select their preferred agent based on track record, ratings, fee structure, and
+turnaround time, then collaborate with that agent through a live bidding dashboard to win cars at
+Japanese auctions. This model — closer to Upwork than to SAT Japan or BE FORWARD —
+creates competitive pressure among agents on service quality and gives buyers genuine choice
+and accountability. Two Bangladesh-specific features further distinguish the platform: Container
+Pooling (automatically grouping buyers into shared shipping containers to cut per-car freight
+costs by up to 30%) and a BRTA Registration Paper Value Tracker (surfacing the currently
+opaque resale value of a car's remaining import-eligible registration life).
+Tech Stack:
+Language: TypeScript, JavaScript
+Framework: Next.js
+Styling: TailwindCSS
+Database: PostgreSQL
+ORM: Prisma
+Deployment: Vercel
+External APIs:
+OpenAI API: For the AI-powered car recommendation engine and Dream Car Research Hub
+intelligence (Member A).
+SSLCommerz / bKash API: For escrow payment processing and agent fee collection (Member
+D).
+Google Maps API: For dealership/service center locator and live vessel position tracking
+(Members A & C).
+Exchange Rate / Currency API (e.g., Open Exchange Rates): For live JPY-to-BDT conversion in
+the landed cost calculator and auction dashboard (Member D).
+User Roles:
+1. Buyer: The primary user — browses all four pillars, selects a bidding organization,
+participates in auctions, purchases used cars, orders modifications, and tracks shipments.
+2. Bidding Organization: A licensed Japanese auction agent — applies for platform approval,
+manages their public profile, conducts live bidding on behalf of assigned buyers, and responds to
+ratings and disputes.
+3. Admin: System super-user — approves bidding organization applications, manages duty rate
+tables and car database, monitors platform analytics, and adjudicates disputes.
+
+-- 2 of 8 --
+
+Functional Requirements
+SL 	Common Workflows
+1 	Registration and Login System: Users can create an account by selecting their
+role: Buyer (individual purchasing a new, used, or reconditioned car), Bidding
+Organization (a licensed Japanese auction agent applying for platform
+partnership), or Administrator. Buyers register with name, email, phone, and
+password. Bidding Organizations complete a multi-step application form covering
+company name, license number, track record, and fee structure — their account
+remains inactive until approved by an admin. All users log in securely to access
+their role-specific dashboards.
+2 	Admin Role & Access Management: The administrator reviews and approves or
+rejects Bidding Organization applications, verifies submitted license details and
+track records, and can suspend any active organization account if complaints or
+rating thresholds are breached. The admin also manages the platform's car
+brand/model database, moderates used-car listings flagged by buyers, monitors
+platform-wide analytics (total bids placed, successful imports, active listings,
+revenue by pillar), and configures NBR duty rate tables used by the unified landed
+cost calculator.
+Module 1
+Member 	Feature 	Description
+Member
+A
+Brand New Car
+Listings & Dealer
+Inquiry
+A structured browsing section for official brand-new car
+listings organised by manufacturer (Toyota, Honda,
+Mitsubishi, Suzuki, etc.). Each listing shows variant and
+trim options with BD-market pricing, verified
+manufacturer warranty terms (length, coverage,
+authorised service centers), and a specifications
+breakdown. Buyers select their preferred variant and
+submit a direct inquiry that is handed off to the
+corresponding dealership partner. The platform acts as a
+lead and booking layer — it does not hold inventory.
+Dealer partners are managed by the admin, and each
+listing links to a service center map (Google Maps API)
+showing the nearest authorised workshop.
+Member
+B
+Used Car P2P
+Marketplace & Seller
+Dashboard
+A peer-to-peer marketplace where individual sellers can
+create car listings with photos, mileage, condition notes,
+asking price, and optional inspection report upload.
+Ownership document verification is prompted at listing
+creation — sellers upload relevant BRTA documents,
+
+-- 3 of 8 --
+
+which are reviewed by the platform's verification layer
+before the listing goes live. Buyers can browse, filter by
+make/model/year/price/location, and submit offers.
+Sellers manage all their active listings, offers received,
+and listing status from a dedicated seller dashboard.
+Listings that pass document verification receive a
+"Verified Ownership" badge.
+Member
+C
+Bidding Organization
+Marketplace &
+Profile Pages
+The platform's signature differentiator. A browsable
+directory of all admin-approved licensed bidding
+organizations, each with a detailed profile page:
+company name, years in operation, number of
+successful imports, average turnaround time from
+auction win to BD delivery, customer star rating, fee
+structure (agent fee as fixed amount or percentage of
+bid), and verified license status. Buyers compare
+organizations side-by-side before selecting one for their
+reconditioned car search. This creates competitive
+pressure among agents on service quality, not just price
+— distinguishing the platform from single-vendor
+importers. Ratings are written by verified buyers who
+completed a transaction with that organization.
+Member
+D
+Unified Landed Cost
+Calculator
+A consistent cost calculation engine available across all
+four platform pillars — new cars, used cars,
+reconditioned imports, and modification bundles. For
+reconditioned cars: bid price (in JPY) is converted to
+BDT at live exchange rates, then NBR import duty is
+applied based on engine CC and vehicle age (using the
+admin-maintained duty rate table), plus shipping
+estimate, agent fee, and port handling — giving a single
+total landed cost figure. The calculator updates in real
+time as the bid price changes during a live auction. For
+new and used cars, it shows total on-road price
+including registration and token tax. This is the single
+most-used tool across the platform and is intentionally
+kept consistent so users always trust the number they
+see.
+Member
+A
+Dream Car Research
+Hub
+A top-of-funnel content and research section covering
+popular JDM and BD-market car models. Each model
+page contains: full specifications and variant
+comparison across generations, common reliability
+issues (sourced from owner community data), and a
+Total Cost of Ownership calculator specific to
+Bangladesh — covering registration tax, annual BRTA
+
+-- 4 of 8 --
+
+token tax, estimated fuel cost by engine size and BD
+fuel prices, insurance estimate, and typical parts
+availability and maintenance cost. Casual browsers not
+yet ready to buy are converted into platform leads
+through this section. Each model page links directly to
+relevant auction listings, new car pages, or the used car
+marketplace.
+Module 2
+Member 	Feature 	Description
+Member
+B
+Reconditioned Car
+Auction Interface
+The core auction experience for buyers who have
+selected a bidding organization. Buyers specify their
+target car using a structured form: make, model, year
+range, budget ceiling, maximum mileage, and must-
+have features, with an option to attach reference photos
+or links. The live bidding dashboard shows the current
+lot photo, auction sheet grade (A, B, C, D — with a
+translated condition breakdown), current bid price in
+JPY and live BDT equivalent, time remaining, and the
+number of active bidders. A real-time chat and call-log
+panel connects the buyer directly with their assigned
+bidder for live decisions (e.g., "go up to ¥750,000").
+Buyers receive in-app and SMS alerts when a matching
+lot appears or when their bidder is about to place a bid.
+Member
+C
+Container Pooling —
+Group Shipping
+Coordination
+A Bangladesh-specific feature addressing the high per-
+car shipping cost faced by individual buyers. After a
+buyer wins a lot at auction, the system checks for other
+buyers whose cars are at the same origin port (e.g.,
+Yokohama) within a compatible shipping window and
+size class. Eligible buyers are shown a prompt: "3 open
+slots on a Yokohama→Chattogram container departing
+in 11 days — join to reduce your shipping cost by
+approximately 30%." Buyers who opt in are grouped
+into a shared container managed by the platform's
+logistics partner. The feature improves as the platform
+grows (more simultaneous imports = better pool
+matches), creating a natural network-effect moat that
+single-vendor importers cannot replicate.
+Member
+D
+Escrow Payment &
+Buyer Protection
+A secure escrow-style payment flow for used car P2P
+transactions. When a buyer agrees to purchase a used
+car, funds are held in escrow via the payment gateway
+
+-- 5 of 8 --
+
+(SSLCommerz /
+bKash API)
+(SSLCommerz or bKash) rather than transferred
+directly to the seller. The funds are released to the seller
+only after the buyer confirms receipt and satisfaction (or
+after a defined dispute window closes without a claim).
+For reconditioned auction purchases, the system collects
+the agent fee and shipping deposit via the same gateway
+and issues an itemised digital receipt. All payment
+records are stored per transaction and visible in both
+buyer and seller dashboards.
+Member
+A
+AI-Powered Car
+Recommendation
+Engine (OpenAI API)
+A natural-language assistant that helps buyers who are
+unsure of what to look for. A buyer can describe their
+needs in plain text (e.g., "I want a fuel-efficient family
+car under 25 lakh taka, preferably Japanese, good for
+Dhaka traffic") and the system uses the OpenAI API to
+extract requirements, map them to available inventory
+across all three pillars (new, used, reconditioned), and
+return a ranked shortlist with reasoning for each
+recommendation. The assistant also flags trade-offs
+(e.g., "this model has lower fuel cost but higher parts
+cost in BD") using data from the Dream Car Research
+Hub. Buyers can refine suggestions through follow-up
+messages.
+Member
+B
+Modification Studio
+& Fitment Checker
+A catalog browsing section for BRTA-legal cosmetic
+and performance modifications: wheels (Rays, BBS,
+Work, Enkei), body kits (Rocket Bunny, Modellista,
+Kuhl Racing), interior accessories, and lighting
+upgrades. Each product listing specifies compatibility
+by chassis code, bolt pattern, and offset. A fitment
+checker tool lets buyers input their specific car (or
+select from their garage) and filters the catalog to show
+only compatible parts — preventing incorrect orders.
+Modifications can be sourced through the platform's
+existing licensed bidding organization network (verified
+genuine parts), and buyers can bundle a modification
+order with their car purchase for combined shipping and
+pre-installation before delivery.
+Module 3
+Member 	Feature 	Description
+
+-- 6 of 8 --
+
+Member
+C
+Shipment & Import
+Status Tracker
+(Google Maps API)
+A real-time shipment tracking dashboard for buyers
+with an active import order. Stages tracked include:
+auction win confirmed → payment received → vehicle
+collected at Japanese port → vessel departed → vessel
+in transit → arrived at Chattogram port → customs
+clearance → ready for delivery. Each stage is
+timestamped and displayed on a visual progress
+timeline. A map view (Google Maps API) shows the
+vessel's last known position during transit. SMS and in-
+app notifications are sent automatically at each stage
+transition. Buyers with container-pooled shipments see
+all cars in their shared container on the same tracker.
+Member
+D
+BRTA Registration
+Paper Value Tracker
+A Bangladesh-specific feature addressing a real,
+currently opaque market factor: a car's BRTA
+registration paper carries separate resale value tied to
+NBR import age-quota rules that shift with each
+national budget. For any used or reconditioned listing,
+this tool displays how many years of import-eligible
+registration life remain before the car ages out of
+common resale categories, along with a historical view
+of how NBR's import age-limit policy has changed
+across past budgets. This converts a word-of-mouth,
+informal factor into a transparent, data-backed display
+on every relevant listing — a genuine information
+advantage for buyers that no existing platform currently
+offers.
+Member
+A
+Accident History &
+Inspection
+Verification Report
+For used car listings, sellers can upload auction sheets,
+previous inspection reports, and ownership transfer
+documents. The platform's verification layer cross-
+references the chassis number (VIN) against a partner
+database of accident records and flags any history
+found. Verified listings display an "Accident History:
+None Found" or "1 Incident Recorded" badge. Buyers
+can optionally request a third-party physical inspection
+through a partner garage network, booked and paid
+directly through the platform. The inspection report is
+uploaded to the listing and permanently visible to all
+subsequent buyers if the car is relisted — creating a
+persistent trust record tied to the chassis number.
+Member
+B
+Bidding Organization
+Rating & Dispute
+System
+After a reconditioned car import is completed and
+delivered, the buyer is prompted to rate their bidding
+organization across four dimensions: communication
+quality, accuracy of auction sheet grading, delivery
+
+-- 7 of 8 --
+
+timeline adherence, and overall value. Ratings
+contribute to the organization's public profile score. If a
+buyer disputes a transaction (e.g., car condition
+significantly differs from described grade), they can
+raise a formal dispute through the platform. The admin
+reviews the dispute with access to the full chat and bid
+log. Repeat disputes against an organization above a
+configurable threshold trigger an automatic suspension
+pending admin review, maintaining marketplace quality
+without requiring manual monitoring of every
+transaction.
+Member
+C & D
+Admin — Platform
+Analytics & Revenue
+Dashboard
+A system-wide admin view displaying key platform
+metrics across all four pillars: total active listings by
+category, total bids placed and auction win rate,
+successful imports completed, average landed cost by
+vehicle class, container pooling match rate, escrow
+transaction volume, and revenue breakdown by source
+(dealership referral commissions, listing fees, agent
+placement commissions, modification sourcing margin).
+Charts display trends over configurable date ranges.
+The admin can also manage NBR duty rate tables
+(updated each budget cycle), adjust container pooling
+parameters, and view all pending Bidding Organization
+applications and active disputes from a single panel.
+
+-- 8 of 8 --
+

@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<style>
+  @keyframes pulseDot { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+  @keyframes floatSlow { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-14px); } }
+  @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+  @keyframes barGrow { 0% { transform: scaleX(0); } 100% { transform: scaleX(1); } }
+  @keyframes sheenSweep { 0% { transform: translateX(-160%) rotate(8deg); } 55%, 100% { transform: translateX(220%) rotate(8deg); } }
+  @keyframes blobMorphA {
+    0%, 100% { border-radius: 42% 58% 65% 35% / 45% 40% 60% 55%; transform: translate(0,0) scale(1); }
+    33% { border-radius: 60% 40% 35% 65% / 55% 65% 35% 45%; transform: translate(20px,-30px) scale(1.06); }
+    66% { border-radius: 35% 65% 55% 45% / 40% 50% 50% 60%; transform: translate(-15px,15px) scale(0.97); }
+  }
+  @keyframes blobMorphB {
+    0%, 100% { border-radius: 55% 45% 40% 60% / 50% 55% 45% 50%; transform: translate(0,0) scale(1); }
+    50% { border-radius: 38% 62% 60% 40% / 60% 40% 60% 40%; transform: translate(-25px,20px) scale(1.08); }
+  }
+  @keyframes arrowNudge { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(3px); } }
+  @keyframes dotBreathe { 0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(var(--accent-rgb),0.5); } 50% { transform: scale(1.15); box-shadow: 0 0 0 6px rgba(var(--accent-rgb),0); } }
+  .marquee-track:hover { animation-play-state: paused; }
+  .pill-btn span:last-child { transition: transform 0.25s ease; }
+  .pill-btn:hover span:last-child { transform: translateX(3px) rotate(-45deg); }
+  .zoom-card { transition: transform 0.4s cubic-bezier(0.16,1,0.3,1), box-shadow 0.4s ease, border-color 0.4s ease; }
+  .zoom-card:hover { transform: translateY(-8px) scale(1.025); }
+  @keyframes bidFlash { 0% { background: rgba(var(--accent-rgb),0.28); } 100% { background: transparent; } }
+  @keyframes borderTravel { 0% { background-position: 0% 50%; } 100% { background-position: 200% 50%; } }
+  @keyframes ringExpand { 0% { transform: scale(0.85); opacity: 0.7; } 100% { transform: scale(1.6); opacity: 0; } }
+  @keyframes iconSpin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  @keyframes quoteFloat { 0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.15; } 50% { transform: translateY(-4px) rotate(-3deg); opacity: 0.25; } }
+  @keyframes dashFlow { to { stroke-dashoffset: -24; } }
+  @keyframes zoomPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.016); } }
+  @keyframes zoomPulseSoft { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.01); } }
+  @keyframes bubbleRise {
+    0% { transform: translateY(0) scale(0.6); opacity: 0; }
+    12% { opacity: 0.55; }
+    85% { opacity: 0.25; }
+    100% { transform: translateY(-180px) scale(1.3); opacity: 0; }
+  }
+  .bubble { position: absolute; border-radius: 50%; background: radial-gradient(circle at 35% 30%, rgba(var(--accent-rgb),0.5), rgba(var(--accent-rgb),0.05)); pointer-events: none; animation: bubbleRise linear infinite; }
+  .demo-card { position: relative; }
+  .demo-card::before {
+    content: ''; position: absolute; inset: -1px; border-radius: 19px; padding: 1px;
+    background: linear-gradient(90deg, rgba(var(--accent-rgb),0.6), rgba(var(--accent-rgb),0), rgba(var(--accent-rgb),0.6));
+    background-size: 200% 100%; animation: borderTravel 3.5s linear infinite;
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none;
+  }
+  .trust-card { position: relative; }
+  .trust-card::after {
+    content: '"'; position: absolute; top: 8px; right: 18px; font-size: 64px; font-weight: 800; color: var(--accent);
+    opacity: 0.15; line-height: 1; animation: quoteFloat 4s ease-in-out infinite; pointer-events: none;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; }
+  a { color: var(--accent); }
+  a:hover { color: var(--accent-hover); }
+  .theme-toggle { transition: background 0.3s ease; }
+  .theme-toggle:hover .toggle-knob { filter: brightness(1.08); }
+  .gallery-tile:hover .gallery-img { transform: scale(1.08); }
+</style>
+</helmet>
+
+<div style="min-height:100vh;--bg:{{ cBg }};--text:{{ cText }};--muted:{{ cMuted }};--dim:{{ cDim }};--border:{{ cBorder }};--border-strong:{{ cBorderStrong }};--card-bg:{{ cCardBg }};--hairline:{{ cHairline }};--surface2:{{ cSurface2 }};--line-soft:{{ cLineSoft }};--btn-bg:{{ cBtnBg }};--btn-bg2:{{ cBtnBg2 }};--core-text:{{ cCoreText }};--accent:{{ cAccent }};--accent-hover:{{ cAccentHover }};--accent-rgb:{{ cAccentRgb }};--on-accent:{{ cOnAccent }};background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;overflow-x:hidden;position:relative;transition:background 0.4s ease,color 0.4s ease">
+
+  <!-- NAV -->
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:{{ navPadding }};position:sticky;top:0;z-index:30;background:{{ navBg }};backdrop-filter:blur(16px);border-bottom:1px solid var(--hairline);transition:padding 0.3s ease,background 0.3s ease">
+    <div style="font-size:22px;font-weight:800;letter-spacing:-0.02em">Auto<span style="color:var(--accent)">BD</span></div>
+    <div style="display:flex;gap:30px;align-items:center">
+      <div style="font-size:14px;color:var(--muted);cursor:pointer;transition:color 0.2s ease" style-hover="color:var(--text)">Pillars</div>
+      <div style="font-size:14px;color:var(--muted);cursor:pointer;transition:color 0.2s ease" style-hover="color:var(--text)">How it works</div>
+      <div style="font-size:14px;color:var(--muted);cursor:pointer;transition:color 0.2s ease" style-hover="color:var(--text)">Trust</div>
+
+      <div class="theme-toggle" onClick="{{ toggleTheme }}" style="position:relative;width:58px;height:30px;border-radius:999px;background:linear-gradient(90deg,#0a0a0a 50%,#f3f2ee 50%);cursor:pointer;flex-shrink:0;border:1px solid rgba(120,120,120,0.3)">
+        <div style="position:absolute;left:7px;top:50%;transform:translateY(-50%) rotate(-25deg);width:11px;height:11px;border-radius:50%;box-shadow:4px -2px 0 1px #f3f2ee inset;background:transparent"></div>
+        <div style="position:absolute;right:8px;top:50%;transform:translateY(-50%);width:10px;height:10px;border-radius:50%;background:#0a0a0a;box-shadow:0 0 0 2px #0a0a0a, 7px 0 0 -3.5px #0a0a0a, -7px 0 0 -3.5px #0a0a0a, 0 7px 0 -3.5px #0a0a0a, 0 -7px 0 -3.5px #0a0a0a"></div>
+        <div class="toggle-knob" style="position:absolute;top:2px;left:{{ knobLeft }};width:24px;height:24px;border-radius:50%;background:var(--accent);box-shadow:0 2px 8px rgba(0,0,0,0.35);transition:left 0.32s cubic-bezier(0.16,1,0.3,1)"></div>
+      </div>
+
+      <a class="pill-btn" href="./AutoBD Prototype.dc.html" style="display:inline-flex;align-items:center;gap:12px;border:1px solid var(--border-strong);border-radius:999px;padding:5px 5px 5px 18px;background:var(--btn-bg);text-decoration:none;color:var(--text);font-size:13.5px;font-weight:600;white-space:nowrap;transition:border-color 0.25s ease,transform 0.25s ease" style-hover="border-color:rgba(var(--accent-rgb),0.5);transform:scale(1.03)">
+        <span style="white-space:nowrap">Open the app</span>
+        <span style="width:30px;height:30px;border-radius:50%;background:var(--accent);color:var(--on-accent);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0">&rarr;</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- LIQUID BACKGROUND -->
+  <div style="position:absolute;top:60px;right:-120px;width:520px;height:520px;background:radial-gradient(circle,rgba(var(--accent-rgb),0.16),transparent 68%);filter:blur(20px);animation:blobMorphA 14s ease-in-out infinite;pointer-events:none;z-index:0"></div>
+  <div style="position:absolute;top:900px;left:-160px;width:460px;height:460px;background:radial-gradient(circle,rgba(var(--accent-rgb),0.10),transparent 70%);filter:blur(24px);animation:blobMorphB 18s ease-in-out infinite;pointer-events:none;z-index:0"></div>
+
+  <!-- HERO (full-bleed image, scroll zoom-out effect, theme-swapped) -->
+  <div style="position:relative;height:760px;overflow:hidden">
+    <div style="position:absolute;inset:-40px;background-image:url('{{ heroImg }}');background-size:cover;background-position:center 55%;transform:scale({{ heroImgScale }});transition:transform 0.05s linear,background-image 0.3s ease"></div>
+    <div style="position:absolute;inset:0;background:{{ heroOverlay }};transition:background 0.4s ease"></div>
+    <div style="position:absolute;inset:0;background:{{ heroOverlaySide }};transition:background 0.4s ease"></div>
+
+    <div style="position:absolute;top:46%;right:14%;width:14px;height:14px;border-radius:50%;background:var(--accent);animation:dotBreathe 2.2s ease-in-out infinite;z-index:2"></div>
+
+    <div style="position:absolute;bottom:64px;width:100%;padding:0 56px;z-index:2;opacity:{{ heroTextOpacity }};transform:translateY({{ heroTextShift }}px);transition:opacity 0.1s linear,transform 0.1s linear">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px">
+        <div style="width:18px;height:2px;background:var(--accent)"></div>
+        <div style="font-size:12px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent)">Car Marketplace</div>
+      </div>
+      <div style="font-size:60px;font-weight:800;line-height:1.05;letter-spacing:-0.03em;color:{{ heroText }};max-width:760px;margin-bottom:28px;transition:color 0.4s ease">Buy a car, without the guesswork.</div>
+
+      <div style="display:flex;align-items:center;gap:32px;flex-wrap:wrap">
+        <a class="pill-btn" href="./AutoBD Prototype.dc.html" style="display:inline-flex;align-items:center;gap:14px;border:1px solid {{ heroPillBorder }};border-radius:999px;padding:6px 6px 6px 22px;background:{{ heroPillBg }};backdrop-filter:blur(10px);text-decoration:none;color:{{ heroText }};font-size:15px;font-weight:700;white-space:nowrap;transition:border-color 0.25s ease,transform 0.25s ease,color 0.4s ease,background 0.4s ease" style-hover="border-color:rgba(var(--accent-rgb),0.6);transform:scale(1.03)">
+          <span style="white-space:nowrap">Explore the app</span>
+          <span style="width:38px;height:38px;border-radius:50%;background:var(--accent);color:var(--on-accent);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">&rarr;</span>
+        </a>
+        <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:{{ heroTextMuted }}">
+          <div style="width:7px;height:7px;border-radius:50%;background:var(--accent);animation:pulseDot 1.4s ease-in-out infinite"></div>
+          {{ liveAuctionCount }} auctions live in Japan right now
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MARQUEE -->
+  <div style="border-top:1px solid var(--hairline);border-bottom:1px solid var(--hairline);padding:18px 0;overflow:hidden;white-space:nowrap;position:relative;z-index:1">
+    <div class="marquee-track" style="display:inline-flex;animation:marquee 26s linear infinite">
+      <sc-for list="{{ marqueeItemsDouble }}" as="item" hint-placeholder-count="16">
+        <div style="display:inline-flex;align-items:center;gap:10px;padding:0 28px;font-size:14px;color:var(--dim);font-weight:600">{{ item }} <span style="color:#3a382f">&middot;</span></div>
+      </sc-for>
+    </div>
+  </div>
+
+  <!-- PILLARS -->
+  <div ref="{{ pillarsRef }}" style="max-width:1180px;margin:0 auto;padding:100px 40px;position:relative;z-index:1">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+      <div style="width:18px;height:2px;background:var(--accent)"></div>
+      <div style="font-size:12px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent)">Four pillars</div>
+    </div>
+    <div style="font-size:38px;font-weight:800;letter-spacing:-0.02em;margin-bottom:52px;max-width:600px">One workflow, four ways to buy.</div>
+
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:18px">
+      <div class="zoom-card" style="position:relative;overflow:hidden;border:1px solid var(--border);border-radius:20px;padding:28px;background:var(--card-bg);backdrop-filter:blur(14px);opacity:{{ pillarsOpacity }};transform:{{ pillarsTransform }};transition-property:opacity,transform,box-shadow,border-color;transition-duration:0.7s,0.7s,0.4s,0.4s;transition-delay:0s" style-hover="box-shadow:0 16px 32px rgba(0,0,0,0.4);border-color:rgba(var(--accent-rgb),0.35)">
+        <div style="font-size:13px;font-weight:700;color:var(--dim);margin-bottom:16px">01</div>
+        <div style="font-size:19px;font-weight:700;margin-bottom:10px">Brand New Cars</div>
+        <div style="font-size:14px;color:var(--muted);line-height:1.6">Dealer inventory and warranty terms, one catalog.</div>
+      </div>
+      <div class="zoom-card" style="position:relative;overflow:hidden;border:1px solid var(--border);border-radius:20px;padding:28px;background:var(--card-bg);backdrop-filter:blur(14px);opacity:{{ pillarsOpacity }};transform:{{ pillarsTransform }};transition-property:opacity,transform,box-shadow,border-color;transition-duration:0.7s,0.7s,0.4s,0.4s;transition-delay:0.1s" style-hover="box-shadow:0 16px 32px rgba(0,0,0,0.4);border-color:rgba(var(--accent-rgb),0.35)">
+        <div style="font-size:13px;font-weight:700;color:var(--dim);margin-bottom:16px">02</div>
+        <div style="font-size:19px;font-weight:700;margin-bottom:10px">Used Car P2P</div>
+        <div style="font-size:14px;color:var(--muted);line-height:1.6">Verified ownership, direct offers, no middlemen.</div>
+      </div>
+      <div class="zoom-card" style="position:relative;overflow:hidden;border:1px solid rgba(var(--accent-rgb),0.45);border-radius:20px;padding:28px;background:linear-gradient(160deg,rgba(var(--accent-rgb),0.16),var(--card-bg));backdrop-filter:blur(14px);opacity:{{ pillarsOpacity }};transform:{{ pillarsTransform }};transition-property:opacity,transform,box-shadow;transition-duration:0.7s,0.7s,0.4s;transition-delay:0.2s" style-hover="box-shadow:0 20px 40px rgba(var(--accent-rgb),0.15)">
+        <div style="position:absolute;top:16px;right:16px;font-size:10px;font-weight:800;letter-spacing:0.04em;text-transform:uppercase;background:var(--accent);color:var(--on-accent);padding:4px 8px;border-radius:6px">Core</div>
+        <div style="font-size:13px;font-weight:700;color:var(--accent);margin-bottom:16px">03</div>
+        <div style="font-size:19px;font-weight:700;margin-bottom:10px">Reconditioned Import</div>
+        <div style="font-size:14px;color:var(--core-text);line-height:1.6">Licensed agents, live Japanese auctions, real-time cost.</div>
+      </div>
+      <div class="zoom-card" style="position:relative;overflow:hidden;border:1px solid var(--border);border-radius:20px;padding:28px;background:var(--card-bg);backdrop-filter:blur(14px);opacity:{{ pillarsOpacity }};transform:{{ pillarsTransform }};transition-property:opacity,transform,box-shadow,border-color;transition-duration:0.7s,0.7s,0.4s,0.4s;transition-delay:0.3s" style-hover="box-shadow:0 16px 32px rgba(0,0,0,0.4);border-color:rgba(var(--accent-rgb),0.35)">
+        <div style="font-size:13px;font-weight:700;color:var(--dim);margin-bottom:16px">04</div>
+        <div style="font-size:19px;font-weight:700;margin-bottom:10px">Modification Studio</div>
+        <div style="font-size:14px;color:var(--muted);line-height:1.6">BRTA-legal parts, filtered to fit your car.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LIVE COST DEMO -->
+  <div ref="{{ demoRef }}" style="max-width:1180px;margin:0 auto;padding:0 40px 100px;opacity:{{ demoOpacity }};transform:{{ demoTransform }};transition:opacity 0.8s ease,transform 0.8s ease;position:relative;z-index:1">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center;background:var(--card-bg);backdrop-filter:blur(18px);border:1px solid var(--border);border-radius:26px;padding:48px;position:relative;overflow:hidden;animation:zoomPulse 7s ease-in-out infinite">
+      <div class="bubble" style="width:22px;height:22px;left:8%;bottom:6%;animation-duration:7s;animation-delay:0.2s"></div>
+      <div class="bubble" style="width:14px;height:14px;left:16%;bottom:2%;animation-duration:5.5s;animation-delay:1.6s"></div>
+      <div class="bubble" style="width:10px;height:10px;left:24%;bottom:10%;animation-duration:6.2s;animation-delay:3s"></div>
+      <div class="bubble" style="width:18px;height:18px;right:10%;bottom:4%;animation-duration:6.8s;animation-delay:0.8s"></div>
+      <div class="bubble" style="width:12px;height:12px;right:20%;bottom:8%;animation-duration:5s;animation-delay:2.4s"></div>
+      <div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+          <div style="width:18px;height:2px;background:var(--accent)"></div>
+          <div style="font-size:12px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent)">Live, not static</div>
+        </div>
+        <div style="font-size:30px;font-weight:800;letter-spacing:-0.01em;margin-bottom:16px">Cost updates as the auction moves.</div>
+        <div style="font-size:15px;color:var(--muted);line-height:1.7">Duty, shipping, and fees recalculate with every bid.</div>
+      </div>
+      <div class="demo-card" style="background:var(--surface2);border:1px solid var(--border);border-radius:18px;padding:28px;position:relative;overflow:hidden">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+          <div style="font-size:13px;color:var(--muted)">Toyota Harrier Hybrid &middot; 2019</div>
+          <div style="display:flex;align-items:center;gap:6px;background:rgba(var(--accent-rgb),0.14);color:var(--accent);font-size:11px;font-weight:700;padding:5px 10px;border-radius:20px">
+            <div style="width:6px;height:6px;border-radius:50%;background:var(--accent);animation:pulseDot 1.4s ease-in-out infinite"></div>
+            LIVE
+          </div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--hairline);font-size:14px;border-radius:8px;transition:background 0.05s linear;background:{{ bidFlashBg }}">
+          <span style="color:var(--muted)">Current bid</span><span style="font-weight:700;font-variant-numeric:tabular-nums">¥{{ demoBidJPYFormatted }}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--hairline);font-size:14px">
+          <span style="color:var(--muted)">Exchange rate</span><span style="font-weight:700;font-variant-numeric:tabular-nums">1 JPY &asymp; {{ demoRateFormatted }} BDT</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:16px 0 8px;font-size:18px">
+          <span style="font-weight:800">Total landed cost</span><span style="font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums">৳{{ demoTotalFormatted }}</span>
+        </div>
+        <div style="height:5px;border-radius:3px;background:var(--hairline);overflow:hidden">
+          <div style="height:100%;width:{{ demoBarPct }}%;background:linear-gradient(90deg,var(--accent),var(--accent-hover));border-radius:3px;transition:width 1.2s cubic-bezier(0.16,1,0.3,1)"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HOW IT WORKS (vertical timeline) -->
+  <div ref="{{ howRef }}" style="max-width:1180px;margin:0 auto;padding:0 40px 100px;position:relative;z-index:1">
+    <div style="display:grid;grid-template-columns:1fr 1.3fr;gap:48px">
+      <div style="opacity:{{ howOpacity }};transform:{{ howTransform }};transition:opacity 0.8s ease,transform 0.8s ease">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+          <div style="width:18px;height:2px;background:var(--accent)"></div>
+          <div style="font-size:12px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent)">How it works</div>
+        </div>
+        <div style="font-size:38px;font-weight:800;letter-spacing:-0.02em;line-height:1.15;margin-bottom:28px">Four steps, start to delivery.</div>
+        <a class="pill-btn" href="./AutoBD Prototype.dc.html" style="display:inline-flex;align-items:center;gap:14px;border:1px solid var(--border-strong);border-radius:999px;padding:6px 6px 6px 22px;background:var(--btn-bg);text-decoration:none;color:var(--text);font-size:14px;font-weight:700;white-space:nowrap;transition:border-color 0.25s ease,transform 0.25s ease" style-hover="border-color:rgba(var(--accent-rgb),0.6);transform:scale(1.03)">
+          <span style="white-space:nowrap">Get started</span>
+          <span style="width:32px;height:32px;border-radius:50%;background:var(--accent);color:var(--on-accent);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0">&rarr;</span>
+        </a>
+      </div>
+
+      <div style="position:relative;padding-left:32px">
+        <div style="position:absolute;left:5px;top:8px;bottom:8px;width:2px;background:linear-gradient(180deg,var(--accent),rgba(var(--accent-rgb),0.15));transform-origin:top;transform:scaleY({{ howOpacity }});transition:transform 1.1s cubic-bezier(0.16,1,0.3,1)"></div>
+        <sc-for list="{{ steps }}" as="step" hint-placeholder-count="4">
+          <div class="zoom-card" style="position:relative;margin-bottom:16px;opacity:{{ howOpacity }};transform:{{ howTransform }};transition-property:opacity,transform;transition-duration:0.7s;transition-delay:{{ step.delay }}">
+            <div style="position:absolute;left:-32px;top:24px;width:12px;height:12px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 4px rgba(var(--accent-rgb),0.15);animation:dotBreathe 2.4s ease-in-out infinite;animation-delay:{{ step.delay }}"></div>
+            <div style="border:1px solid var(--border);border-radius:16px;padding:22px 24px;background:var(--card-bg);backdrop-filter:blur(14px);transition:border-color 0.3s ease,transform 0.3s ease" style-hover="border-color:rgba(var(--accent-rgb),0.35);transform:translateX(6px)">
+              <div style="font-size:11px;font-weight:700;color:var(--dim);margin-bottom:8px">STEP {{ step.n }}</div>
+              <div style="font-size:17px;font-weight:700;margin-bottom:6px">{{ step.title }}</div>
+              <div style="font-size:14px;color:var(--muted);line-height:1.6">{{ step.desc }}</div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+
+  <!-- TRUST -->
+  <div ref="{{ trustRef }}" style="max-width:1180px;margin:0 auto;padding:0 40px 100px;position:relative;z-index:1">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;opacity:{{ trustOpacity }};transform:{{ trustTransform }};transition:opacity 0.8s ease,transform 0.8s ease">
+      <div style="width:18px;height:2px;background:var(--accent)"></div>
+      <div style="font-size:12px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent)">Testimonials</div>
+    </div>
+    <div style="font-size:38px;font-weight:800;letter-spacing:-0.02em;margin-bottom:40px;max-width:600px;opacity:{{ trustOpacity }};transform:{{ trustTransform }};transition:opacity 0.8s ease,transform 0.8s ease">Trusted by buyers across Bangladesh.</div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px">
+      <div class="zoom-card" style="border:1px solid var(--border);border-radius:18px;padding:28px;background:var(--card-bg);backdrop-filter:blur(14px);opacity:{{ trustOpacity }};transform:{{ trustTransform }};transition-property:opacity,transform,box-shadow,border-color;transition-duration:0.7s,0.7s,0.4s,0.4s;transition-delay:0s;overflow:hidden" style-hover="box-shadow:0 16px 32px rgba(0,0,0,0.4);border-color:rgba(var(--accent-rgb),0.3)">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+          <div style="width:28px;height:28px;border-radius:8px;background:rgba(var(--accent-rgb),0.14);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <div style="width:12px;height:12px;border:2px solid var(--accent);border-top-color:transparent;border-radius:50%;animation:iconSpin 2.4s linear infinite"></div>
+          </div>
+          <div style="font-size:14px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.04em">Container Pooling</div>
+        </div>
+        <div style="font-size:15.5px;line-height:1.6;color:var(--muted)">Shared shipping with nearby buyers cuts cost up to 30%.</div>
+      </div>
+      <div class="zoom-card" style="border:1px solid var(--border);border-radius:18px;padding:28px;background:var(--card-bg);backdrop-filter:blur(14px);opacity:{{ trustOpacity }};transform:{{ trustTransform }};transition-property:opacity,transform,box-shadow,border-color;transition-duration:0.7s,0.7s,0.4s,0.4s;transition-delay:0.1s;overflow:hidden" style-hover="box-shadow:0 16px 32px rgba(0,0,0,0.4);border-color:rgba(var(--accent-rgb),0.3)">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+          <div style="width:28px;height:28px;border-radius:8px;background:rgba(var(--accent-rgb),0.14);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <div style="width:8px;height:8px;border-radius:50%;background:var(--accent);animation:dotBreathe 2s ease-in-out infinite"></div>
+          </div>
+          <div style="font-size:14px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.04em">BRTA Paper Value Tracker</div>
+        </div>
+        <div style="font-size:15.5px;line-height:1.6;color:var(--muted)">See remaining import-eligible registration life upfront.</div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:18px">
+      <sc-for list="{{ testimonials }}" as="t" hint-placeholder-count="3">
+        <div class="zoom-card trust-card" style="border:1px solid var(--border);border-radius:16px;padding:24px;background:var(--card-bg);backdrop-filter:blur(14px);opacity:{{ trustOpacity }};transform:{{ trustTransform }};transition-property:opacity,transform,box-shadow,border-color;transition-duration:0.7s,0.7s,0.4s,0.4s;transition-delay:{{ t.delay }};overflow:hidden" style-hover="box-shadow:0 16px 32px rgba(0,0,0,0.4);border-color:rgba(var(--accent-rgb),0.3)">
+          <div style="position:relative;font-size:14.5px;line-height:1.6;color:var(--muted);margin-bottom:18px">"{{ t.quote }}"</div>
+          <div style="width:18px;height:2px;background:var(--line-soft);margin-bottom:10px"></div>
+          <div style="font-size:13px;font-weight:700;color:var(--accent)">{{ t.name }}</div>
+          <div style="font-size:12px;color:var(--dim)">{{ t.role }}</div>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <!-- FINAL CTA -->
+  <div ref="{{ ctaRef }}" style="max-width:1180px;margin:0 auto;padding:0 40px 100px;opacity:{{ ctaOpacity }};transform:{{ ctaTransform }};transition:opacity 0.8s ease,transform 0.8s ease;position:relative;z-index:1">
+    <div style="border-radius:28px;background:var(--card-bg);backdrop-filter:blur(18px);border:1px solid var(--border);padding:64px;text-align:center;position:relative;overflow:hidden;animation:zoomPulseSoft 8s ease-in-out infinite" style-hover="transform:scale(1.01)">
+      <div style="position:absolute;top:-100px;left:50%;transform:translateX(-50%);width:400px;height:300px;background:radial-gradient(circle,rgba(var(--accent-rgb),0.25),transparent 70%);filter:blur(10px);animation:blobMorphB 12s ease-in-out infinite;pointer-events:none"></div>
+      <div class="bubble" style="width:16px;height:16px;left:12%;bottom:8%;animation-duration:6s;animation-delay:0.4s"></div>
+      <div class="bubble" style="width:10px;height:10px;left:22%;bottom:14%;animation-duration:5.2s;animation-delay:2.1s"></div>
+      <div class="bubble" style="width:20px;height:20px;right:14%;bottom:6%;animation-duration:7s;animation-delay:1.2s"></div>
+      <div class="bubble" style="width:12px;height:12px;right:24%;bottom:16%;animation-duration:5.8s;animation-delay:3.4s"></div>
+      <div style="position:relative">
+        <div style="font-size:38px;font-weight:800;letter-spacing:-0.02em;color:var(--text);margin-bottom:14px">Ready to find your car?</div>
+        <div style="font-size:16px;color:var(--muted);margin-bottom:32px">No account required to browse.</div>
+        <div style="position:relative;display:inline-block">
+          <div style="position:absolute;inset:-6px;border-radius:999px;border:1.5px solid rgba(var(--accent-rgb),0.5);animation:ringExpand 2.4s ease-out infinite;pointer-events:none"></div>
+          <div style="position:absolute;inset:-6px;border-radius:999px;border:1.5px solid rgba(var(--accent-rgb),0.5);animation:ringExpand 2.4s ease-out infinite;animation-delay:1.2s;pointer-events:none"></div>
+          <a class="pill-btn" href="./AutoBD Prototype.dc.html" style="position:relative;display:inline-flex;align-items:center;gap:14px;border-radius:999px;padding:6px 6px 6px 26px;background:var(--accent);text-decoration:none;color:var(--on-accent);font-size:15px;font-weight:800;white-space:nowrap;transition:background 0.25s ease,transform 0.25s ease" style-hover="background:var(--accent-hover);transform:scale(1.04)">
+            <span style="white-space:nowrap">Open the app</span>
+            <span style="width:38px;height:38px;border-radius:50%;background:var(--on-accent);color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">&rarr;</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GALLERY -->
+  <div style="max-width:1180px;margin:0 auto;padding:0 40px 100px;position:relative;z-index:1">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+      <div style="width:18px;height:2px;background:var(--accent)"></div>
+      <div style="font-size:12px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent)">Gallery</div>
+    </div>
+    <div style="font-size:38px;font-weight:800;letter-spacing:-0.02em;margin-bottom:36px;max-width:600px">The kind of cars you'll find here.</div>
+
+    <div style="display:grid;grid-template-columns:1.3fr 1fr 1fr;grid-template-rows:220px 220px;gap:16px">
+      <div class="gallery-tile" style="grid-row:span 2;position:relative;border-radius:20px;overflow:hidden;border:1px solid var(--border)">
+        <div class="gallery-img" style="position:absolute;inset:0;background-image:url('./assets/gallery-3.jpg');background-size:cover;background-position:center;transition:transform 0.6s cubic-bezier(0.16,1,0.3,1)"></div>
+        <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(0,0,0,0.65) 100%)"></div>
+        <div style="position:absolute;bottom:18px;left:20px;color:#fff;font-size:15px;font-weight:700;text-shadow:0 1px 4px rgba(0,0,0,0.5)">Porsche 911 &middot; classic livery</div>
+      </div>
+
+      <div class="gallery-tile" style="position:relative;border-radius:20px;overflow:hidden;border:1px solid var(--border)">
+        <div class="gallery-img" style="position:absolute;inset:0;background-image:url('./assets/gallery-1.jpg');background-size:cover;background-position:center;transition:transform 0.6s cubic-bezier(0.16,1,0.3,1)"></div>
+        <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(0,0,0,0.6) 100%)"></div>
+        <div style="position:absolute;bottom:16px;left:18px;color:#fff;font-size:14px;font-weight:700;text-shadow:0 1px 4px rgba(0,0,0,0.5)">Porsche GT3 &middot; track-ready</div>
+      </div>
+
+      <div class="gallery-tile" style="position:relative;border-radius:20px;overflow:hidden;border:1px solid var(--border)">
+        <div class="gallery-img" style="position:absolute;inset:0;background-image:url('./assets/gallery-2.jpg');background-size:cover;background-position:center;transition:transform 0.6s cubic-bezier(0.16,1,0.3,1)"></div>
+        <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(0,0,0,0.6) 100%)"></div>
+        <div style="position:absolute;bottom:16px;left:18px;color:#fff;font-size:14px;font-weight:700;text-shadow:0 1px 4px rgba(0,0,0,0.5)">Genesis Magma GT3 concept</div>
+      </div>
+
+      <div class="gallery-tile" style="position:relative;border-radius:20px;overflow:hidden;border:1px solid var(--border)">
+        <div class="gallery-img" style="position:absolute;inset:0;background-image:url('./assets/gallery-4.jpg');background-size:cover;background-position:center;transition:transform 0.6s cubic-bezier(0.16,1,0.3,1)"></div>
+        <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(0,0,0,0.6) 100%)"></div>
+        <div style="position:absolute;bottom:16px;left:18px;color:#fff;font-size:14px;font-weight:700;text-shadow:0 1px 4px rgba(0,0,0,0.5)">Restomod 911 &middot; Safari green</div>
+      </div>
+
+      <div class="gallery-tile" style="position:relative;border-radius:20px;overflow:hidden;border:1px solid var(--border)">
+        <div class="gallery-img" style="position:absolute;inset:0;background-image:url('./assets/gallery-5.jpg');background-size:cover;background-position:center;transition:transform 0.6s cubic-bezier(0.16,1,0.3,1)"></div>
+        <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(0,0,0,0.6) 100%)"></div>
+        <div style="position:absolute;bottom:16px;left:18px;color:#fff;font-size:14px;font-weight:700;text-shadow:0 1px 4px rgba(0,0,0,0.5)">GT3 RS &middot; track livery</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div style="border-top:1px solid var(--hairline);padding:36px 56px;display:flex;justify-content:space-between;align-items:center;position:relative;z-index:1">
+    <div style="font-size:16px;font-weight:800">Auto<span style="color:var(--accent)">BD</span></div>
+    <div style="font-size:13px;color:var(--dim)">&copy; 2026 AutoBD &middot; Dhaka, Bangladesh</div>
+    <div style="display:flex;gap:20px">
+      <a href="#" style="font-size:13px;text-decoration:none;color:var(--muted)">Terms</a>
+      <a href="#" style="font-size:13px;text-decoration:none;color:var(--muted)">Privacy</a>
+      <a href="#" style="font-size:13px;text-decoration:none;color:var(--muted)">Contact</a>
+    </div>
+  </div>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const MARQUEE_ITEMS = [
+  'Toyota Harrier', 'Honda Vezel', 'Toyota Axio', 'Mazda CX-5', 'Nissan X-Trail', 'Toyota Premio',
+  'Suzuki Swift', 'Mitsubishi Xpander', 'Honda City e:HEV', 'Toyota Corolla Cross'
+];
+
+const STEPS = [
+  { n: '1', title: 'Choose your pillar', desc: 'New, used, import, or modification.' },
+  { n: '2', title: 'Pick a verified partner', desc: 'License-checked agents, verified sellers.' },
+  { n: '3', title: 'Bid or buy', desc: 'Cost updates live as the deal moves.' },
+  { n: '4', title: 'Track to your door', desc: 'Escrow payment, live shipment tracking.' }
+];
+
+const TESTIMONIALS = [
+  { quote: 'Landed cost matched what I paid at customs, to the taka.', name: 'Rafiul H.', role: 'Buyer, Dhaka' },
+  { quote: 'Container pooling saved me ~28% on shipping.', name: 'Nusrat J.', role: 'Buyer, Chattogram' },
+  { quote: 'Live bidding with my agent felt like being in Japan.', name: 'Tanvir A.', role: 'Buyer, Sylhet' }
+];
+
+const EXCHANGE_RATE = 0.79;
+
+const THEMES = {
+  dark: {
+    bg: '#0a0a0a', text: '#f3f2ee', muted: '#a9a49a', dim: '#7d786f',
+    border: 'rgba(255,255,255,0.09)', borderStrong: 'rgba(255,255,255,0.18)',
+    cardBg: 'rgba(255,255,255,0.035)', hairline: 'rgba(255,255,255,0.07)',
+    surface2: '#0d0d0a', lineSoft: 'rgba(255,255,255,0.2)',
+    btnBg: 'rgba(255,255,255,0.04)', btnBg2: 'rgba(255,255,255,0.08)',
+    navBase: 'rgba(10,10,10,0.55)', navScrolled: 'rgba(10,10,10,0.9)',
+    coreText: '#d9e6a8',
+    accent: '#e3f23a', accentHover: '#eef874', accentRgb: '227,242,58', onAccent: '#0a0a0a',
+    heroImg: './assets/hero-car.png',
+    heroOverlay: 'linear-gradient(180deg,rgba(10,10,10,0.55) 0%,rgba(10,10,10,0.15) 30%,rgba(10,10,10,0.35) 60%,rgba(10,10,10,0.92) 100%)',
+    heroOverlaySide: 'linear-gradient(90deg,rgba(10,10,10,0.5) 0%,transparent 45%)',
+    heroText: '#f3f2ee', heroTextMuted: '#d9d5cb',
+    heroPillBorder: 'rgba(255,255,255,0.25)', heroPillBg: 'rgba(255,255,255,0.08)'
+  },
+  light: {
+    bg: '#ffffff', text: '#1a0d0d', muted: '#6b5555', dim: '#9c8686',
+    border: 'rgba(216,31,42,0.16)', borderStrong: 'rgba(216,31,42,0.28)',
+    cardBg: 'rgba(255,255,255,0.75)', hairline: 'rgba(216,31,42,0.12)',
+    surface2: '#fff6f6', lineSoft: 'rgba(216,31,42,0.2)',
+    btnBg: 'rgba(216,31,42,0.05)', btnBg2: 'rgba(216,31,42,0.08)',
+    navBase: 'rgba(255,255,255,0.6)', navScrolled: 'rgba(255,255,255,0.92)',
+    coreText: '#7a1218',
+    accent: '#d81f2a', accentHover: '#ef3b3b', accentRgb: '216,31,42', onAccent: '#ffffff',
+    heroImg: './assets/hero-car-light.jpg',
+    heroOverlay: 'linear-gradient(180deg,rgba(255,255,255,0.1) 0%,rgba(255,255,255,0.02) 30%,rgba(255,255,255,0.25) 60%,rgba(255,255,255,0.96) 100%)',
+    heroOverlaySide: 'linear-gradient(90deg,rgba(255,255,255,0.35) 0%,transparent 45%)',
+    heroText: '#1a0d0d', heroTextMuted: '#5c4444',
+    heroPillBorder: 'rgba(216,31,42,0.3)', heroPillBg: 'rgba(255,255,255,0.65)'
+  }
+};
+
+class Component extends DCLogic {
+  state = {
+    liveAuctionCount: 214,
+    statImports: 12480,
+    demoBidJPY: 685000,
+    demoRate: EXCHANGE_RATE,
+    visible: { pillars: false, demo: false, how: false, trust: false, cta: false },
+    scrollY: 0,
+    countProgress: 0,
+    bidFlashUntil: 0,
+    theme: 'dark'
+  };
+
+  pillarsRef = React.createRef();
+  demoRef = React.createRef();
+  howRef = React.createRef();
+  trustRef = React.createRef();
+  ctaRef = React.createRef();
+
+  componentDidMount() {
+    try {
+      const saved = localStorage.getItem('autobd-landing-theme');
+      if (saved === 'dark' || saved === 'light') this.setState({ theme: saved });
+    } catch (e) {}
+
+    this._tick = setInterval(() => {
+      this.setState(s => {
+        const bidWillRise = Math.random() < 0.25;
+        return {
+          demoRate: +(EXCHANGE_RATE + (Math.random() - 0.5) * 0.004).toFixed(4),
+          demoBidJPY: s.demoBidJPY + (bidWillRise ? (5000 + Math.floor(Math.random() * 15000)) : 0),
+          liveAuctionCount: Math.max(180, Math.min(260, s.liveAuctionCount + (Math.random() < 0.5 ? -1 : 1))),
+          bidFlashUntil: bidWillRise ? Date.now() + 700 : s.bidFlashUntil
+        };
+      });
+      this.forceUpdate();
+    }, 1400);
+    this._flashTick = setInterval(() => this.forceUpdate(), 100);
+
+    const keys = { pillars: this.pillarsRef, demo: this.demoRef, how: this.howRef, trust: this.trustRef, cta: this.ctaRef };
+    this._observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const key = Object.keys(keys).find(k => keys[k].current === entry.target);
+          if (key) {
+            this.setState(s => ({ visible: { ...s.visible, [key]: true } }));
+            this._observer.unobserve(entry.target);
+          }
+        }
+      });
+    }, { threshold: 0.15 });
+    Object.values(keys).forEach(ref => { if (ref.current) this._observer.observe(ref.current); });
+
+    this._onScroll = () => {
+      const y = window.scrollY || document.documentElement.scrollTop || 0;
+      this.setState({ scrollY: y });
+    };
+    window.addEventListener('scroll', this._onScroll, { passive: true });
+
+    const countStart = performance.now();
+    const countDuration = 1400;
+    const animateCount = (time) => {
+      const p = Math.min(1, (time - countStart) / countDuration);
+      const eased = 1 - Math.pow(1 - p, 3);
+      this.setState({ countProgress: eased });
+      if (p < 1) this._countRaf = requestAnimationFrame(animateCount);
+    };
+    this._countRaf = requestAnimationFrame(animateCount);
+  }
+
+  componentWillUnmount() {
+    clearInterval(this._tick);
+    clearInterval(this._flashTick);
+    if (this._observer) this._observer.disconnect();
+    if (this._onScroll) window.removeEventListener('scroll', this._onScroll);
+    if (this._countRaf) cancelAnimationFrame(this._countRaf);
+  }
+
+  toggleTheme = () => {
+    this.setState(s => {
+      const next = s.theme === 'dark' ? 'light' : 'dark';
+      try { localStorage.setItem('autobd-landing-theme', next); } catch (e) {}
+      return { theme: next };
+    });
+  };
+
+  fmt(n) { return Math.round(n).toLocaleString('en-US'); }
+
+  revealStyle(visible) {
+    return { opacity: visible ? '1' : '0', transform: visible ? 'translateY(0px)' : 'translateY(40px)' };
+  }
+
+  renderVals() {
+    const bidJPY = this.state.demoBidJPY;
+    const rate = this.state.demoRate;
+    const bidBDT = bidJPY * rate;
+    const duty = bidBDT * 1.10;
+    const shipping = 195000 * 0.7;
+    const agentFee = bidBDT * 0.03;
+    const port = 42000;
+    const total = bidBDT + duty + shipping + agentFee + port;
+
+    const v = this.state.visible;
+    const pillars = this.revealStyle(v.pillars);
+    const demo = this.revealStyle(v.demo);
+    const how = this.revealStyle(v.how);
+    const trust = this.revealStyle(v.trust);
+    const cta = this.revealStyle(v.cta);
+
+    const stepsWithDelay = STEPS.map((s, i) => ({ ...s, delay: (i * 0.1) + 's' }));
+    const testimonialsWithDelay = TESTIMONIALS.map((t, i) => ({ ...t, delay: (i * 0.1) + 's' }));
+
+    const scrollY = this.state.scrollY;
+    const heroScale = Math.min(1.22, 1 + scrollY * 0.00025);
+    const heroFade = Math.max(0, 1 - scrollY / 420);
+
+    const cp = this.state.countProgress;
+    const navScrolled = scrollY > 40;
+    const T = THEMES[this.state.theme];
+
+    return {
+      cBg: T.bg, cText: T.text, cMuted: T.muted, cDim: T.dim,
+      cBorder: T.border, cBorderStrong: T.borderStrong, cCardBg: T.cardBg,
+      cHairline: T.hairline, cSurface2: T.surface2, cLineSoft: T.lineSoft,
+      cBtnBg: T.btnBg, cBtnBg2: T.btnBg2, cCoreText: T.coreText,
+      cAccent: T.accent, cAccentHover: T.accentHover, cAccentRgb: T.accentRgb, cOnAccent: T.onAccent,
+      heroImg: T.heroImg, heroOverlay: T.heroOverlay, heroOverlaySide: T.heroOverlaySide,
+      heroText: T.heroText, heroTextMuted: T.heroTextMuted,
+      heroPillBorder: T.heroPillBorder, heroPillBg: T.heroPillBg,
+      toggleTheme: this.toggleTheme,
+      knobLeft: this.state.theme === 'dark' ? '3px' : '31px',
+      liveAuctionCount: this.state.liveAuctionCount,
+      statImports: this.fmt(this.state.statImports),
+      statImportsDisplay: this.fmt(Math.round(this.state.statImports * cp)),
+      statWaysDisplay: Math.round(4 * cp),
+      statVerifiedDisplay: Math.round(100 * cp),
+      marqueeItemsDouble: MARQUEE_ITEMS.concat(MARQUEE_ITEMS),
+      steps: stepsWithDelay,
+      testimonials: testimonialsWithDelay,
+      demoBidJPYFormatted: this.fmt(bidJPY),
+      demoRateFormatted: rate.toFixed(4),
+      demoTotalFormatted: this.fmt(total),
+
+      bidFlashBg: Date.now() < this.state.bidFlashUntil ? ('rgba(' + T.accentRgb + ',0.16)') : 'transparent',
+      demoBarPct: Math.min(96, 30 + ((bidJPY - 685000) / 400000) * 66).toFixed(1),
+
+      heroImgScale: heroScale.toFixed(4),
+      heroTextOpacity: heroFade.toFixed(3),
+      heroTextShift: Math.round(scrollY * 0.15),
+      navBg: navScrolled ? T.navScrolled : T.navBase,
+      navPadding: navScrolled ? '14px 56px' : '22px 56px',
+
+      pillarsRef: this.pillarsRef, pillarsOpacity: pillars.opacity, pillarsTransform: pillars.transform,
+      demoRef: this.demoRef, demoOpacity: demo.opacity, demoTransform: demo.transform,
+      howRef: this.howRef, howOpacity: how.opacity, howTransform: how.transform,
+      trustRef: this.trustRef, trustOpacity: trust.opacity, trustTransform: trust.transform,
+      ctaRef: this.ctaRef, ctaOpacity: cta.opacity, ctaTransform: cta.transform
+    };
+  }
+}
+
+</script>
+</body>
+</html>
