@@ -67,6 +67,26 @@
         </div>
       </div>
 
+      <!-- LIVE AUCTION BROADCAST CONTROL -->
+      <div style="border:1px solid var(--border);border-radius:16px;background:var(--card-bg);padding:22px;margin-bottom:24px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:var(--dim)">Live auction broadcast</div>
+          <div style="display:flex;align-items:center;gap:7px;font-size:11px;font-weight:800;letter-spacing:0.04em;padding:5px 11px;border-radius:6px;background:{{ broadcastBadgeBg }};color:{{ broadcastBadgeColor }}">
+            <div style="width:7px;height:7px;border-radius:50%;background:{{ broadcastBadgeColor }};animation:pulseDot 1.4s ease-in-out infinite"></div>{{ broadcastStatusLabel }}
+          </div>
+        </div>
+        <div style="font-size:13px;color:var(--muted);margin-bottom:16px">Broadcast a live auction feed to every buyer's telecast screen. Paste a YouTube Live / stream URL, or upload a video file.</div>
+        <div style="display:flex;gap:10px;margin-bottom:12px">
+          <input value="{{ broadcastInput }}" onChange="{{ setBroadcastInput }}" placeholder="Paste YouTube Live or .mp4 stream URL…" style="flex:1;padding:11px 14px;border:1px solid var(--border);border-radius:9px;font-size:13.5px;background:#ffffff" />
+          <div onClick="{{ goLiveBroadcast }}" style="white-space:nowrap;padding:11px 22px;border-radius:9px;background:#c1442d;color:#fff;font-size:13.5px;font-weight:700;cursor:pointer">Go live &rarr;</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+          <label style="display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border:1px dashed var(--border);border-radius:9px;font-size:13px;font-weight:600;color:var(--text);cursor:pointer">Upload video file<input type="file" accept="video/*" onChange="{{ uploadBroadcast }}" style="display:none" /></label>
+          <div onClick="{{ stopBroadcast }}" style="padding:10px 16px;border-radius:9px;background:var(--chip-bg);color:var(--muted);font-size:13px;font-weight:700;cursor:pointer">Stop broadcast</div>
+          <div style="font-size:12px;color:var(--dim)">{{ broadcastSourceLabel }}</div>
+        </div>
+      </div>
+
       <div style="border:1px solid var(--border);border-radius:16px;background:var(--card-bg);padding:22px;margin-bottom:24px">
         <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:var(--dim);margin-bottom:16px">Revenue by source</div>
         <sc-for list="{{ revenueRows }}" as="row" hint-placeholder-count="4">
@@ -847,31 +867,44 @@
         <!-- BROADCAST FRAME -->
         <div>
           <div style="position:relative;border-radius:16px 16px 0 0;overflow:hidden;background:#0f0d0a;height:400px;border:1px solid var(--border)">
-            <div style="position:absolute;inset:0;background:radial-gradient(circle at 50% 42%,rgba(var(--accent-rgb),0.14),transparent 62%)"></div>
-            <div style="position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(255,255,255,0.02),rgba(255,255,255,0.02) 2px,transparent 2px,transparent 4px)"></div>
 
-            <div style="position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:14px 16px;z-index:2">
-              <div style="display:flex;align-items:center;gap:8px;background:#c1442d;color:#fff;font-size:11px;font-weight:800;letter-spacing:0.04em;padding:5px 11px;border-radius:6px">
-                <div style="width:7px;height:7px;border-radius:50%;background:#fff;animation:pulseDot 1.4s ease-in-out infinite"></div> LIVE
+            <sc-if value="{{ broadcastIsYoutube }}" hint-placeholder-val="{{ false }}">
+              <iframe src="{{ broadcastSrc }}" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen style="position:absolute;inset:0;width:100%;height:100%;border:0;z-index:1"></iframe>
+            </sc-if>
+            <sc-if value="{{ broadcastIsVideo }}" hint-placeholder-val="{{ true }}">
+              <video src="{{ broadcastSrc }}" autoplay="autoplay" muted="muted" loop="loop" playsinline="playsinline" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#000;z-index:1"></video>
+            </sc-if>
+            <sc-if value="{{ broadcastOffline }}" hint-placeholder-val="{{ false }}">
+              <div style="position:absolute;inset:0;background:radial-gradient(circle at 50% 42%,rgba(var(--accent-rgb),0.14),transparent 62%)"></div>
+              <div style="position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(255,255,255,0.02),rgba(255,255,255,0.02) 2px,transparent 2px,transparent 4px)"></div>
+              <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px">
+                <div style="font-size:12px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--dim);margin-bottom:10px">Broadcast offline</div>
+                <div style="font-size:20px;font-weight:800;color:#fff;margin-bottom:6px">Waiting for the auction house feed</div>
+                <div style="font-size:13px;color:#c9c4ba;max-width:340px">The stream appears here once an admin starts the {{ selectedAuction.house }} broadcast.</div>
               </div>
-              <div style="background:rgba(0,0,0,0.45);color:#fff;font-size:12px;font-weight:600;padding:5px 11px;border-radius:6px">{{ telecastViewers }} watching</div>
-            </div>
+            </sc-if>
 
-            <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px">
-              <div style="font-size:11px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:var(--accent);margin-bottom:12px">Now on the block</div>
-              <div style="font-size:25px;font-weight:800;color:#fff;margin-bottom:6px">Toyota Harrier Hybrid &mdash; 2019</div>
-              <div style="font-size:13px;color:#c9c4ba;margin-bottom:22px">Lot A-8842 &middot; Grade 4.5B &middot; 32,400 km</div>
-              <div style="font-size:44px;font-weight:800;color:#fff;font-variant-numeric:tabular-nums;line-height:1">¥{{ bidJPYFormatted }}</div>
-              <div style="font-size:14px;color:var(--accent);font-weight:700;margin-top:6px">৳{{ bidBDTFormatted }} equivalent</div>
-            </div>
-
-            <div style="position:absolute;bottom:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:14px 16px;background:linear-gradient(0deg,rgba(0,0,0,0.65),transparent);z-index:2">
-              <div style="font-size:12.5px;color:#e2e0d9">Hammer falls in <span style="font-weight:700;color:#fff">{{ timerFormatted }}</span></div>
-              <div style="display:flex;align-items:center;gap:8px">
-                <div style="font-size:11px;color:#c9c4ba">1080p</div>
-                <div style="width:30px;height:16px;border-radius:3px;background:rgba(255,255,255,0.22)"></div>
+            <sc-if value="{{ broadcastLive }}" hint-placeholder-val="{{ true }}">
+              <div style="position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:14px 16px;z-index:3;pointer-events:none">
+                <div style="display:flex;align-items:center;gap:8px;background:#c1442d;color:#fff;font-size:11px;font-weight:800;letter-spacing:0.04em;padding:5px 11px;border-radius:6px">
+                  <div style="width:7px;height:7px;border-radius:50%;background:#fff;animation:pulseDot 1.4s ease-in-out infinite"></div> LIVE
+                </div>
+                <div style="background:rgba(0,0,0,0.55);color:#fff;font-size:12px;font-weight:600;padding:5px 11px;border-radius:6px">{{ telecastViewers }} watching</div>
               </div>
-            </div>
+              <div style="position:absolute;bottom:0;left:0;right:0;padding:26px 16px 14px;background:linear-gradient(0deg,rgba(0,0,0,0.82),transparent);z-index:3;pointer-events:none">
+                <div style="font-size:10.5px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--accent);margin-bottom:4px">Now on the block</div>
+                <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:12px">
+                  <div>
+                    <div style="font-size:16px;font-weight:800;color:#fff">Toyota Harrier Hybrid &mdash; 2019 &middot; Lot A-8842</div>
+                    <div style="font-size:12px;color:#c9c4ba">Grade 4.5B &middot; 32,400 km &middot; Hammer in {{ timerFormatted }}</div>
+                  </div>
+                  <div style="text-align:right;flex-shrink:0">
+                    <div style="font-size:22px;font-weight:800;color:#fff;font-variant-numeric:tabular-nums;line-height:1">¥{{ bidJPYFormatted }}</div>
+                    <div style="font-size:12px;color:var(--accent);font-weight:700">৳{{ bidBDTFormatted }}</div>
+                  </div>
+                </div>
+              </div>
+            </sc-if>
           </div>
 
           <div style="display:flex;align-items:center;justify-content:space-between;border:1px solid var(--border);border-top:none;border-radius:0 0 16px 16px;padding:14px 18px;background:var(--card-bg)">
@@ -1287,6 +1320,8 @@ class Component extends DCLogic {
     authMode: 'login',
     userRole: null,
     orgChatInput: '',
+    broadcastUrl: 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4',
+    broadcastInput: '',
     bidJPY: 685000,
     timerSeconds: 272,
     activeBidders: 4,
@@ -1393,6 +1428,18 @@ class Component extends DCLogic {
   goAuctions = () => this.setState({ screen: 'auction-select' });
   goAuctionLots = () => this.setState({ screen: 'auction-lots' });
   goTelecast = () => this.setState({ screen: 'telecast' });
+  parseBroadcast(url) {
+    if (!url) return null;
+    const u = ('' + url).trim();
+    const yt = u.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|live\/|shorts\/)|youtu\.be\/)([\w-]{11})/);
+    if (yt) return { kind: 'youtube', src: 'https://www.youtube.com/embed/' + yt[1] + '?autoplay=1&mute=1&rel=0&playsinline=1' };
+    if (/youtube\.com|youtu\.be/.test(u)) return { kind: 'youtube', src: u };
+    return { kind: 'video', src: u };
+  }
+  setBroadcastInput = (e) => this.setState({ broadcastInput: e.target.value });
+  goLiveBroadcast = () => { const u = (this.state.broadcastInput || '').trim(); if (u) this.setState({ broadcastUrl: u, broadcastInput: '' }); };
+  uploadBroadcast = (e) => { const f = e.target.files && e.target.files[0]; if (f) this.setState({ broadcastUrl: URL.createObjectURL(f) }); };
+  stopBroadcast = () => this.setState({ broadcastUrl: '' });
   pickAuction(id) { this.setState({ screen: 'auction-lots', selectedAuctionId: id }); }
   toggleWishlist(id) { this.setState(s => ({ wishlist: s.wishlist.includes(id) ? s.wishlist.filter(x => x !== id) : s.wishlist.concat(id) })); }
   joinAuction = () => this.setState({ screen: 'bidding' });
@@ -1638,6 +1685,7 @@ class Component extends DCLogic {
 
     const tfBid = this.state.bidJPY;
     const telecastViewers = (1180 + this.state.activeBidders * 13).toLocaleString('en-US');
+    const bc = this.parseBroadcast(this.state.broadcastUrl);
     const telecastFeed = [
       { who: ORG_NAME + ' (you)', bid: '¥' + this.fmt(tfBid), me: true },
       { who: 'Bidder #44', bid: '¥' + this.fmt(tfBid - 10000), me: false },
@@ -1717,6 +1765,14 @@ class Component extends DCLogic {
       isAuctionSelect: mode === 'buyer' && screen === 'auction-select',
       isAuctionLots: mode === 'buyer' && screen === 'auction-lots',
       isTelecast: mode === 'buyer' && screen === 'telecast',
+      broadcastLive: !!bc, broadcastOffline: !bc,
+      broadcastIsYoutube: !!bc && bc.kind === 'youtube', broadcastIsVideo: !!bc && bc.kind === 'video',
+      broadcastSrc: bc ? bc.src : '',
+      broadcastInput: this.state.broadcastInput, setBroadcastInput: this.setBroadcastInput,
+      goLiveBroadcast: this.goLiveBroadcast, uploadBroadcast: this.uploadBroadcast, stopBroadcast: this.stopBroadcast,
+      broadcastStatusLabel: bc ? 'LIVE' : 'OFFLINE',
+      broadcastBadgeBg: bc ? 'rgba(193,68,45,0.14)' : 'var(--chip-bg)', broadcastBadgeColor: bc ? '#c1442d' : 'var(--dim)',
+      broadcastSourceLabel: bc ? (bc.kind === 'youtube' ? 'Live source: YouTube stream' : 'Live source: video file / URL') : 'No active broadcast',
       isBidding: mode === 'buyer' && screen === 'bidding',
       isEscrow: mode === 'buyer' && screen === 'escrow',
       isShipment: mode === 'buyer' && screen === 'shipment',
