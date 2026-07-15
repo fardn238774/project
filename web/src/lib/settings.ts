@@ -15,6 +15,15 @@ const DEFAULTS = {
   importEligibilityMaxAgeYears: 5,
   minBidIncrementJpy: 5000,
   exchangeRateTtlMinutes: 60,
+
+  // Commission rates behind the admin revenue breakdown. The FR names the four
+  // sources but sets no rates, so these are placeholders for the business to
+  // set — they are admin-editable and every revenue figure is derived from real
+  // transaction rows using them.
+  referralFeePerInquiryBdt: 2000,
+  listingFeeBdt: 500,
+  agentPlacementCutPercent: 10,
+  modSourcingMarginPercent: 8,
 } as const;
 
 export type SettingKey = keyof typeof DEFAULTS;

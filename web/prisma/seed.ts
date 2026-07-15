@@ -11,6 +11,7 @@ import {
   ListingStatus,
   AccidentStatus,
   PartCategory,
+  EngagementStatus,
 } from "../src/generated/prisma/client";
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
@@ -48,6 +49,14 @@ const SETTINGS: Record<string, string> = {
   importEligibilityMaxAgeYears: String(ELIGIBILITY_MAX_AGE),
   minBidIncrementJpy: "5000",
   exchangeRateTtlMinutes: "60",
+
+  // ASSUMPTION: the FR names four revenue sources but sets no rates. These are
+  // placeholders for the business to set — admin-editable, and every figure on
+  // the admin revenue panel is derived from real rows using them.
+  referralFeePerInquiryBdt: "2000",
+  listingFeeBdt: "500",
+  agentPlacementCutPercent: "10",
+  modSourcingMarginPercent: "8",
 };
 
 async function seedSettings() {
@@ -88,8 +97,6 @@ const ORGS = [
     feeValue: 3,
     successfulImports: 2100,
     avgTurnaroundDays: 33,
-    ratingAvg: 4.9,
-    ratingCount: 521,
     about:
       "Osaka Bridge Auto has run BD-facing auction sourcing since 2015, specializing in hybrid SUVs and sedans from Kansai-region auction houses. Their in-house translators produce a fully translated auction sheet before any bid is placed, and they carry the lowest dispute rate on the platform.",
   },
@@ -102,8 +109,6 @@ const ORGS = [
     feeValue: 3.5,
     successfulImports: 1240,
     avgTurnaroundDays: 38,
-    ratingAvg: 4.8,
-    ratingCount: 312,
     about:
       "Yokohama Direct Trading focuses on volume imports of compact and mid-size sedans, with direct relationships at three Kanto-area auction houses.",
   },
@@ -116,8 +121,6 @@ const ORGS = [
     feeValue: 45000,
     successfulImports: 860,
     avgTurnaroundDays: 45,
-    ratingAvg: 4.6,
-    ratingCount: 198,
     about:
       "TokyoLine Motors BD offers a flat-fee model, useful for buyers targeting higher-value lots where a percentage fee would run high.",
   },
@@ -130,8 +133,6 @@ const ORGS = [
     feeValue: 4,
     successfulImports: 310,
     avgTurnaroundDays: 52,
-    ratingAvg: 4.4,
-    ratingCount: 97,
     about:
       "A newer agent on the platform, Nagoya Fleet Partners is building track record with a focus on kei cars and small hatchbacks.",
   },
@@ -155,6 +156,8 @@ async function seedOrgs() {
 
 const BUYERS = [
   { email: "rafiul.buyer@autobd.test", fullName: "Rafiul Hasan", phone: "01711223344", city: "Dhaka" },
+  { email: "nusrat.buyer@autobd.test", fullName: "Nusrat Jahan", phone: "01711223355", city: "Chattogram" },
+  { email: "tanvir.buyer@autobd.test", fullName: "Tanvir Ahmed", phone: "01711223366", city: "Sylhet" },
   { email: "rahman.seller@autobd.test", fullName: "M. Rahman", phone: "01712000001", city: "Dhaka" },
   { email: "islam.seller@autobd.test", fullName: "S. Islam", phone: "01712000002", city: "Chattogram" },
   { email: "karim.seller@autobd.test", fullName: "A. Karim", phone: "01712000003", city: "Sylhet" },
@@ -295,19 +298,82 @@ async function seedUsedCars(sellers: { id: string; fullName: string }[]) {
         accidentStatus: AccidentStatus.NOT_CHECKED,
         status: ListingStatus.PENDING_VERIFICATION,
       },
+      // The three listings above come from the prototype and are all long past
+      // the import-eligibility window, so the BRTA paper-value tracker reads
+      // "aged out" on every one. These two are recent enough to exercise the
+      // healthy and near-the-limit states.
+      {
+        sellerId: byName("M. Rahman"),
+        title: `Toyota Corolla Cross ${eligibleYear(2)}`,
+        make: "Toyota",
+        model: "Corolla Cross",
+        manufactureYear: eligibleYear(2),
+        mileageKm: 18400,
+        location: "Dhaka",
+        priceBdt: 4650000,
+        conditionNotes:
+          "Company-maintained, still under manufacturer warranty. Full digital service record.",
+        inspectionNotes: "Dealer inspection completed at last service, report attached.",
+        ownershipVerified: true,
+        accidentStatus: AccidentStatus.NONE_FOUND,
+        status: ListingStatus.ACTIVE,
+      },
+      {
+        sellerId: byName("S. Islam"),
+        title: `Honda City ${eligibleYear(4)}`,
+        make: "Honda",
+        model: "City",
+        manufactureYear: eligibleYear(4),
+        mileageKm: 39500,
+        location: "Dhaka",
+        priceBdt: 2850000,
+        conditionNotes:
+          "Second owner, garage kept. Tyres replaced last year, no accident history on record.",
+        inspectionNotes: "Third-party inspection available on request.",
+        ownershipVerified: true,
+        accidentStatus: AccidentStatus.NONE_FOUND,
+        status: ListingStatus.ACTIVE,
+      },
     ],
   });
 }
 
 // -------------------------------------------------------------- auctions
 
+/**
+ * Scheduled sessions are pinned to realistic JST clock times on future days
+ * rather than "now + N hours" — otherwise every session lands at the same
+ * wall-clock time and the JST/BST columns all read identically.
+ */
 const AUCTIONS = [
-  { house: "USS Yokohama", location: "Yokohama, Kanagawa", inHours: 3 },
-  { house: "TAA Kanto", location: "Sagamihara, Kanagawa", inHours: 27 },
-  { house: "USS Nagoya", location: "Toyoake, Aichi", inHours: 75 },
-  { house: "Arai Bay Auction", location: "Kisarazu, Chiba", inHours: 99 },
-  { house: "JU Gifu", location: "Gifu", inHours: 123 },
+  { house: "USS Yokohama", location: "Yokohama, Kanagawa", inDays: 0, jstHour: 14, jstMinute: 0 },
+  { house: "TAA Kanto", location: "Sagamihara, Kanagawa", inDays: 1, jstHour: 10, jstMinute: 30 },
+  { house: "USS Nagoya", location: "Toyoake, Aichi", inDays: 2, jstHour: 9, jstMinute: 0 },
+  { house: "Arai Bay Auction", location: "Kisarazu, Chiba", inDays: 3, jstHour: 11, jstMinute: 0 },
+  { house: "JU Gifu", location: "Gifu", inDays: 4, jstHour: 13, jstMinute: 30 },
 ];
+
+/// JST is UTC+9 year-round (no DST), so a JST wall time maps to UTC by -9h.
+/// Date.UTC normalises the negative hour by rolling the date back.
+function jstDate(inDays: number, jstHour: number, jstMinute: number) {
+  const nowJst = new Date(Date.now() + 9 * 3600e3);
+  return new Date(
+    Date.UTC(
+      nowJst.getUTCFullYear(),
+      nowJst.getUTCMonth(),
+      nowJst.getUTCDate() + inDays,
+      jstHour - 9,
+      jstMinute,
+    ),
+  );
+}
+
+/**
+ * Real auction lots run 1–2 minutes. The seeded live lot gets a 30-minute
+ * window so the session is actually usable straight after seeding; an admin
+ * can start any lot from the admin dashboard with whatever duration they want.
+ */
+const LIVE_LOT_SECONDS = 1800;
 
 /// Model years are expressed as "age in years" so every lot stays inside the
 /// import-eligibility window no matter when the seed runs.
@@ -321,6 +387,17 @@ const LOTS = [
 ];
 
 async function seedAuctions(adminId: string) {
+  // Everything that references an AuctionCar has to go first.
+  await prisma.rating.deleteMany();
+  await prisma.dispute.deleteMany();
+  await prisma.containerBooking.deleteMany();
+  await prisma.shipmentEvent.deleteMany();
+  await prisma.shipment.deleteMany();
+  await prisma.escrow.deleteMany();
+  await prisma.payment.deleteMany();
+  await prisma.conversation.deleteMany();
+  await prisma.engagement.deleteMany();
+  await prisma.auctionCar.updateMany({ data: { winningBidId: null } });
   await prisma.bid.deleteMany();
   await prisma.wishlist.deleteMany();
   await prisma.auctionCar.deleteMany();
@@ -331,7 +408,8 @@ async function seedAuctions(adminId: string) {
   const first = AUCTIONS[0];
   const rest = AUCTIONS.slice(1);
 
-  // The nearest session is live and owns the seeded lots.
+  // The nearest session is live and owns the seeded lots. It started half an
+  // hour ago regardless of its nominal JST slot, so it is live on any seed run.
   const live = await prisma.auction.create({
     data: {
       house: first.house,
@@ -342,14 +420,15 @@ async function seedAuctions(adminId: string) {
       lots: {
         create: LOTS.map((l, i) => {
           const { agedBy, ...lot } = l;
+          const isOnBlock = i === 0;
           return {
             ...lot,
             manufactureYear: eligibleYear(agedBy),
-            durationSeconds: 300,
-            // First lot is on the block; the rest are queued.
-            status: i === 0 ? LotStatus.LIVE : LotStatus.PENDING,
-            startedAt: i === 0 ? new Date(now) : null,
-            endsAt: i === 0 ? new Date(now + 300 * 1000) : null,
+            durationSeconds: LIVE_LOT_SECONDS,
+            // First lot is on the block; the rest are queued for the admin.
+            status: isOnBlock ? LotStatus.LIVE : LotStatus.PENDING,
+            startedAt: isOnBlock ? new Date(now) : null,
+            endsAt: isOnBlock ? new Date(now + LIVE_LOT_SECONDS * 1000) : null,
           };
         }),
       },
@@ -361,7 +440,7 @@ async function seedAuctions(adminId: string) {
       data: {
         house: a.house,
         location: a.location,
-        startsAt: new Date(now + a.inHours * 3600 * 1000),
+        startsAt: jstDate(a.inDays, a.jstHour, a.jstMinute),
         status: AuctionStatus.SCHEDULED,
         createdByAdminId: adminId,
       },
@@ -504,6 +583,179 @@ async function seedResearch() {
   }
 }
 
+// -------------------------------------------------- completed import history
+
+/**
+ * A past auction whose lots actually sold, so agent ratings are real rows
+ * rather than a hardcoded average. Organization.ratingAvg/ratingCount are
+ * recomputed from these — see recomputeOrgRatings.
+ *
+ * Note: successfulImports and avgTurnaroundDays stay as declared org history
+ * (they predate the platform and are not derivable from our data), but the
+ * star rating a buyer sees is genuinely computed from the Rating table.
+ */
+const HISTORY = [
+  {
+    lot: { lotNumber: "H-7701", make: "Toyota", model: "Harrier Hybrid", agedBy: 5, mileageKm: 40100, engineCc: 1986, grade: "4.5B", hammerJpy: 705000 },
+    orgName: "Osaka Bridge Auto",
+    buyerName: "Rafiul Hasan",
+    rating: { communication: 5, gradingAccuracy: 5, timeliness: 4, overallValue: 5, comment: "Grading matched the car exactly when it arrived. No surprises." },
+  },
+  {
+    lot: { lotNumber: "H-7702", make: "Honda", model: "Vezel Hybrid Z", agedBy: 4, mileageKm: 51200, engineCc: 1496, grade: "4B", hammerJpy: 540000 },
+    orgName: "Osaka Bridge Auto",
+    buyerName: "M. Rahman",
+    rating: { communication: 5, gradingAccuracy: 4, timeliness: 5, overallValue: 5, comment: "Fast replies during the live bid — felt like they were right there with me." },
+  },
+  {
+    lot: { lotNumber: "H-7703", make: "Mazda", model: "CX-5 XD", agedBy: 5, mileageKm: 66800, engineCc: 2188, grade: "4B", hammerJpy: 655000 },
+    orgName: "Yokohama Direct Trading",
+    buyerName: "S. Islam",
+    rating: { communication: 4, gradingAccuracy: 4, timeliness: 4, overallValue: 4, comment: "Good value agent, communicative throughout." },
+  },
+  {
+    lot: { lotNumber: "H-7704", make: "Toyota", model: "Premio 1.5F", agedBy: 4, mileageKm: 44300, engineCc: 1496, grade: "4.5B", hammerJpy: 498000 },
+    orgName: "TokyoLine Motors BD",
+    buyerName: "A. Karim",
+    rating: { communication: 4, gradingAccuracy: 5, timeliness: 3, overallValue: 4, comment: "Flat fee saved me money on a higher-bid lot." },
+  },
+  {
+    lot: { lotNumber: "H-7705", make: "Nissan", model: "X-Trail 20X", agedBy: 5, mileageKm: 62400, engineCc: 1997, grade: "4B", hammerJpy: 505000 },
+    orgName: "Nagoya Fleet Partners",
+    buyerName: "Rafiul Hasan",
+    rating: { communication: 5, gradingAccuracy: 4, timeliness: 4, overallValue: 4, comment: "Smaller agent, but very responsive for a first-timer like me." },
+  },
+];
+
+async function seedHistory(
+  adminId: string,
+  orgs: { id: string; companyName: string }[],
+  buyers: { id: string; fullName: string }[],
+) {
+  const orgByName = (n: string) => orgs.find((o) => o.companyName === n)!.id;
+  const buyerByName = (n: string) => buyers.find((b) => b.fullName === n)!.id;
+
+  const now = Date.now();
+  const past = await prisma.auction.create({
+    data: {
+      house: "USS Yokohama",
+      location: "Yokohama, Kanagawa",
+      startsAt: new Date(now - 45 * 864e5),
+      status: AuctionStatus.ENDED,
+      createdByAdminId: adminId,
+    },
+  });
+
+  for (const h of HISTORY) {
+    const { agedBy, hammerJpy, ...lot } = h.lot;
+    const buyerId = buyerByName(h.buyerName);
+
+    const car = await prisma.auctionCar.create({
+      data: {
+        ...lot,
+        auctionId: past.id,
+        manufactureYear: eligibleYear(agedBy),
+        startingPriceJpy: hammerJpy - 60000,
+        reservePriceJpy: hammerJpy - 20000,
+        durationSeconds: 300,
+        startedAt: new Date(now - 45 * 864e5),
+        endsAt: new Date(now - 45 * 864e5 + 300_000),
+        status: LotStatus.SOLD,
+      },
+    });
+
+    // A real winning Bid row, so the lot's price came from a bid like any other.
+    const bid = await prisma.bid.create({
+      data: { auctionCarId: car.id, bidderId: buyerId, amountJpy: hammerJpy },
+    });
+    await prisma.auctionCar.update({
+      where: { id: car.id },
+      data: { winningBidId: bid.id },
+    });
+
+    // The engagement is what records "this org bid on this lot for this buyer";
+    // the admin revenue panel derives agent commission from it.
+    await prisma.engagement.create({
+      data: {
+        buyerId,
+        organizationId: orgByName(h.orgName),
+        auctionCarId: car.id,
+        targetCar: `${lot.make} ${lot.model}`,
+        budgetCeilingBdt: Math.round(hammerJpy * 0.76 * 1.9),
+        status: EngagementStatus.COMPLETED,
+      },
+    });
+
+    await prisma.rating.create({
+      data: {
+        ...h.rating,
+        buyerId,
+        organizationId: orgByName(h.orgName),
+        auctionCarId: car.id,
+        createdAt: new Date(now - (30 - HISTORY.indexOf(h)) * 864e5),
+      },
+    });
+  }
+  return past;
+}
+
+/**
+ * Current engagements — the organization dashboard's "who is hiring you" list.
+ * Mirrors the prototype's ORG_HIRES, but as real rows against real lots.
+ */
+const HIRES = [
+  { buyerName: "Rafiul Hasan", orgName: "Osaka Bridge Auto", lotNumber: "A-8842", targetCar: "Toyota Harrier Hybrid · 2018–2020", budgetCeilingBdt: 5500000, status: EngagementStatus.REQUESTED },
+  { buyerName: "Nusrat Jahan", orgName: "Osaka Bridge Auto", lotNumber: "A-8851", targetCar: "Honda Vezel · 2019+, ≤ 40k km", budgetCeilingBdt: 4500000, status: EngagementStatus.ACTIVE },
+  { buyerName: "Tanvir Ahmed", orgName: "Osaka Bridge Auto", lotNumber: "A-8863", targetCar: "Mazda CX-5 diesel · grade 4+", budgetCeilingBdt: 6000000, status: EngagementStatus.REQUESTED },
+  { buyerName: "Rafiul Hasan", orgName: "Yokohama Direct Trading", lotNumber: "A-8894", targetCar: "Toyota Premio · low mileage", budgetCeilingBdt: 3800000, status: EngagementStatus.ACTIVE },
+];
+
+async function seedEngagements(
+  orgs: { id: string; companyName: string }[],
+  buyers: { id: string; fullName: string }[],
+) {
+  const orgByName = (n: string) => orgs.find((o) => o.companyName === n)!.id;
+  const buyerByName = (n: string) => buyers.find((b) => b.fullName === n)!.id;
+
+  for (const h of HIRES) {
+    const lot = await prisma.auctionCar.findFirst({
+      where: { lotNumber: h.lotNumber, status: { in: [LotStatus.PENDING, LotStatus.LIVE] } },
+    });
+    if (!lot) continue;
+
+    await prisma.engagement.create({
+      data: {
+        buyerId: buyerByName(h.buyerName),
+        organizationId: orgByName(h.orgName),
+        auctionCarId: lot.id,
+        targetCar: h.targetCar,
+        budgetCeilingBdt: h.budgetCeilingBdt,
+        status: h.status,
+      },
+    });
+  }
+}
+
+/** ratingAvg/ratingCount are denormalised aggregates — derive, never invent. */
+async function recomputeOrgRatings() {
+  const grouped = await prisma.rating.groupBy({
+    by: ["organizationId"],
+    _avg: { overallValue: true },
+    _count: { _all: true },
+  });
+
+  for (const org of await prisma.organization.findMany({ select: { id: true } })) {
+    const row = grouped.find((g) => g.organizationId === org.id);
+    await prisma.organization.update({
+      where: { id: org.id },
+      data: {
+        ratingAvg: row?._avg.overallValue ?? null,
+        ratingCount: row?._count._all ?? 0,
+      },
+    });
+  }
+}
+
 // ------------------------------------------------------------ containers
 
 async function seedContainers() {
@@ -528,18 +780,24 @@ async function main() {
   await seedNewCars();
   await seedUsedCars(buyers);
   const liveAuction = await seedAuctions(admin.id);
+  await seedHistory(admin.id, orgs, buyers);
+  await seedEngagements(orgs, buyers);
+  await recomputeOrgRatings();
   await seedModification();
   await seedResearch();
   await seedContainers();
 
   const lots = await prisma.auctionCar.count();
+  const ratings = await prisma.rating.count();
+  const listings = await prisma.usedCarListing.count();
   console.log(
     [
       `settings: ${Object.keys(SETTINGS).length}, duty bands: ${DUTY_BANDS.length}`,
       `admin: ${ADMIN_EMAIL}`,
       `orgs: ${orgs.length} (approved), buyers: ${buyers.length}`,
-      `new cars: ${NEW_CARS.length}, used listings: 3, research models: ${RESEARCH.length}`,
-      `auctions: ${AUCTIONS.length} (live: ${liveAuction.house}), lots: ${lots} (years ${eligibleYear(5)}-${eligibleYear(3)}, all import-eligible)`,
+      `new cars: ${NEW_CARS.length}, used listings: ${listings}, research models: ${RESEARCH.length}`,
+      `auctions: ${AUCTIONS.length} live/scheduled (current: ${liveAuction.house}) + 1 ended, lots: ${lots}`,
+      `import history: ${HISTORY.length} sold lots, ${ratings} ratings (org star ratings derived from these)`,
     ].join("\n"),
   );
 }

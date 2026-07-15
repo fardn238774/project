@@ -50,3 +50,10 @@ export function jpy(v: Numeric): string {
 export function km(v: Numeric): string {
   return enUS.format(Math.round(num(v)));
 }
+
+/**
+ * FX rate to 4 dp, e.g. "0.7605". Lives here rather than in fx.ts so the
+ * bidding screen's client components can format the live rate without pulling
+ * fx.ts's prisma import into the browser bundle.
+ */
+export const formatRate = (rate: number) => rate.toFixed(4);

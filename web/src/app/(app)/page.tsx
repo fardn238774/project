@@ -1,5 +1,8 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { auth } from "@/auth";
 import { logout } from "@/lib/auth-actions";
+import { Role } from "@/generated/prisma/enums";
 
 const PILLARS = [
   {
@@ -32,7 +35,11 @@ const PILLARS = [
   },
 ];
 
-export default function HomePage() {
+export default async function HomePage() {
+  // The pillars are a buyer's shopping surface; agents work from their console.
+  const session = await auth();
+  if (session?.user?.role === Role.ORGANIZATION) redirect("/org");
+
   return (
     <main className="mx-auto w-full max-w-[1180px] px-10 pb-20 pt-16">
       <div className="mb-9 max-w-[680px]">
