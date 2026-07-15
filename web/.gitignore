@@ -42,3 +42,7 @@ yarn-error.log*
 next-env.d.ts
 
 /src/generated/prisma
+
+# Copied from the repo root by scripts/copy-configurator.mjs at dev/build time.
+# ~44MB — one source of truth at the root, no duplicate blob in git.
+/public/kaido-multicar-garage.html

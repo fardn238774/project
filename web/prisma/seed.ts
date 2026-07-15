@@ -378,12 +378,12 @@ const LIVE_LOT_SECONDS = 1800;
 /// Model years are expressed as "age in years" so every lot stays inside the
 /// import-eligibility window no matter when the seed runs.
 const LOTS = [
-  { lotNumber: "A-8842", make: "Toyota", model: "Harrier Hybrid", agedBy: 4, mileageKm: 32400, engineCc: 1986, grade: "4.5B", startingPriceJpy: 620000, reservePriceJpy: 680000 },
-  { lotNumber: "A-8851", make: "Honda", model: "Vezel Hybrid Z", agedBy: 4, mileageKm: 48900, engineCc: 1496, grade: "4B", startingPriceJpy: 460000, reservePriceJpy: 510000 },
-  { lotNumber: "A-8863", make: "Mazda", model: "CX-5 XD", agedBy: 5, mileageKm: 61200, engineCc: 2188, grade: "4B", startingPriceJpy: 560000, reservePriceJpy: 620000 },
-  { lotNumber: "A-8870", make: "Toyota", model: "Corolla Axio", agedBy: 3, mileageKm: 75500, engineCc: 1496, grade: "3.5C", startingPriceJpy: 300000, reservePriceJpy: 330000 },
-  { lotNumber: "A-8881", make: "Nissan", model: "X-Trail 20X", agedBy: 5, mileageKm: 58100, engineCc: 1997, grade: "4B", startingPriceJpy: 430000, reservePriceJpy: 480000 },
-  { lotNumber: "A-8894", make: "Toyota", model: "Premio 1.5F", agedBy: 4, mileageKm: 41700, engineCc: 1496, grade: "4.5B", startingPriceJpy: 420000, reservePriceJpy: 470000 },
+  { lotNumber: "A-8842", make: "Toyota", model: "Harrier Hybrid", chassisCode: "AVU65", agedBy: 4, mileageKm: 32400, engineCc: 1986, grade: "4.5B", startingPriceJpy: 620000, reservePriceJpy: 680000 },
+  { lotNumber: "A-8851", make: "Honda", model: "Vezel Hybrid Z", chassisCode: "RU3", agedBy: 4, mileageKm: 48900, engineCc: 1496, grade: "4B", startingPriceJpy: 460000, reservePriceJpy: 510000 },
+  { lotNumber: "A-8863", make: "Mazda", model: "CX-5 XD", chassisCode: "KF2P", agedBy: 5, mileageKm: 61200, engineCc: 2188, grade: "4B", startingPriceJpy: 560000, reservePriceJpy: 620000 },
+  { lotNumber: "A-8870", make: "Toyota", model: "Corolla Axio", chassisCode: "NZE161", agedBy: 3, mileageKm: 75500, engineCc: 1496, grade: "3.5C", startingPriceJpy: 300000, reservePriceJpy: 330000 },
+  { lotNumber: "A-8881", make: "Nissan", model: "X-Trail 20X", chassisCode: "T32", agedBy: 5, mileageKm: 58100, engineCc: 1997, grade: "4B", startingPriceJpy: 430000, reservePriceJpy: 480000 },
+  { lotNumber: "A-8894", make: "Toyota", model: "Premio 1.5F", chassisCode: "NZT260", agedBy: 4, mileageKm: 41700, engineCc: 1496, grade: "4.5B", startingPriceJpy: 420000, reservePriceJpy: 470000 },
 ];
 
 async function seedAuctions(adminId: string) {
@@ -459,12 +459,25 @@ async function seedModification() {
   await prisma.spoiler.deleteMany();
   await prisma.configCar.deleteMany();
 
+  // The FR names wheels (Rays, BBS, Work, Enkei), body kits (Rocket Bunny,
+  // Modellista, Kuhl Racing), interior and lighting. Bolt patterns are the real
+  // ones for each chassis, so the fitment checker rejects genuinely wrong parts:
+  //   AVU65 Harrier 5x114.3 · RU3 Vezel 5x114.3 · KF2P CX-5 5x114.3
+  //   T32 X-Trail 5x114.3 · NZE161 Axio 4x100 · NZT260 Premio 5x100
   const parts = [
-    { name: 'Rays TE37 18"', brand: "Rays", category: PartCategory.WHEELS, priceBdt: 185000, boltPattern: "5x114.3", offsetMm: 40, fits: ["AVU65", "RU3"] },
-    { name: "Rocket Bunny Body Kit", brand: "Rocket Bunny", category: PartCategory.BODY_KIT, priceBdt: 320000, fits: ["AVU65"] },
-    { name: "LED Headlight Kit", brand: "Generic", category: PartCategory.LIGHTING, priceBdt: 45000, fits: ["AVU65", "RU3", "KF2P"] },
-    { name: 'BBS LM 19"', brand: "BBS", category: PartCategory.WHEELS, priceBdt: 240000, boltPattern: "5x120", offsetMm: 35, fits: ["KF2P"] },
-    { name: "Kuhl Racing Kit", brand: "Kuhl Racing", category: PartCategory.BODY_KIT, priceBdt: 410000, fits: ["KF2P"] },
+    { name: 'Rays TE37 Saga 18"', brand: "Rays", category: PartCategory.WHEELS, priceBdt: 185000, boltPattern: "5x114.3", offsetMm: 40, fits: ["AVU65", "RU3", "KF2P", "T32"] },
+    { name: 'BBS LM 19"', brand: "BBS", category: PartCategory.WHEELS, priceBdt: 240000, boltPattern: "5x114.3", offsetMm: 35, fits: ["AVU65", "KF2P", "T32"] },
+    { name: 'Work Emotion CR Kiwami 17"', brand: "Work", category: PartCategory.WHEELS, priceBdt: 152000, boltPattern: "5x100", offsetMm: 45, fits: ["NZT260"] },
+    { name: 'Enkei RPF1 17"', brand: "Enkei", category: PartCategory.WHEELS, priceBdt: 98000, boltPattern: "4x100", offsetMm: 43, fits: ["NZE161"] },
+    { name: "Rocket Bunny Wide Body Kit", brand: "Rocket Bunny", category: PartCategory.BODY_KIT, priceBdt: 320000, fits: ["AVU65"] },
+    { name: "Modellista Aero Kit", brand: "Modellista", category: PartCategory.BODY_KIT, priceBdt: 210000, fits: ["AVU65", "NZT260", "NZE161"] },
+    { name: "Kuhl Racing Full Kit", brand: "Kuhl Racing", category: PartCategory.BODY_KIT, priceBdt: 410000, fits: ["KF2P"] },
+    { name: "LED Headlight Conversion", brand: "Koito", category: PartCategory.LIGHTING, priceBdt: 45000, fits: ["AVU65", "RU3", "KF2P", "T32", "NZE161", "NZT260"] },
+    { name: "Sequential LED Tail Lamps", brand: "Valenti", category: PartCategory.LIGHTING, priceBdt: 62000, fits: ["AVU65", "RU3", "NZT260"] },
+    { name: "Alcantara Steering Wheel", brand: "Damd", category: PartCategory.INTERIOR, priceBdt: 38000, fits: ["AVU65", "RU3", "KF2P", "T32"] },
+    { name: "Ambient Interior Lighting Kit", brand: "Garson", category: PartCategory.INTERIOR, priceBdt: 21000, fits: ["AVU65", "RU3", "KF2P", "T32", "NZE161", "NZT260"] },
+    // BRTA-illegal: surfaced but flagged, per the FR's "BRTA-legal" catalog framing.
+    { name: "HID Underglow Kit", brand: "Generic", category: PartCategory.LIGHTING, priceBdt: 18000, brtaLegal: false, fits: ["AVU65", "RU3", "KF2P", "T32", "NZE161", "NZT260"] },
   ];
   for (const p of parts) {
     const { fits, ...part } = p;
@@ -596,31 +609,31 @@ async function seedResearch() {
  */
 const HISTORY = [
   {
-    lot: { lotNumber: "H-7701", make: "Toyota", model: "Harrier Hybrid", agedBy: 5, mileageKm: 40100, engineCc: 1986, grade: "4.5B", hammerJpy: 705000 },
+    lot: { lotNumber: "H-7701", make: "Toyota", model: "Harrier Hybrid", chassisCode: "AVU65", agedBy: 5, mileageKm: 40100, engineCc: 1986, grade: "4.5B", hammerJpy: 705000 },
     orgName: "Osaka Bridge Auto",
     buyerName: "Rafiul Hasan",
     rating: { communication: 5, gradingAccuracy: 5, timeliness: 4, overallValue: 5, comment: "Grading matched the car exactly when it arrived. No surprises." },
   },
   {
-    lot: { lotNumber: "H-7702", make: "Honda", model: "Vezel Hybrid Z", agedBy: 4, mileageKm: 51200, engineCc: 1496, grade: "4B", hammerJpy: 540000 },
+    lot: { lotNumber: "H-7702", make: "Honda", model: "Vezel Hybrid Z", chassisCode: "RU3", agedBy: 4, mileageKm: 51200, engineCc: 1496, grade: "4B", hammerJpy: 540000 },
     orgName: "Osaka Bridge Auto",
     buyerName: "M. Rahman",
     rating: { communication: 5, gradingAccuracy: 4, timeliness: 5, overallValue: 5, comment: "Fast replies during the live bid — felt like they were right there with me." },
   },
   {
-    lot: { lotNumber: "H-7703", make: "Mazda", model: "CX-5 XD", agedBy: 5, mileageKm: 66800, engineCc: 2188, grade: "4B", hammerJpy: 655000 },
+    lot: { lotNumber: "H-7703", make: "Mazda", model: "CX-5 XD", chassisCode: "KF2P", agedBy: 5, mileageKm: 66800, engineCc: 2188, grade: "4B", hammerJpy: 655000 },
     orgName: "Yokohama Direct Trading",
     buyerName: "S. Islam",
     rating: { communication: 4, gradingAccuracy: 4, timeliness: 4, overallValue: 4, comment: "Good value agent, communicative throughout." },
   },
   {
-    lot: { lotNumber: "H-7704", make: "Toyota", model: "Premio 1.5F", agedBy: 4, mileageKm: 44300, engineCc: 1496, grade: "4.5B", hammerJpy: 498000 },
+    lot: { lotNumber: "H-7704", make: "Toyota", model: "Premio 1.5F", chassisCode: "NZT260", agedBy: 4, mileageKm: 44300, engineCc: 1496, grade: "4.5B", hammerJpy: 498000 },
     orgName: "TokyoLine Motors BD",
     buyerName: "A. Karim",
     rating: { communication: 4, gradingAccuracy: 5, timeliness: 3, overallValue: 4, comment: "Flat fee saved me money on a higher-bid lot." },
   },
   {
-    lot: { lotNumber: "H-7705", make: "Nissan", model: "X-Trail 20X", agedBy: 5, mileageKm: 62400, engineCc: 1997, grade: "4B", hammerJpy: 505000 },
+    lot: { lotNumber: "H-7705", make: "Nissan", model: "X-Trail 20X", chassisCode: "T32", agedBy: 5, mileageKm: 62400, engineCc: 1997, grade: "4B", hammerJpy: 505000 },
     orgName: "Nagoya Fleet Partners",
     buyerName: "Rafiul Hasan",
     rating: { communication: 5, gradingAccuracy: 4, timeliness: 4, overallValue: 4, comment: "Smaller agent, but very responsive for a first-timer like me." },

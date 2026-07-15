@@ -270,6 +270,10 @@ model AuctionCar {
   mileageKm       Int
   engineCc        Int
   grade           String
+  /// JDM chassis code (e.g. AVU65). The FR's fitment checker matches parts by
+  /// chassis code, so a car a buyer won can only filter the catalog if we
+  /// carry it. Nullable: older lots may predate the field.
+  chassisCode     String?
 
   startingPriceJpy Decimal   @db.Decimal(14, 2)
   reservePriceJpy  Decimal?  @db.Decimal(14, 2)

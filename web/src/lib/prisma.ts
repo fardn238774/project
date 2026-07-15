@@ -1,3 +1,9 @@
+// Poisons the client bundle: any client component that reaches this module,
+// however indirectly, now fails the build with an error naming the file rather
+// than a runtime "can't resolve 'dns'" that names neither. Keep pure helpers
+// (format, parts, landed-cost) in modules that don't import prisma.
+import "server-only";
+
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@/generated/prisma/client";
 
