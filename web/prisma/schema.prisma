@@ -1,7 +1,14 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
+// AutoBD — schema
+//
+// NOTE ON THE AUCTION MODEL: auctions here are PLATFORM-HOSTED. This simulates
+// the agent-mediated real-auction-house process described in the FR doc;
+// integrating with actual Japanese auction house APIs (USS/TAA) is not
+// accessible for this project. Bids are placed by buyers in this database and
+// price moves only via real bids — there is deliberately no way for an admin or
+// organization to raise a price (that would be shill bidding).
+//
+// NOTE ON DUTY: the CC-band duty table is a documented simplification. Actual
+// NBR rates vary by vehicle type and change with annual budget notifications.
 
 generator client {
   provider = "prisma-client"
@@ -10,4 +17,677 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+}
+
+// ---------------------------------------------------------------- identity
+
+enum Role {
+  BUYER
+  ORGANIZATION
+  ADMIN
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  role         Role
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  buyer        Buyer?
+  organization Organization?
+  admin        Admin?
+  messages     Message[]
+}
+
+model Buyer {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fullName  String
+  phone     String
+  city      String?
+  createdAt DateTime @default(now())
+
+  bids          Bid[]
+  wishlist      Wishlist[]
+  engagements   Engagement[]
+  conversations Conversation[]
+  payments      Payment[]
+  shipments     Shipment[]
+  bookings      ContainerBooking[]
+  listings      UsedCarListing[]
+  offers        Offer[]
+  inquiries     DealerInquiry[]
+  savedBuilds   SavedBuild[]
+  ratings       Rating[]
+  disputes      Dispute[]
+}
+
+enum OrgStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  SUSPENDED
+}
+
+enum FeeType {
+  PERCENT
+  FLAT
+}
+
+model Organization {
+  id               String    @id @default(cuid())
+  userId           String    @unique
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  companyName      String
+  licenseNumber    String    @unique
+  yearsInOperation Int
+  about            String?
+
+  // Fee structure is per-organization and drives the landed-cost agent fee.
+  // PERCENT -> feeValue is a percentage of the bid (e.g. 3.0)
+  // FLAT    -> feeValue is a fixed BDT amount (e.g. 45000)
+  feeType  FeeType
+  feeValue Decimal @db.Decimal(12, 2)
+
+  status          OrgStatus @default(PENDING)
+  reviewedAt      DateTime?
+  reviewedById    String?
+  reviewedBy      Admin?    @relation(fields: [reviewedById], references: [id])
+  rejectionReason String?
+  createdAt       DateTime  @default(now())
+
+  engagements   Engagement[]
+  conversations Conversation[]
+  ratings       Rating[]
+  disputes      Dispute[]
+}
+
+model Admin {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fullName  String
+  createdAt DateTime @default(now())
+
+  reviewedOrgs      Organization[]
+  createdAuctions   Auction[]
+  updatedBroadcasts Broadcast[]
+  reviewedDisputes  Dispute[]
+}
+
+// ------------------------------------------------- pillar 1: brand new cars
+
+model NewCar {
+  id            String   @id @default(cuid())
+  brand         String
+  model         String
+  priceMinBdt   Decimal  @db.Decimal(14, 2)
+  priceMaxBdt   Decimal  @db.Decimal(14, 2)
+  warrantyYears Int
+  warrantyKm    Int
+  createdAt     DateTime @default(now())
+
+  variants NewCarVariant[]
+}
+
+model NewCarVariant {
+  id            String  @id @default(cuid())
+  newCarId      String
+  newCar        NewCar  @relation(fields: [newCarId], references: [id], onDelete: Cascade)
+  name          String
+  priceBdt      Decimal @db.Decimal(14, 2)
+  engine        String
+  transmission  String
+  economyKmPerL Decimal @db.Decimal(5, 2)
+
+  inquiries DealerInquiry[]
+  payments  Payment[]
+}
+
+enum InquiryStatus {
+  SUBMITTED
+  CONTACTED
+  CLOSED
+}
+
+model DealerInquiry {
+  id        String        @id @default(cuid())
+  buyerId   String
+  buyer     Buyer         @relation(fields: [buyerId], references: [id], onDelete: Cascade)
+  variantId String
+  variant   NewCarVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  status    InquiryStatus @default(SUBMITTED)
+  createdAt DateTime      @default(now())
+}
+
+// ---------------------------------------------------- pillar 2: used car p2p
+
+enum ListingStatus {
+  PENDING_VERIFICATION
+  ACTIVE
+  OFFER_RECEIVED
+  SOLD
+}
+
+enum AccidentStatus {
+  NONE_FOUND
+  ONE_INCIDENT
+  NOT_CHECKED
+}
+
+model UsedCarListing {
+  id                String         @id @default(cuid())
+  sellerId          String
+  seller            Buyer          @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  title             String
+  make              String
+  model             String
+  manufactureYear   Int
+  mileageKm         Int
+  location          String
+  priceBdt          Decimal        @db.Decimal(14, 2)
+  conditionNotes    String
+  inspectionNotes   String?
+  ownershipVerified Boolean        @default(false)
+  accidentStatus    AccidentStatus @default(NOT_CHECKED)
+  status            ListingStatus  @default(PENDING_VERIFICATION)
+  createdAt         DateTime       @default(now())
+
+  offers   Offer[]
+  payments Payment[]
+}
+
+enum OfferStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+model Offer {
+  id        String         @id @default(cuid())
+  listingId String
+  listing   UsedCarListing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  buyerId   String
+  buyer     Buyer          @relation(fields: [buyerId], references: [id], onDelete: Cascade)
+  amountBdt Decimal        @db.Decimal(14, 2)
+  status    OfferStatus    @default(PENDING)
+  createdAt DateTime       @default(now())
+}
+
+// ------------------------------------- pillar 3: reconditioned import auctions
+
+enum AuctionStatus {
+  SCHEDULED
+  LIVE
+  ENDED
+}
+
+/// An auction session (e.g. "USS Yokohama, today 14:00 JST"). Only an Admin
+/// creates these; organizations act as bidding agents, not suppliers.
+model Auction {
+  id               String        @id @default(cuid())
+  house            String
+  location         String
+  startsAt         DateTime
+  status           AuctionStatus @default(SCHEDULED)
+  createdByAdminId String
+  createdBy        Admin         @relation(fields: [createdByAdminId], references: [id])
+  createdAt        DateTime      @default(now())
+
+  lots      AuctionCar[]
+  broadcast Broadcast?
+}
+
+enum LotStatus {
+  PENDING
+  LIVE
+  SOLD
+  NO_SALE
+}
+
+/// A single car (lot) inside an auction. Bidding, the countdown and the
+/// landed-cost calculation all hang off this. `manufactureYear` is gated at
+/// creation time: a car older than 5 years cannot be listed (import eligibility).
+model AuctionCar {
+  id              String  @id @default(cuid())
+  auctionId       String
+  auction         Auction @relation(fields: [auctionId], references: [id], onDelete: Cascade)
+  lotNumber       String
+  make            String
+  model           String
+  manufactureYear Int
+  mileageKm       Int
+  engineCc        Int
+  grade           String
+
+  startingPriceJpy Decimal   @db.Decimal(14, 2)
+  reservePriceJpy  Decimal?  @db.Decimal(14, 2)
+  durationSeconds  Int
+  startedAt        DateTime?
+  endsAt           DateTime?
+  status           LotStatus @default(PENDING)
+
+  /// Incremented each time an anti-snipe extension fires. No hard cap, but
+  /// application logs a warning past 20 in case it signals a bug.
+  extensionCount Int @default(0)
+
+  winningBidId String? @unique
+  winningBid   Bid?    @relation("WinningBid", fields: [winningBidId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  bids          Bid[]          @relation("LotBids")
+  wishlist      Wishlist[]
+  engagements   Engagement[]
+  conversations Conversation[]
+  payments      Payment[]
+  shipment      Shipment?
+  ratings       Rating[]
+  disputes      Dispute[]
+
+  @@index([auctionId, status])
+}
+
+/// Full audit trail — every bid ever placed, not just the current highest.
+/// Price only ever moves through rows in this table.
+model Bid {
+  id           String     @id @default(cuid())
+  auctionCarId String
+  auctionCar   AuctionCar @relation("LotBids", fields: [auctionCarId], references: [id], onDelete: Cascade)
+  bidderId     String
+  bidder       Buyer      @relation(fields: [bidderId], references: [id], onDelete: Cascade)
+  amountJpy    Decimal    @db.Decimal(14, 2)
+  createdAt    DateTime   @default(now())
+
+  wonLot AuctionCar? @relation("WinningBid")
+
+  @@index([auctionCarId, amountJpy(sort: Desc)])
+  @@index([auctionCarId, bidderId])
+}
+
+model Wishlist {
+  id           String     @id @default(cuid())
+  buyerId      String
+  buyer        Buyer      @relation(fields: [buyerId], references: [id], onDelete: Cascade)
+  auctionCarId String
+  auctionCar   AuctionCar @relation(fields: [auctionCarId], references: [id], onDelete: Cascade)
+  createdAt    DateTime   @default(now())
+
+  @@unique([buyerId, auctionCarId])
+}
+
+enum EngagementStatus {
+  REQUESTED
+  ACTIVE
+  COMPLETED
+  DECLINED
+}
+
+/// Which buyers an organization is currently representing / bidding for.
+/// Powers the organization dashboard's "who's hiring you" list.
+model Engagement {
+  id               String           @id @default(cuid())
+  buyerId          String
+  buyer            Buyer            @relation(fields: [buyerId], references: [id], onDelete: Cascade)
+  organizationId   String
+  organization     Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  auctionCarId     String?
+  auctionCar       AuctionCar?      @relation(fields: [auctionCarId], references: [id])
+  targetCar        String
+  budgetCeilingBdt Decimal?         @db.Decimal(14, 2)
+  status           EngagementStatus @default(REQUESTED)
+  createdAt        DateTime         @default(now())
+
+  @@unique([buyerId, organizationId, auctionCarId])
+}
+
+// ------------------------------------------------------------------ chat
+
+/// One conversation per (lot, buyer, organization).
+model Conversation {
+  id             String       @id @default(cuid())
+  auctionCarId   String
+  auctionCar     AuctionCar   @relation(fields: [auctionCarId], references: [id], onDelete: Cascade)
+  buyerId        String
+  buyer          Buyer        @relation(fields: [buyerId], references: [id], onDelete: Cascade)
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdAt      DateTime     @default(now())
+
+  messages Message[]
+
+  @@unique([auctionCarId, buyerId, organizationId])
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderUserId   String
+  sender         User         @relation(fields: [senderUserId], references: [id])
+  body           String
+  createdAt      DateTime     @default(now())
+
+  @@index([conversationId, createdAt])
+}
+
+// ------------------------------------------- pillar 4: modification studio
+
+enum PartCategory {
+  WHEELS
+  BODY_KIT
+  INTERIOR
+  LIGHTING
+}
+
+/// FR's catalog + fitment checker.
+model Part {
+  id          String       @id @default(cuid())
+  name        String
+  brand       String
+  category    PartCategory
+  priceBdt    Decimal      @db.Decimal(14, 2)
+  brtaLegal   Boolean      @default(true)
+  boltPattern String?
+  offsetMm    Int?
+  createdAt   DateTime     @default(now())
+
+  fitments PartFitment[]
+}
+
+/// A part fits a chassis code (e.g. "AVU65"). Drives the fitment checker.
+model PartFitment {
+  id          String @id @default(cuid())
+  partId      String
+  part        Part   @relation(fields: [partId], references: [id], onDelete: Cascade)
+  chassisCode String
+
+  @@unique([partId, chassisCode])
+}
+
+/// Cars available in the kaido 3D configurator layer.
+model ConfigCar {
+  id          String  @id @default(cuid())
+  slug        String  @unique
+  name        String
+  tagline     String?
+  chassisCode String?
+
+  rims        Rim[]
+  spoilers    Spoiler[]
+  savedBuilds SavedBuild[]
+}
+
+model Rim {
+  id          String     @id @default(cuid())
+  name        String
+  priceBdt    Decimal    @db.Decimal(14, 2)
+  configCarId String?
+  configCar   ConfigCar? @relation(fields: [configCarId], references: [id])
+
+  savedBuilds SavedBuild[]
+}
+
+model Spoiler {
+  id          String     @id @default(cuid())
+  name        String
+  priceBdt    Decimal    @db.Decimal(14, 2)
+  configCarId String?
+  configCar   ConfigCar? @relation(fields: [configCarId], references: [id])
+
+  savedBuilds SavedBuild[]
+}
+
+model SavedBuild {
+  id          String    @id @default(cuid())
+  buyerId     String
+  buyer       Buyer     @relation(fields: [buyerId], references: [id], onDelete: Cascade)
+  configCarId String
+  configCar   ConfigCar @relation(fields: [configCarId], references: [id])
+  paintHex    String
+  finish      String
+  rimId       String?
+  rim         Rim?      @relation(fields: [rimId], references: [id])
+  spoilerId   String?
+  spoiler     Spoiler?  @relation(fields: [spoilerId], references: [id])
+  totalBdt    Decimal   @db.Decimal(14, 2)
+  createdAt   DateTime  @default(now())
+
+  payments Payment[]
+}
+
+// ----------------------------------------------------- payment + escrow
+
+enum PaymentPurpose {
+  AUCTION_WIN
+  USED_CAR
+  NEW_CAR
+  MODIFICATION
+}
+
+/// FR specifies SSLCommerz (primary) and bKash (secondary) only.
+enum Gateway {
+  SSLCOMMERZ
+  BKASH
+}
+
+enum PaymentStatus {
+  PENDING
+  HELD_IN_ESCROW
+  RELEASED
+  FAILED
+  REFUNDED
+}
+
+/// One payment mechanism for every purchase path. The target is whichever of
+/// the nullable references is set, matched to `purpose`.
+model Payment {
+  id      String         @id @default(cuid())
+  payerId String
+  payer   Buyer          @relation(fields: [payerId], references: [id], onDelete: Cascade)
+  purpose PaymentPurpose
+  gateway Gateway
+
+  amountBdt    Decimal       @db.Decimal(14, 2)
+  status       PaymentStatus @default(PENDING)
+  gatewayTxnId String?       @unique
+  gatewayRef   String?
+
+  auctionCarId     String?
+  auctionCar       AuctionCar?     @relation(fields: [auctionCarId], references: [id])
+  usedCarListingId String?
+  usedCarListing   UsedCarListing? @relation(fields: [usedCarListingId], references: [id])
+  newCarVariantId  String?
+  newCarVariant    NewCarVariant?  @relation(fields: [newCarVariantId], references: [id])
+  savedBuildId     String?
+  savedBuild       SavedBuild?     @relation(fields: [savedBuildId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  escrow Escrow?
+
+  @@index([payerId, status])
+}
+
+model Escrow {
+  id                   String    @id @default(cuid())
+  paymentId            String    @unique
+  payment              Payment   @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  heldAt               DateTime  @default(now())
+  releasedAt           DateTime?
+  disputeWindowEndsAt  DateTime?
+}
+
+// --------------------------------------------- shipment + container pooling
+
+enum ShipmentStage {
+  WIN_CONFIRMED
+  PAYMENT_RECEIVED
+  COLLECTED_JP
+  VESSEL_DEPARTED
+  IN_TRANSIT
+  ARRIVED_CTG
+  CUSTOMS_CLEARANCE
+  READY_FOR_DELIVERY
+}
+
+model Shipment {
+  id           String        @id @default(cuid())
+  buyerId      String
+  buyer        Buyer         @relation(fields: [buyerId], references: [id], onDelete: Cascade)
+  auctionCarId String        @unique
+  auctionCar   AuctionCar    @relation(fields: [auctionCarId], references: [id], onDelete: Cascade)
+  stage        ShipmentStage @default(WIN_CONFIRMED)
+  createdAt    DateTime      @default(now())
+
+  events  ShipmentEvent[]
+  booking ContainerBooking?
+}
+
+model ShipmentEvent {
+  id         String        @id @default(cuid())
+  shipmentId String
+  shipment   Shipment      @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  stage      ShipmentStage
+  at         DateTime      @default(now())
+
+  @@index([shipmentId, at])
+}
+
+enum ContainerStatus {
+  OPEN
+  FULL
+  DEPARTED
+}
+
+/// Pooling is offered AFTER a buyer wins a lot (per FR). Available slots are
+/// derived as `capacity - bookings.length`; capacity is admin-editable.
+model Container {
+  id              String          @id @default(cuid())
+  originPort      String
+  destinationPort String
+  departureDate   DateTime
+  capacity        Int             @default(10)
+  sizeClass       String?
+  status          ContainerStatus @default(OPEN)
+  createdAt       DateTime        @default(now())
+
+  bookings ContainerBooking[]
+
+  @@index([originPort, departureDate, status])
+}
+
+model ContainerBooking {
+  id          String    @id @default(cuid())
+  containerId String
+  container   Container @relation(fields: [containerId], references: [id], onDelete: Cascade)
+  buyerId     String
+  buyer       Buyer     @relation(fields: [buyerId], references: [id], onDelete: Cascade)
+  shipmentId  String    @unique
+  shipment    Shipment  @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  reservedAt  DateTime  @default(now())
+
+  @@unique([containerId, shipmentId])
+}
+
+// ------------------------------------------------- ratings + disputes
+
+model Rating {
+  id              String       @id @default(cuid())
+  buyerId         String
+  buyer           Buyer        @relation(fields: [buyerId], references: [id], onDelete: Cascade)
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  auctionCarId    String
+  auctionCar      AuctionCar   @relation(fields: [auctionCarId], references: [id], onDelete: Cascade)
+  communication   Int
+  gradingAccuracy Int
+  timeliness      Int
+  overallValue    Int
+  comment         String?
+  createdAt       DateTime     @default(now())
+
+  @@unique([buyerId, auctionCarId])
+}
+
+enum DisputeStatus {
+  OPEN
+  UNDER_REVIEW
+  RESOLVED
+}
+
+model Dispute {
+  id                String        @id @default(cuid())
+  buyerId           String
+  buyer             Buyer         @relation(fields: [buyerId], references: [id], onDelete: Cascade)
+  organizationId    String
+  organization      Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  auctionCarId      String?
+  auctionCar        AuctionCar?   @relation(fields: [auctionCarId], references: [id])
+  description       String
+  status            DisputeStatus @default(OPEN)
+  resolution        String?
+  reviewedByAdminId String?
+  reviewedBy        Admin?        @relation(fields: [reviewedByAdminId], references: [id])
+  createdAt         DateTime      @default(now())
+}
+
+// ------------------------------------------ admin settings + cached rates
+
+/// Simplified NBR duty bands by engine CC, admin-editable. Surfaced in the UI
+/// as "simplified estimate — actual NBR rates vary by vehicle type and change
+/// with annual budget notifications".
+model DutyRate {
+  id          String   @id @default(cuid())
+  ccMin       Int
+  ccMax       Int?
+  ratePercent Decimal  @db.Decimal(6, 2)
+  updatedAt   DateTime @updatedAt
+
+  @@unique([ccMin, ccMax])
+}
+
+/// Admin-editable key/value knobs. Nothing in the cost engine is hardcoded.
+/// Keys: shippingFlatBdt, portHandlingBdt, minBidIncrementJpy,
+/// antiSnipeWindowSeconds, antiSnipeExtendSeconds, containerCapacity,
+/// poolingDiscountPercent, exchangeRateTtlMinutes
+model PlatformSetting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+}
+
+/// Cached FX so we don't hit the exchange-rate API on every page load.
+model ExchangeRate {
+  id        String   @id @default(cuid())
+  base      String
+  quote     String
+  rate      Decimal  @db.Decimal(18, 8)
+  fetchedAt DateTime @default(now())
+
+  @@unique([base, quote])
+}
+
+// ------------------------------------------------------------- broadcast
+
+enum BroadcastKind {
+  VIDEO
+  YOUTUBE
+}
+
+/// Admin-controlled live telecast feed for an auction.
+model Broadcast {
+  id                String        @id @default(cuid())
+  auctionId         String        @unique
+  auction           Auction       @relation(fields: [auctionId], references: [id], onDelete: Cascade)
+  url               String?
+  kind              BroadcastKind @default(VIDEO)
+  isLive            Boolean       @default(false)
+  updatedByAdminId  String?
+  updatedBy         Admin?        @relation(fields: [updatedByAdminId], references: [id])
+  updatedAt         DateTime      @updatedAt
 }
