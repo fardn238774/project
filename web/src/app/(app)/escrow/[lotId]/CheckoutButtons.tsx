@@ -49,8 +49,8 @@ export function CheckoutButtons({
                   : "border-border bg-card text-text hover:border-accent"
               }`}
             >
-              {g.label}
-              <span className="ml-1.5 text-[10px] font-semibold text-dim">
+              {g.label}{" "}
+              <span className="text-[10px] font-semibold text-dim">
                 {g.configured ? (g.sandbox ? "sandbox" : "live") : "not configured"}
               </span>
             </button>

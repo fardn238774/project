@@ -4,32 +4,10 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireUser, currentBuyer } from "@/lib/session";
 import { getSettings } from "@/lib/settings";
-import { ContainerStatus, Role, ShipmentStage } from "@/generated/prisma/enums";
+import { ContainerStatus, Role } from "@/generated/prisma/enums";
+import { STAGE_ORDER } from "@/lib/shipment";
 
 export type ShipmentResult = { error?: string; ok?: boolean };
-
-/** Ordered pipeline — the tracker renders this, and advance walks it. */
-export const STAGE_ORDER: ShipmentStage[] = [
-  ShipmentStage.WIN_CONFIRMED,
-  ShipmentStage.PAYMENT_RECEIVED,
-  ShipmentStage.COLLECTED_JP,
-  ShipmentStage.VESSEL_DEPARTED,
-  ShipmentStage.IN_TRANSIT,
-  ShipmentStage.ARRIVED_CTG,
-  ShipmentStage.CUSTOMS_CLEARANCE,
-  ShipmentStage.READY_FOR_DELIVERY,
-];
-
-export const STAGE_LABEL: Record<ShipmentStage, string> = {
-  WIN_CONFIRMED: "Win confirmed",
-  PAYMENT_RECEIVED: "Payment received",
-  COLLECTED_JP: "Collected at Japanese yard",
-  VESSEL_DEPARTED: "Vessel departed",
-  IN_TRANSIT: "In transit",
-  ARRIVED_CTG: "Arrived at Chattogram",
-  CUSTOMS_CLEARANCE: "Customs clearance",
-  READY_FOR_DELIVERY: "Ready for delivery",
-};
 
 /**
  * Advances a shipment one stage and records a real ShipmentEvent.

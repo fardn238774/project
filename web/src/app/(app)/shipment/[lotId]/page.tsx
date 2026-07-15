@@ -5,7 +5,7 @@ import { auth } from "@/auth";
 import { currentBuyer } from "@/lib/session";
 import { getSettings } from "@/lib/settings";
 import { listOpenContainers } from "@/lib/containers";
-import { STAGE_ORDER, STAGE_LABEL } from "@/lib/shipment-actions";
+import { STAGE_ORDER, STAGE_LABEL } from "@/lib/shipment";
 import { shortDate, daysUntil } from "@/lib/time";
 import { PhotoPlaceholder } from "@/components/PhotoPlaceholder";
 import { AdvanceStageButton, JoinContainerButton } from "./ShipmentControls";
