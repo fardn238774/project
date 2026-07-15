@@ -1,23 +1,40 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 
 type Theme = "light" | "dark";
 
-export function ThemeToggle() {
-  const [theme, setTheme] = useState<Theme>("light");
+const STORAGE_KEY = "autobd-app-theme";
 
-  useEffect(() => {
-    const current = document.documentElement.dataset.theme;
-    setTheme(current === "dark" ? "dark" : "light");
-  }, []);
+/**
+ * data-theme on <html> is the source of truth — the inline script in the root
+ * layout sets it before paint, so it is an external store rather than React
+ * state. Subscribing keeps the toggle correct even if the theme is changed
+ * elsewhere.
+ */
+function subscribe(onChange: () => void) {
+  const observer = new MutationObserver(onChange);
+  observer.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ["data-theme"],
+  });
+  return () => observer.disconnect();
+}
+
+const getSnapshot = (): Theme =>
+  document.documentElement.dataset.theme === "dark" ? "dark" : "light";
+
+// The server has no DOM; the root layout renders data-theme="light" to match.
+const getServerSnapshot = (): Theme => "light";
+
+export function ThemeToggle() {
+  const theme = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
   const toggle = () => {
     const next: Theme = theme === "dark" ? "light" : "dark";
-    setTheme(next);
     document.documentElement.dataset.theme = next;
     try {
-      localStorage.setItem("autobd-app-theme", next);
+      localStorage.setItem(STORAGE_KEY, next);
     } catch {
       // storage unavailable — theme still applies for this session
     }
