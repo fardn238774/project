@@ -92,6 +92,14 @@ model Organization {
   feeType  FeeType
   feeValue Decimal @db.Decimal(12, 2)
 
+  // Operational stats shown on the directory/profile. successfulImports and
+  // avgTurnaroundDays are not derivable from platform data alone. ratingAvg/
+  // ratingCount are denormalised aggregates recomputed when a Rating is added.
+  successfulImports Int      @default(0)
+  avgTurnaroundDays Int?
+  ratingAvg         Decimal? @db.Decimal(3, 2)
+  ratingCount       Int      @default(0)
+
   status          OrgStatus @default(PENDING)
   reviewedAt      DateTime?
   reviewedById    String?
@@ -457,6 +465,32 @@ model SavedBuild {
   createdAt   DateTime  @default(now())
 
   payments Payment[]
+}
+
+// ------------------------------------------------ dream car research hub
+
+/// Top-of-funnel model pages: specs, reliability issues and the BD-specific
+/// total-cost-of-ownership inputs.
+model ResearchModel {
+  id            String  @id @default(cuid())
+  slug          String  @unique
+  name          String
+  tagline       String
+  specs         String
+  regTaxBdt     Decimal @db.Decimal(14, 2)
+  tokenTaxBdt   Decimal @db.Decimal(14, 2)
+  insuranceBdt  Decimal @db.Decimal(14, 2)
+  fuelPricePerL Decimal @db.Decimal(8, 2)
+  kmPerL        Decimal @db.Decimal(5, 2)
+
+  issues ResearchIssue[]
+}
+
+model ResearchIssue {
+  id      String        @id @default(cuid())
+  modelId String
+  model   ResearchModel @relation(fields: [modelId], references: [id], onDelete: Cascade)
+  text    String
 }
 
 // ----------------------------------------------------- payment + escrow

@@ -1,36 +1,98 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AutoBD — web app
 
-## Getting Started
+Real implementation of the AutoBD prototype (`../AutoBD Prototype.dc.html`).
+The prototype is the visual/behavioural spec; this app rebuilds it against a
+real Postgres database.
 
-First, run the development server:
+Stack: Next.js 16 (App Router) · TypeScript · Tailwind v4 · Prisma 7 · Neon
+Postgres · Auth.js v5.
+
+## Setup
 
 ```bash
+npm install
+cp .env.example .env      # then paste your Neon connection string
+npx prisma migrate dev    # create tables
+npx prisma db seed        # settings + demo data
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Required env vars (see `.env.example`):
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Var | Purpose |
+| --- | --- |
+| `DATABASE_URL` | Neon Postgres connection string |
+| `AUTH_SECRET` | Auth.js session signing secret |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## ⚠️ Dev-only seeded accounts
 
-## Learn More
+**These are development credentials. Change or remove them before any real
+deployment — do not ship them.**
 
-To learn more about Next.js, take a look at the following resources:
+| Role | Email | Password |
+| --- | --- | --- |
+| Admin | `admin@autobd.test` | `AdminDev123!` |
+| Buyer | `rafiul.buyer@autobd.test` | `testpass123` |
+| Organization | `osaka.org@autobd.test` | `testpass123` |
+| Organization | `yokohama.org@autobd.test` | `testpass123` |
+| Organization | `tokyoline.org@autobd.test` | `testpass123` |
+| Organization | `nagoya.org@autobd.test` | `testpass123` |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Admin accounts cannot self-register, so the admin above is created by the seed.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Documented simplifications
 
-## Deploy on Vercel
+These are deliberate, agreed deviations — not oversights.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Auctions are platform-hosted
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+The FR doc describes bidding organizations acting as agents at **real Japanese
+auction houses** (USS/TAA). Integrating with those auction houses' APIs is not
+accessible for this project, so **the platform hosts the auction itself**: lots,
+bids, countdown and settlement all live in this database, simulating the
+agent-mediated process.
+
+Consequences:
+
+- Buyers bid directly. Organizations stay **advisory** (chat + the `Engagement`
+  record of who they represent) and have **no bid path at all** — price can only
+  move through a real buyer bid, so shill bidding is impossible by construction.
+- "Active bidders" counts distinct bidders on that lot in our `Bid` table.
+
+### Import duty is a simplified estimate
+
+Duty uses an admin-editable band table keyed on **engine CC only**:
+
+| Engine | Rate |
+| --- | --- |
+| ≤1500cc | 89% |
+| 1501–2000cc | 110% |
+| 2001–3000cc | 150% |
+| >3000cc | 200% |
+
+Surfaced in the UI as a *simplified estimate — actual NBR rates vary by vehicle
+type and change with annual budget notifications*. Duty is applied to
+(bid + shipping) as a **CIF approximation**, since insurance is not modelled
+separately.
+
+Vehicle **age** is not a duty modifier: it is a hard eligibility gate instead —
+a car may only be listed if its manufacture year is within **5 years** of today.
+The BRTA "registration life remaining" figure is `5 - (current year -
+manufacture year)`.
+
+### Other
+
+- Shipping and port handling are flat, admin-editable settings, not formulas —
+  there is no public formula to replicate accurately.
+- Chat is **polling-based** (~3–5s), not WebSockets: Vercel's serverless runtime
+  can't hold long-lived connections.
+- Route protection uses `auth()` in server layouts rather than Next 16's `proxy`
+  convention, which is documented as CDN-deployable and unable to rely on shared
+  modules — incompatible with Prisma-backed session checks.
+
+## Future work
+
+- **BRTA historical policy view** — the FR asks for a history of how NBR's import
+  age-limit policy changed across past budgets. Deferred; needs a policy dataset.
+- Call-log panel alongside chat (the FR mentions it; out of scope for now).
+- SMS alerts on shipment stage transitions.

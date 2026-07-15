@@ -1,26 +1,82 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* Palettes lifted verbatim from the prototype's THEMES object so the ported
+   app matches it exactly. Theme is driven by data-theme on <html>. */
+:root,
+:root[data-theme="light"] {
+  --bg: #f7f4ee;
+  --text: #211d18;
+  --muted: #6f6a60;
+  --dim: #a39d90;
+  --border: #e6e1d6;
+  --card-bg: #ffffff;
+  --track-bg: #f0ede5;
+  --chip-bg: #f2efe8;
+  --accent: #c1442d;
+  --accent-hover: #9c3520;
+  --accent-rgb: 193, 68, 45;
+  --on-accent: #ffffff;
+  --accent-tint: #fbeeea;
+  --ink: #1a0d0d;
 }
 
+:root[data-theme="dark"] {
+  --bg: #0a0a0a;
+  --text: #f3f2ee;
+  --muted: #a9a49a;
+  --dim: #7d786f;
+  --border: rgba(255, 255, 255, 0.1);
+  --card-bg: #1c1812;
+  --track-bg: rgba(255, 255, 255, 0.08);
+  --chip-bg: rgba(255, 255, 255, 0.06);
+  --accent: #e3f23a;
+  --accent-hover: #eef874;
+  --accent-rgb: 227, 242, 58;
+  --on-accent: #0a0a0a;
+  --accent-tint: rgba(227, 242, 58, 0.14);
+  --ink: #1a0d0d;
+}
+
+/* Expose the palette to Tailwind utilities (bg-bg, text-muted, border-border…) */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-bg: var(--bg);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+  --color-dim: var(--dim);
+  --color-border: var(--border);
+  --color-card: var(--card-bg);
+  --color-track: var(--track-bg);
+  --color-chip: var(--chip-bg);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-on-accent: var(--on-accent);
+  --color-accent-tint: var(--accent-tint);
+  --color-ink: var(--ink);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@keyframes pulseDot {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
   }
 }
 
+html {
+  color-scheme: light;
+}
+html[data-theme="dark"] {
+  color-scheme: dark;
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  transition:
+    background 0.4s ease,
+    color 0.4s ease;
 }
