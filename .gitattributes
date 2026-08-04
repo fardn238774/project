@@ -1,0 +1,12 @@
+# GitHub Linguist overrides — make the language bar reflect the actual app
+# (TypeScript/React), not the large bundled HTML reference files.
+
+# 3D configurator: a self-contained ~44MB bundle that is mostly base64-embedded
+# 3D models, not hand-written source. Excluded from language stats.
+kaido-multicar-garage.html linguist-vendored
+
+# Design prototype exports: visual/behavioural reference, not the running app.
+AutoBD*.html linguist-vendored
+
+# Prisma-generated client — generated code, not authored by us.
+web/src/generated/** linguist-generated
