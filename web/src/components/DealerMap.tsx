@@ -7,10 +7,13 @@ import type { Map as LMap, Marker as LMarker } from "leaflet";
 /**
  * Dealer/location map.
  *
- * Displayed with Leaflet + OpenStreetMap tiles — free, no API key, no billing —
- * so the real location and marker always render (no "waiting on a key" state).
- * Navigation ("take me to the showroom") uses a Google Maps directions
- * deep-link, which also needs no key and opens the user's Google Maps app.
+ * Everything here is FREE and needs no API key or billing account:
+ *  - The map itself is drawn with Leaflet + OpenStreetMap tiles.
+ *  - "View on Google Maps" opens the real business listing — where Google's
+ *    own photos, Street View and reviews are — via a plain Maps URL. (Embedding
+ *    those photos INSIDE this app would need the paid Google Places API, so we
+ *    link out to Google Maps instead, which is free.)
+ *  - "Get directions" opens Google Maps routing, also via a plain URL.
  *
  * Reusable: New Cars detail uses it now; the shipment tracker can adopt it.
  */
@@ -22,7 +25,15 @@ const PIN_SVG = `
   <circle cx="15" cy="15" r="6" fill="#fff"/>
 </svg>`;
 
-/** Directions to a coordinate — opens Google Maps routing, no key needed. */
+/**
+ * Opens the place on Google Maps by NAME (not raw coordinates), so Maps resolves
+ * to the actual business listing and shows its photos/Street View. Free URL, no
+ * key. `place` is a human query like "Navana Toyota — Gulshan, Gulshan 1, Dhaka".
+ */
+const placeUrl = (place: string) =>
+  `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place)}`;
+
+/** Google Maps routing to a coordinate. Free URL, no key. */
 const directionsTo = (lat: number, lng: number) =>
   `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
 
@@ -42,6 +53,15 @@ export function DealerMap({
   const elRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<LMap | null>(null);
   const markerRef = useRef<LMarker | null>(null);
+
+  // Human search string that resolves to the real business listing on Google
+  // Maps (so its photos/Street View show). Em dash dropped to help matching.
+  const query = `${name.replace(/\s*—\s*/g, " ")}, ${address}, Dhaka`;
+  const place = placeUrl(query);
+
+  // The pin's click handler is bound once; this ref lets it use the CURRENT
+  // dealer after the selection changes (kept in sync by an effect below).
+  const placeRef = useRef(place);
 
   // Create the map once. Leaflet touches window, so it's imported dynamically
   // inside the effect (client-only) rather than at module scope.
@@ -69,12 +89,8 @@ export function DealerMap({
       });
       const marker = L.marker([latitude, longitude], { icon }).addTo(map);
 
-      // Clicking the pin (or its popup link) routes to the showroom.
-      const openDirections = () => {
-        const { lat, lng } = marker.getLatLng();
-        window.open(directionsTo(lat, lng), "_blank", "noopener");
-      };
-      marker.on("click", openDirections);
+      // Clicking the pin opens the branch on Google Maps, where its photos are.
+      marker.on("click", () => window.open(placeRef.current, "_blank", "noopener"));
 
       mapRef.current = map;
       markerRef.current = marker;
@@ -92,6 +108,11 @@ export function DealerMap({
     // Created once; selecting a different dealer is handled by the next effect.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Keep the pin's click target pointing at the currently selected dealer.
+  useEffect(() => {
+    placeRef.current = place;
+  }, [place]);
 
   // Re-center and move the pin when the selected dealer changes.
   useEffect(() => {
@@ -111,20 +132,34 @@ export function DealerMap({
         className="relative z-0 overflow-hidden rounded-xl border border-border"
         style={{ height }}
       />
-      <div className="mt-2 flex items-center justify-between gap-3">
+      <div className="mt-2 flex flex-wrap items-center justify-between gap-2.5">
         <div className="min-w-0">
           <p className="truncate text-[13px] font-semibold text-text">{name}</p>
           <p className="truncate text-[12px] text-muted">{address}</p>
         </div>
-        <a
-          href={directionsTo(latitude, longitude)}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="shrink-0 rounded-[9px] bg-ink px-3.5 py-2 text-[12.5px] font-bold text-white transition hover:bg-accent hover:text-on-accent"
-        >
-          Get directions &rarr;
-        </a>
+        <div className="flex shrink-0 gap-2">
+          <a
+            href={place}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="rounded-[9px] bg-accent px-3.5 py-2 text-[12.5px] font-bold text-on-accent transition hover:bg-accent-hover"
+          >
+            View on Google Maps
+          </a>
+          <a
+            href={directionsTo(latitude, longitude)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="rounded-[9px] bg-ink px-3.5 py-2 text-[12.5px] font-bold text-white transition hover:bg-accent hover:text-on-accent"
+          >
+            Directions &rarr;
+          </a>
+        </div>
       </div>
+      <p className="mt-1.5 text-[11px] text-dim">
+        Tap the pin or &ldquo;View on Google Maps&rdquo; to see the branch&apos;s photos and
+        Street View.
+      </p>
     </div>
   );
 }
