@@ -41,7 +41,9 @@ const bodyOf = (model: string) =>
  */
 export async function recommend(req: Requirements, limit = 4): Promise<Suggestion[]> {
   const [newCars, usedCars, lots, research, settings, fx] = await Promise.all([
-    prisma.newCar.findMany({ include: { variants: { orderBy: { priceBdt: "asc" } } } }),
+    prisma.newCar.findMany({
+      include: { variants: { orderBy: { priceBdt: "asc" } }, brand: { select: { name: true, slug: true } } },
+    }),
     prisma.usedCarListing.findMany({ where: { status: { not: ListingStatus.SOLD } } }),
     prisma.auctionCar.findMany({
       where: { status: { in: [LotStatus.PENDING, LotStatus.LIVE] } },
@@ -106,7 +108,7 @@ export async function recommend(req: Requirements, limit = 4): Promise<Suggestio
     if (!variant) continue;
 
     const price = num(variant.priceBdt);
-    const model = `${car.brand} ${car.model}`;
+    const model = `${car.brand.name} ${car.model}`;
     const reasons: string[] = [];
     const tradeoffs: string[] = [];
 
@@ -121,7 +123,7 @@ export async function recommend(req: Requirements, limit = 4): Promise<Suggestio
     reasons.push(`${car.warrantyYears}-year warranty, dealer-fulfilled`);
     tradeoffs.push("New-car pricing: no import duty to pay, but the highest sticker of the three routes");
 
-    if (req.preferredMakes.length > 0 && !req.preferredMakes.includes(car.brand)) score -= 8;
+    if (req.preferredMakes.length > 0 && !req.preferredMakes.includes(car.brand.name)) score -= 8;
 
     out.push({
       id: car.id,
@@ -129,7 +131,7 @@ export async function recommend(req: Requirements, limit = 4): Promise<Suggestio
       title: `${model} ${variant.name}`,
       priceLabel: bdtLakh(price),
       priceBdt: price,
-      href: `/new-cars/${car.id}`,
+      href: `/new-cars/${car.brand.slug}/${car.id}`,
       reasons,
       tradeoffs,
       score,

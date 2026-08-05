@@ -181,65 +181,134 @@ async function seedBuyers() {
 
 // ------------------------------------------------------------- new cars
 
-const NEW_CARS = [
+/// Brands own their dealers and their car models. Dealer coordinates are real
+/// Dhaka-area points for the actual BD distributors (Navana=Toyota,
+/// Rangs=Honda/Mitsubishi, Uttara Motors=Suzuki) so the map plots something
+/// true once a Google Maps key is set. Each brand carries 3-4 models so the
+/// brand pages aren't single-car.
+const BRANDS = [
   {
-    brand: "Toyota",
-    model: "Corolla Cross Hybrid",
-    priceMinBdt: 4800000,
-    priceMaxBdt: 5800000,
-    warrantyYears: 5,
-    warrantyKm: 100000,
-    variants: [
-      { name: "X", priceBdt: 4800000, engine: "1.8L Hybrid", transmission: "CVT", economyKmPerL: 23 },
-      { name: "G", priceBdt: 5300000, engine: "1.8L Hybrid", transmission: "CVT", economyKmPerL: 22 },
-      { name: "Z", priceBdt: 5800000, engine: "1.8L Hybrid", transmission: "CVT", economyKmPerL: 21 },
+    slug: "toyota",
+    name: "Toyota",
+    country: "Japan",
+    dealers: [
+      { name: "Navana Toyota — Tejgaon", address: "205/1/A Tejgaon Industrial Area", city: "Dhaka", latitude: 23.763900, longitude: 90.393600, phone: "+8809612444444" },
+      { name: "Navana Toyota — Gulshan", address: "Gulshan Avenue, Gulshan 1", city: "Dhaka", latitude: 23.792500, longitude: 90.407800, phone: "+8809612444445" },
+    ],
+    cars: [
+      { model: "Corolla Cross Hybrid", priceMinBdt: 4800000, priceMaxBdt: 5800000, warrantyYears: 5, warrantyKm: 100000, variants: [
+        { name: "X", priceBdt: 4800000, engine: "1.8L Hybrid", transmission: "CVT", economyKmPerL: 23 },
+        { name: "G", priceBdt: 5300000, engine: "1.8L Hybrid", transmission: "CVT", economyKmPerL: 22 },
+        { name: "Z", priceBdt: 5800000, engine: "1.8L Hybrid", transmission: "CVT", economyKmPerL: 21 },
+      ] },
+      { model: "Corolla Altis", priceMinBdt: 4200000, priceMaxBdt: 4800000, warrantyYears: 5, warrantyKm: 100000, variants: [
+        { name: "1.6 GL", priceBdt: 4200000, engine: "1.6L Petrol", transmission: "CVT", economyKmPerL: 16 },
+        { name: "1.8 GX", priceBdt: 4800000, engine: "1.8L Petrol", transmission: "CVT", economyKmPerL: 15 },
+      ] },
+      { model: "Yaris", priceMinBdt: 3200000, priceMaxBdt: 3800000, warrantyYears: 3, warrantyKm: 100000, variants: [
+        { name: "J", priceBdt: 3200000, engine: "1.5L Petrol", transmission: "CVT", economyKmPerL: 19 },
+        { name: "S", priceBdt: 3800000, engine: "1.5L Petrol", transmission: "CVT", economyKmPerL: 18 },
+      ] },
+      { model: "Raize", priceMinBdt: 3500000, priceMaxBdt: 4000000, warrantyYears: 3, warrantyKm: 100000, variants: [
+        { name: "G", priceBdt: 3500000, engine: "1.0L Turbo", transmission: "CVT", economyKmPerL: 20 },
+        { name: "Z", priceBdt: 4000000, engine: "1.0L Turbo", transmission: "CVT", economyKmPerL: 19 },
+      ] },
     ],
   },
   {
-    brand: "Honda",
-    model: "City e:HEV",
-    priceMinBdt: 4200000,
-    priceMaxBdt: 4600000,
-    warrantyYears: 3,
-    warrantyKm: 100000,
-    variants: [
-      { name: "EL", priceBdt: 4200000, engine: "1.5L e:HEV", transmission: "e-CVT", economyKmPerL: 27 },
-      { name: "SV", priceBdt: 4600000, engine: "1.5L e:HEV", transmission: "e-CVT", economyKmPerL: 26 },
+    slug: "honda",
+    name: "Honda",
+    country: "Japan",
+    dealers: [
+      { name: "Honda — Gulshan Showroom", address: "Gulshan 2 Circle", city: "Dhaka", latitude: 23.794300, longitude: 90.414500, phone: "+8809606999999" },
+      { name: "Rangs Motors — Bijoy Sarani", address: "Bijoy Sarani, Tejgaon", city: "Dhaka", latitude: 23.765000, longitude: 90.386000, phone: "+8809606999998" },
+    ],
+    cars: [
+      { model: "City e:HEV", priceMinBdt: 4200000, priceMaxBdt: 4600000, warrantyYears: 3, warrantyKm: 100000, variants: [
+        { name: "EL", priceBdt: 4200000, engine: "1.5L e:HEV", transmission: "e-CVT", economyKmPerL: 27 },
+        { name: "SV", priceBdt: 4600000, engine: "1.5L e:HEV", transmission: "e-CVT", economyKmPerL: 26 },
+      ] },
+      { model: "Civic", priceMinBdt: 5500000, priceMaxBdt: 6500000, warrantyYears: 3, warrantyKm: 100000, variants: [
+        { name: "VX", priceBdt: 5500000, engine: "1.5L Turbo", transmission: "CVT", economyKmPerL: 17 },
+        { name: "RS", priceBdt: 6500000, engine: "1.5L Turbo", transmission: "CVT", economyKmPerL: 16 },
+      ] },
+      { model: "HR-V", priceMinBdt: 4800000, priceMaxBdt: 5600000, warrantyYears: 3, warrantyKm: 100000, variants: [
+        { name: "e:HEV X", priceBdt: 4800000, engine: "1.5L Hybrid", transmission: "e-CVT", economyKmPerL: 25 },
+        { name: "e:HEV Z", priceBdt: 5600000, engine: "1.5L Hybrid", transmission: "e-CVT", economyKmPerL: 24 },
+      ] },
     ],
   },
   {
-    brand: "Mitsubishi",
-    model: "Xpander",
-    priceMinBdt: 3800000,
-    priceMaxBdt: 4300000,
-    warrantyYears: 5,
-    warrantyKm: 100000,
-    variants: [
-      { name: "GLS", priceBdt: 3800000, engine: "1.5L Petrol", transmission: "4AT", economyKmPerL: 14 },
-      { name: "Ultimate", priceBdt: 4300000, engine: "1.5L Petrol", transmission: "4AT", economyKmPerL: 14 },
+    slug: "mitsubishi",
+    name: "Mitsubishi",
+    country: "Japan",
+    dealers: [
+      { name: "Rangs Motors — Uttara", address: "Sonargaon Janapath, Sector 11, Uttara", city: "Dhaka", latitude: 23.870900, longitude: 90.399900, phone: "+8809606999990" },
+      { name: "Rangs Motors — Motijheel", address: "Dilkusha C/A, Motijheel", city: "Dhaka", latitude: 23.728000, longitude: 90.417000, phone: "+8809606999991" },
+    ],
+    cars: [
+      { model: "Xpander", priceMinBdt: 3800000, priceMaxBdt: 4300000, warrantyYears: 5, warrantyKm: 100000, variants: [
+        { name: "GLS", priceBdt: 3800000, engine: "1.5L Petrol", transmission: "4AT", economyKmPerL: 14 },
+        { name: "Ultimate", priceBdt: 4300000, engine: "1.5L Petrol", transmission: "4AT", economyKmPerL: 14 },
+      ] },
+      { model: "Outlander", priceMinBdt: 6000000, priceMaxBdt: 7200000, warrantyYears: 5, warrantyKm: 100000, variants: [
+        { name: "2.0 GLX", priceBdt: 6000000, engine: "2.0L Petrol", transmission: "CVT", economyKmPerL: 13 },
+        { name: "PHEV", priceBdt: 7200000, engine: "2.4L PHEV", transmission: "CVT", economyKmPerL: 18 },
+      ] },
+      { model: "Attrage", priceMinBdt: 2800000, priceMaxBdt: 3300000, warrantyYears: 5, warrantyKm: 100000, variants: [
+        { name: "GLX", priceBdt: 2800000, engine: "1.2L Petrol", transmission: "CVT", economyKmPerL: 21 },
+        { name: "GLS", priceBdt: 3300000, engine: "1.2L Petrol", transmission: "CVT", economyKmPerL: 20 },
+      ] },
     ],
   },
   {
-    brand: "Suzuki",
-    model: "Swift",
-    priceMinBdt: 2900000,
-    priceMaxBdt: 3300000,
-    warrantyYears: 3,
-    warrantyKm: 100000,
-    variants: [
-      { name: "GL", priceBdt: 2900000, engine: "1.2L Petrol", transmission: "5MT", economyKmPerL: 20 },
-      { name: "GLX", priceBdt: 3300000, engine: "1.2L Petrol", transmission: "CVT", economyKmPerL: 19 },
+    slug: "suzuki",
+    name: "Suzuki",
+    country: "Japan",
+    dealers: [
+      { name: "Uttara Motors — Tejgaon", address: "Tejgaon Industrial Area", city: "Dhaka", latitude: 23.770000, longitude: 90.400000, phone: "+8809612555555" },
+      { name: "Uttara Motors — Dhanmondi", address: "Mirpur Road, Dhanmondi", city: "Dhaka", latitude: 23.746000, longitude: 90.376000, phone: "+8809612555556" },
+    ],
+    cars: [
+      { model: "Swift", priceMinBdt: 2900000, priceMaxBdt: 3300000, warrantyYears: 3, warrantyKm: 100000, variants: [
+        { name: "GL", priceBdt: 2900000, engine: "1.2L Petrol", transmission: "5MT", economyKmPerL: 20 },
+        { name: "GLX", priceBdt: 3300000, engine: "1.2L Petrol", transmission: "CVT", economyKmPerL: 19 },
+      ] },
+      { model: "Ciaz", priceMinBdt: 3000000, priceMaxBdt: 3500000, warrantyYears: 3, warrantyKm: 100000, variants: [
+        { name: "GL", priceBdt: 3000000, engine: "1.5L Petrol", transmission: "4AT", economyKmPerL: 20 },
+        { name: "GLX", priceBdt: 3500000, engine: "1.5L Petrol", transmission: "4AT", economyKmPerL: 19 },
+      ] },
+      { model: "Vitara Brezza", priceMinBdt: 3400000, priceMaxBdt: 4000000, warrantyYears: 3, warrantyKm: 100000, variants: [
+        { name: "GLX", priceBdt: 3400000, engine: "1.5L Petrol", transmission: "4AT", economyKmPerL: 18 },
+        { name: "ZDI", priceBdt: 4000000, engine: "1.5L Petrol", transmission: "4AT", economyKmPerL: 17 },
+      ] },
     ],
   },
 ];
 
 async function seedNewCars() {
+  // Children first (they FK into variant/car/dealer), then dealers, then brands.
+  await prisma.testDriveReservation.deleteMany();
   await prisma.dealerInquiry.deleteMany();
   await prisma.newCarVariant.deleteMany();
   await prisma.newCar.deleteMany();
-  for (const c of NEW_CARS) {
-    const { variants, ...car } = c;
-    await prisma.newCar.create({ data: { ...car, variants: { create: variants } } });
+  await prisma.dealer.deleteMany();
+  await prisma.brand.deleteMany();
+
+  for (const b of BRANDS) {
+    const { dealers, cars, ...brand } = b;
+    await prisma.brand.create({
+      data: {
+        ...brand,
+        dealers: { create: dealers },
+        cars: {
+          create: cars.map((c) => {
+            const { variants, ...car } = c;
+            return { ...car, variants: { create: variants } };
+          }),
+        },
+      },
+    });
   }
 }
 
@@ -803,12 +872,14 @@ async function main() {
   const lots = await prisma.auctionCar.count();
   const ratings = await prisma.rating.count();
   const listings = await prisma.usedCarListing.count();
+  const newCarModels = BRANDS.reduce((n, b) => n + b.cars.length, 0);
+  const dealerCount = BRANDS.reduce((n, b) => n + b.dealers.length, 0);
   console.log(
     [
       `settings: ${Object.keys(SETTINGS).length}, duty bands: ${DUTY_BANDS.length}`,
       `admin: ${ADMIN_EMAIL}`,
       `orgs: ${orgs.length} (approved), buyers: ${buyers.length}`,
-      `new cars: ${NEW_CARS.length}, used listings: ${listings}, research models: ${RESEARCH.length}`,
+      `brands: ${BRANDS.length}, new car models: ${newCarModels}, dealers: ${dealerCount}, used listings: ${listings}, research models: ${RESEARCH.length}`,
       `auctions: ${AUCTIONS.length} live/scheduled (current: ${liveAuction.house}) + 1 ended, lots: ${lots}`,
       `import history: ${HISTORY.length} sold lots, ${ratings} ratings (org star ratings derived from these)`,
     ].join("\n"),

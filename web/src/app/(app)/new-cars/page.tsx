@@ -1,47 +1,59 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { bdtLakhRange } from "@/lib/format";
-import { PhotoPlaceholder } from "@/components/PhotoPlaceholder";
+import { bdtLakh, num } from "@/lib/format";
+import { BrandMonogram } from "@/components/BrandMonogram";
 
 export const metadata = { title: "New Cars — AutoBD" };
 
-export default async function NewCarsPage() {
-  const cars = await prisma.newCar.findMany({
-    orderBy: [{ brand: "asc" }, { model: "asc" }],
+export default async function NewCarBrandsPage() {
+  const brands = await prisma.brand.findMany({
+    orderBy: { name: "asc" },
+    include: {
+      _count: { select: { cars: true, dealers: true } },
+      cars: { select: { priceMinBdt: true } },
+    },
   });
 
   return (
     <main className="mx-auto w-full max-w-[1180px] px-10 pb-20 pt-6">
       <h1 className="mb-2 text-[30px] font-extrabold tracking-[-0.01em] text-text">
-        Brand new car listings
+        Brand new cars
       </h1>
       <p className="mb-7 max-w-[640px] text-[15px] text-muted">
-        Browse official dealership inventory by manufacturer. AutoBD is a lead &amp;
-        booking layer — dealer partners fulfil every order.
+        Choose a manufacturer to browse its line-up. AutoBD is a lead &amp; booking layer —
+        dealer partners fulfil every order.
       </p>
 
-      {cars.length === 0 ? (
-        <p className="text-[14px] text-muted">No dealer inventory published yet.</p>
+      {brands.length === 0 ? (
+        <p className="text-[14px] text-muted">No brands published yet.</p>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2">
-          {cars.map((car) => (
-            <Link
-              key={car.id}
-              href={`/new-cars/${car.id}`}
-              className="rounded-2xl border border-border bg-card p-5 transition hover:shadow-[0_6px_18px_rgba(0,0,0,0.06)]"
-            >
-              <PhotoPlaceholder label="product photo" height={120} className="mb-3.5" />
-              <p className="text-xs font-bold uppercase tracking-[0.03em] text-dim">
-                {car.brand}
-              </p>
-              <p className="mb-1.5 text-[17px] font-bold text-text">{car.model}</p>
-              <p className="mb-2.5 text-sm text-muted">
-                {bdtLakhRange(car.priceMinBdt, car.priceMaxBdt)} &middot; {car.warrantyYears}
-                -year warranty
-              </p>
-              <p className="text-[13px] font-bold text-accent">View variants &amp; specs &rarr;</p>
-            </Link>
-          ))}
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {brands.map((b) => {
+            const from = b.cars.length
+              ? bdtLakh(Math.min(...b.cars.map((c) => num(c.priceMinBdt))))
+              : null;
+            return (
+              <Link
+                key={b.id}
+                href={`/new-cars/${b.slug}`}
+                className="flex items-center gap-4 rounded-2xl border border-border bg-card p-5 transition hover:-translate-y-0.5 hover:shadow-[0_6px_18px_rgba(0,0,0,0.06)]"
+              >
+                <BrandMonogram name={b.name} logoUrl={b.logoUrl} />
+                <div className="min-w-0">
+                  <p className="text-[17px] font-bold text-text">{b.name}</p>
+                  <p className="text-[13px] text-muted">
+                    {b._count.cars} {b._count.cars === 1 ? "model" : "models"}
+                    {from && ` · from ${from}`}
+                  </p>
+                  <p className="mt-0.5 text-[12px] text-dim">
+                    {b._count.dealers} {b._count.dealers === 1 ? "dealer" : "dealers"}
+                    {b.country ? ` · ${b.country}` : ""}
+                  </p>
+                </div>
+                <span className="ml-auto text-[13px] font-bold text-accent">View &rarr;</span>
+              </Link>
+            );
+          })}
         </div>
       )}
     </main>

@@ -63,6 +63,7 @@ model Buyer {
   savedBuilds   SavedBuild[]
   ratings       Rating[]
   disputes      Dispute[]
+  testDrives    TestDriveReservation[]
 }
 
 enum OrgStatus {
@@ -78,11 +79,11 @@ enum FeeType {
 }
 
 model Organization {
-  id               String    @id @default(cuid())
-  userId           String    @unique
-  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id               String  @id @default(cuid())
+  userId           String  @unique
+  user             User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   companyName      String
-  licenseNumber    String    @unique
+  licenseNumber    String  @unique
   yearsInOperation Int
   about            String?
 
@@ -128,9 +129,50 @@ model Admin {
 
 // ------------------------------------------------- pillar 1: brand new cars
 
+/// A car manufacturer. Promoted from a bare string on NewCar to a real entity
+/// so it can carry a logo and a URL slug, and — the reason it matters most —
+/// OWN the dealers that power the "nearest dealer" map and test-drive
+/// locations. logoUrl is nullable: monogram tiles are shown until real logo
+/// assets are supplied.
+model Brand {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  name      String
+  logoUrl   String?
+  country   String?
+  createdAt DateTime @default(now())
+
+  cars    NewCar[]
+  dealers Dealer[]
+}
+
+/// A brand's physical showroom/branch. Does double duty: its lat/lng gives the
+/// Google Map real pins, AND it is the required location a buyer picks when
+/// reserving a test drive. Coordinates are stored so no geocoding call is
+/// needed — only the visual map embed depends on the Google Maps API key, so
+/// the dealer list/picker works with or without that key.
+model Dealer {
+  id        String   @id @default(cuid())
+  brandId   String
+  brand     Brand    @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  name      String
+  address   String
+  city      String
+  latitude  Decimal  @db.Decimal(9, 6)
+  longitude Decimal  @db.Decimal(9, 6)
+  phone     String?
+  createdAt DateTime @default(now())
+
+  testDrives TestDriveReservation[]
+  inquiries  DealerInquiry[]
+
+  @@index([brandId])
+}
+
 model NewCar {
   id            String   @id @default(cuid())
-  brand         String
+  brandId       String
+  brand         Brand    @relation(fields: [brandId], references: [id], onDelete: Cascade)
   model         String
   priceMinBdt   Decimal  @db.Decimal(14, 2)
   priceMaxBdt   Decimal  @db.Decimal(14, 2)
@@ -138,7 +180,10 @@ model NewCar {
   warrantyKm    Int
   createdAt     DateTime @default(now())
 
-  variants NewCarVariant[]
+  variants   NewCarVariant[]
+  testDrives TestDriveReservation[]
+
+  @@index([brandId])
 }
 
 model NewCarVariant {
@@ -167,8 +212,40 @@ model DealerInquiry {
   buyer     Buyer         @relation(fields: [buyerId], references: [id], onDelete: Cascade)
   variantId String
   variant   NewCarVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  // Optional: which branch the buyer chose, mirroring the test-drive location.
+  // Nullable so existing inquiries and "no preference" submissions stay valid.
+  dealerId  String?
+  dealer    Dealer?       @relation(fields: [dealerId], references: [id])
   status    InquiryStatus @default(SUBMITTED)
   createdAt DateTime      @default(now())
+}
+
+enum TestDriveStatus {
+  REQUESTED
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+}
+
+/// A buyer's booked test drive of a NewCar at a specific Dealer branch, for a
+/// chosen date/time. Location is required — a test drive has to happen
+/// somewhere — and the Dealer FK reuses the same branches that feed the map,
+/// exactly as agreed (no separate location concept).
+model TestDriveReservation {
+  id          String          @id @default(cuid())
+  buyerId     String
+  buyer       Buyer           @relation(fields: [buyerId], references: [id], onDelete: Cascade)
+  newCarId    String
+  newCar      NewCar          @relation(fields: [newCarId], references: [id], onDelete: Cascade)
+  dealerId    String
+  dealer      Dealer          @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+  scheduledAt DateTime
+  status      TestDriveStatus @default(REQUESTED)
+  createdAt   DateTime        @default(now())
+
+  // Stops an accidental double-submit of the identical slot.
+  @@unique([buyerId, newCarId, dealerId, scheduledAt])
+  @@index([dealerId, scheduledAt])
 }
 
 // ---------------------------------------------------- pillar 2: used car p2p
@@ -552,12 +629,12 @@ model Payment {
 }
 
 model Escrow {
-  id                   String    @id @default(cuid())
-  paymentId            String    @unique
-  payment              Payment   @relation(fields: [paymentId], references: [id], onDelete: Cascade)
-  heldAt               DateTime  @default(now())
-  releasedAt           DateTime?
-  disputeWindowEndsAt  DateTime?
+  id                  String    @id @default(cuid())
+  paymentId           String    @unique
+  payment             Payment   @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  heldAt              DateTime  @default(now())
+  releasedAt          DateTime?
+  disputeWindowEndsAt DateTime?
 }
 
 // --------------------------------------------- shipment + container pooling
@@ -719,13 +796,13 @@ enum BroadcastKind {
 
 /// Admin-controlled live telecast feed for an auction.
 model Broadcast {
-  id                String        @id @default(cuid())
-  auctionId         String        @unique
-  auction           Auction       @relation(fields: [auctionId], references: [id], onDelete: Cascade)
-  url               String?
-  kind              BroadcastKind @default(VIDEO)
-  isLive            Boolean       @default(false)
-  updatedByAdminId  String?
-  updatedBy         Admin?        @relation(fields: [updatedByAdminId], references: [id])
-  updatedAt         DateTime      @updatedAt
+  id               String        @id @default(cuid())
+  auctionId        String        @unique
+  auction          Auction       @relation(fields: [auctionId], references: [id], onDelete: Cascade)
+  url              String?
+  kind             BroadcastKind @default(VIDEO)
+  isLive           Boolean       @default(false)
+  updatedByAdminId String?
+  updatedBy        Admin?        @relation(fields: [updatedByAdminId], references: [id])
+  updatedAt        DateTime      @updatedAt
 }
