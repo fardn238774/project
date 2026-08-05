@@ -34,6 +34,7 @@ never a fake success:
 | `BKASH_APP_KEY`, `BKASH_APP_SECRET`, `BKASH_USERNAME`, `BKASH_PASSWORD` | bKash checkout (secondary gateway) |
 | `BKASH_SANDBOX` | `false` for live; defaults to sandbox |
 | `ANTHROPIC_API_KEY` | Natural-language requirement extraction in the AI assistant |
+| `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | Embedded "nearest dealer" map on New Cars (Maps Embed API). Without it, the dealer address + keyless map link still work |
 
 ## ⚠️ Dev-only seeded accounts
 
