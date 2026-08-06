@@ -36,8 +36,14 @@ export function LocalPhoto({
       {src && (
         // eslint-disable-next-line @next/next/no-img-element
         <img
+          key={src}
           src={src}
           alt={alt}
+          // A cached image can finish loading before React attaches onLoad, so
+          // check `complete` on mount too — otherwise it stays invisible.
+          ref={(node) => {
+            if (node?.complete && node.naturalWidth > 0) setLoaded(true);
+          }}
           className={`absolute inset-0 h-full w-full ${imgClassName ?? ""}`}
           style={{ opacity: loaded ? 1 : 0, transition: "opacity 0.2s ease" }}
           onLoad={() => setLoaded(true)}
