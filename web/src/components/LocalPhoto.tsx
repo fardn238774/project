@@ -3,10 +3,10 @@
 import { useState } from "react";
 
 /**
- * Renders the first working image from a list of candidate paths, layered over
- * a fallback. Each candidate is tried in turn; a missing/broken one advances to
- * the next, and if none load the fallback shows through — with no broken-image
- * flash (the img stays invisible until it actually loads).
+ * Renders the first working image from a list of candidate paths, over a
+ * fallback. Each candidate is tried in turn; a missing/broken one advances to
+ * the next. The fallback shows until an image loads, then fades OUT — so a
+ * transparent logo never shows the placeholder/letter behind it.
  *
  * Used for New Cars brand logos and car photos, so dropping a correctly named
  * file into web/public is all that's needed.
@@ -17,13 +17,15 @@ export function LocalPhoto({
   fallback,
   imgClassName,
   containerClassName,
+  containerStyle,
 }: {
   srcs: string[];
   alt: string;
-  /** Shown as the background; remains visible until an image loads. */
+  /** Shown until an image loads, then hidden. */
   fallback: React.ReactNode;
   imgClassName?: string;
   containerClassName?: string;
+  containerStyle?: React.CSSProperties;
 }) {
   const [index, setIndex] = useState(0);
   const [loaded, setLoaded] = useState(false);
@@ -31,8 +33,14 @@ export function LocalPhoto({
   const src = srcs[index];
 
   return (
-    <div className={`relative ${containerClassName ?? ""}`}>
-      {fallback}
+    <div className={`relative ${containerClassName ?? ""}`} style={containerStyle}>
+      <div
+        className="absolute inset-0"
+        style={{ opacity: loaded ? 0 : 1, transition: "opacity 0.2s ease" }}
+        aria-hidden={loaded}
+      >
+        {fallback}
+      </div>
       {src && (
         // eslint-disable-next-line @next/next/no-img-element
         <img
