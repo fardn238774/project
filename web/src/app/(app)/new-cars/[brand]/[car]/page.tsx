@@ -3,6 +3,9 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { currentBuyer } from "@/lib/session";
 import { bdtLakh, num } from "@/lib/format";
+import { carImageSrcs } from "@/lib/images";
+import { LocalPhoto } from "@/components/LocalPhoto";
+import { PhotoPlaceholder } from "@/components/PhotoPlaceholder";
 import { NewCarDetail } from "./NewCarDetail";
 
 export default async function NewCarDetailPage({
@@ -51,7 +54,15 @@ export default async function NewCarDetailPage({
         {`← Back to ${car.brand.name}`}
       </Link>
       <p className="text-xs font-bold uppercase tracking-[0.03em] text-dim">{car.brand.name}</p>
-      <h1 className="mb-5 text-[30px] font-extrabold text-text">{car.model}</h1>
+      <h1 className="mb-4 text-[30px] font-extrabold text-text">{car.model}</h1>
+
+      <LocalPhoto
+        srcs={carImageSrcs(car.brand.slug, car.model)}
+        alt={`${car.brand.name} ${car.model}`}
+        containerClassName="mb-5 h-[260px] w-full overflow-hidden rounded-2xl border border-border"
+        imgClassName="object-cover"
+        fallback={<PhotoPlaceholder label="car photo" height={260} radius={0} />}
+      />
 
       <NewCarDetail
         newCarId={car.id}

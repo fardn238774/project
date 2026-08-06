@@ -38,7 +38,7 @@ export default async function NewCarBrandsPage() {
                 href={`/new-cars/${b.slug}`}
                 className="flex items-center gap-4 rounded-2xl border border-border bg-card p-5 transition hover:-translate-y-0.5 hover:shadow-[0_6px_18px_rgba(0,0,0,0.06)]"
               >
-                <BrandMonogram name={b.name} logoUrl={b.logoUrl} />
+                <BrandMonogram name={b.name} slug={b.slug} logoUrl={b.logoUrl} />
                 <div className="min-w-0">
                   <p className="text-[17px] font-bold text-text">{b.name}</p>
                   <p className="text-[13px] text-muted">

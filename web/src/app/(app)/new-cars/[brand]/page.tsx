@@ -5,6 +5,8 @@ import { prisma } from "@/lib/prisma";
 import { bdtLakhRange } from "@/lib/format";
 import { BrandMonogram } from "@/components/BrandMonogram";
 import { PhotoPlaceholder } from "@/components/PhotoPlaceholder";
+import { LocalPhoto } from "@/components/LocalPhoto";
+import { carImageSrcs } from "@/lib/images";
 
 export async function generateMetadata({
   params,
@@ -39,7 +41,7 @@ export default async function BrandCarsPage({
       </Link>
 
       <div className="mb-7 flex items-center gap-4">
-        <BrandMonogram name={b.name} logoUrl={b.logoUrl} size={64} />
+        <BrandMonogram name={b.name} slug={b.slug} logoUrl={b.logoUrl} size={64} />
         <div>
           <h1 className="text-[30px] font-extrabold tracking-[-0.01em] text-text">{b.name}</h1>
           <p className="text-[14px] text-muted">
@@ -60,7 +62,13 @@ export default async function BrandCarsPage({
               href={`/new-cars/${b.slug}/${car.id}`}
               className="overflow-hidden rounded-2xl border border-border bg-card transition hover:shadow-[0_6px_18px_rgba(0,0,0,0.06)]"
             >
-              <PhotoPlaceholder label="product photo" height={130} radius={0} />
+              <LocalPhoto
+                srcs={carImageSrcs(b.slug, car.model)}
+                alt={car.model}
+                containerClassName="h-[130px] w-full"
+                imgClassName="object-cover"
+                fallback={<PhotoPlaceholder label="product photo" height={130} radius={0} />}
+              />
               <div className="p-5">
                 <p className="text-[17px] font-bold text-text">{car.model}</p>
                 <p className="mb-2.5 mt-1 text-sm text-muted">
