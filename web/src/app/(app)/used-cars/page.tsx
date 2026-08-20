@@ -32,11 +32,12 @@ export default async function UsedCarsPage({
   const { sort } = await searchParams;
   const active: SortKey = sort && sort in SORTS ? (sort as SortKey) : "all";
 
-  // Unverified listings stay visible — the "Verification Pending" pill is how
-  // the prototype surfaces that state, and hiding them would defeat the point.
-  // Sold cars drop off the marketplace but remain on the seller's dashboard.
+  // Only admin-approved listings appear on the marketplace. A seller's fresh
+  // submission sits in PENDING_VERIFICATION (and a rejected one in REJECTED)
+  // until an admin reviews it — those stay on the seller's own dashboard, not
+  // here. Sold cars also drop off the marketplace but remain on the dashboard.
   const listings = await prisma.usedCarListing.findMany({
-    where: { status: { not: ListingStatus.SOLD } },
+    where: { status: { in: [ListingStatus.ACTIVE, ListingStatus.OFFER_RECEIVED] } },
     orderBy: SORTS[active].orderBy,
   });
 
@@ -48,16 +49,24 @@ export default async function UsedCarsPage({
             Used car marketplace
           </h1>
           <p className="max-w-[560px] text-[15px] text-muted">
-            Peer-to-peer listings, verified where sellers have submitted BRTA ownership
-            documents.
+            Peer-to-peer listings, each reviewed and approved by our admin team — with
+            registration details and an auction sheet on file — before going live.
           </p>
         </div>
-        <Link
-          href="/used-cars/seller"
-          className="whitespace-nowrap text-[13px] font-bold text-accent"
-        >
-          My seller dashboard &rarr;
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link
+            href="/used-cars/seller"
+            className="whitespace-nowrap text-[13px] font-bold text-accent"
+          >
+            My seller dashboard &rarr;
+          </Link>
+          <Link
+            href="/used-cars/seller/new"
+            className="whitespace-nowrap rounded-[10px] bg-accent px-4 py-2.5 text-[13px] font-bold text-on-accent transition hover:bg-accent-hover"
+          >
+            List your car
+          </Link>
+        </div>
       </div>
 
       <div className="mb-5 flex flex-wrap gap-2">
@@ -92,7 +101,16 @@ export default async function UsedCarsPage({
                 href={`/used-cars/${c.id}`}
                 className="overflow-hidden rounded-2xl border border-border bg-card transition hover:shadow-[0_6px_18px_rgba(0,0,0,0.06)]"
               >
-                <PhotoPlaceholder label="listing photo" height={110} radius={0} />
+                {c.photoUrls.length > 0 ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={c.photoUrls[0]}
+                    alt={c.title}
+                    className="h-[110px] w-full object-cover"
+                  />
+                ) : (
+                  <PhotoPlaceholder label="listing photo" height={110} radius={0} />
+                )}
                 <div className="p-4">
                   <p className="mb-1 text-[15px] font-bold text-text">{c.title}</p>
                   <p className="mb-2.5 text-[13px] text-muted">

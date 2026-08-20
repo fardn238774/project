@@ -3,7 +3,8 @@
 import { useMemo, useState } from "react";
 import { bdt } from "@/lib/format";
 import { CATEGORY_LABEL, type CatalogPart, type GarageCar } from "@/lib/parts";
-import { PartCategory } from "@/generated/prisma/enums";
+import { CartItemKind, PartCategory } from "@/generated/prisma/enums";
+import { AddToCartButton } from "@/components/AddToCartButton";
 
 type Tab = "catalog" | "studio";
 
@@ -197,6 +198,14 @@ export function ModStudio({
                       {`Listed for ${p.fits.join(", ")}`}
                     </p>
                   )}
+
+                  <div className="mt-3">
+                    <AddToCartButton
+                      kind={CartItemKind.MODIFICATION}
+                      refId={p.id}
+                      className="w-full rounded-[9px] bg-ink px-3 py-2 text-[12.5px] font-bold text-white transition hover:bg-accent hover:text-on-accent disabled:opacity-60"
+                    />
+                  </div>
                 </div>
               ))}
             </div>
@@ -204,8 +213,8 @@ export function ModStudio({
 
           <p className="mt-5 rounded-xl border border-border bg-chip p-4 text-[12.5px] leading-[1.5] text-muted">
             Parts are sourced through the platform&apos;s licensed bidding organization network,
-            per the FR. Ordering is not wired up yet — the payment gateways need sandbox
-            credentials first.
+            per the FR. Add parts to your cart and pay for them together with the rest of your
+            order at checkout.
           </p>
         </>
       ) : (

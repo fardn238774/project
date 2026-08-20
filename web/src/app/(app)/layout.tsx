@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { AppHeader } from "@/components/AppHeader";
+import { getCartCount } from "@/lib/cart";
 import { Role } from "@/generated/prisma/enums";
 
 // Route protection lives here rather than in a proxy: Next 16's proxy
@@ -22,12 +23,23 @@ export default async function AppLayout({
         })
       : null;
 
+  // Buyers get a cart badge in the header.
+  let cartCount = 0;
+  if (session.user.role === Role.BUYER && session.user.id) {
+    const buyer = await prisma.buyer.findUnique({
+      where: { userId: session.user.id },
+      select: { id: true },
+    });
+    if (buyer) cartCount = await getCartCount(buyer.id);
+  }
+
   return (
     <>
       <AppHeader
         email={session.user.email}
         role={session.user.role}
         orgName={org?.companyName}
+        cartCount={cartCount}
       />
       {children}
     </>

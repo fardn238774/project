@@ -14,6 +14,33 @@ export type FeedBid = { id: string; who: string; amountJpy: number; mine: boolea
 /** Watch-only screen, so it polls a little slower than the bidding room. */
 const POLL_MS = 4000;
 
+/**
+ * Turn any YouTube link — watch, youtu.be, /live/, /shorts/, or an existing
+ * /embed/ — into a proper embeddable player URL. Returns null for non-YouTube
+ * URLs, which are played directly as a video file. This means an admin can
+ * paste a normal YouTube link and it just works, regardless of the "kind" they
+ * picked.
+ */
+function youtubeEmbed(raw: string): string | null {
+  try {
+    const u = new URL(raw);
+    const host = u.hostname.replace(/^www\./, "").replace(/^m\./, "");
+    let id = "";
+    if (host === "youtu.be") {
+      id = u.pathname.slice(1);
+    } else if (host === "youtube.com" || host === "youtube-nocookie.com") {
+      if (u.pathname === "/watch") id = u.searchParams.get("v") ?? "";
+      else if (u.pathname.startsWith("/embed/")) id = u.pathname.split("/")[2] ?? "";
+      else if (u.pathname.startsWith("/live/")) id = u.pathname.split("/")[2] ?? "";
+      else if (u.pathname.startsWith("/shorts/")) id = u.pathname.split("/")[2] ?? "";
+    }
+    if (!/^[\w-]{6,}$/.test(id)) return null;
+    return `https://www.youtube.com/embed/${id}?autoplay=1&mute=1&playsinline=1&rel=0`;
+  } catch {
+    return null;
+  }
+}
+
 export function TelecastView({
   lotId,
   initialState,
@@ -68,6 +95,7 @@ export function TelecastView({
   }, []);
 
   const onAir = broadcast.isLive && Boolean(broadcast.url);
+  const embedUrl = broadcast.url ? youtubeEmbed(broadcast.url) : null;
   const bidBdt = state ? state.currentBidJpy * state.rate : 0;
   const showOverlay = onAir && state !== null && lot !== null;
 
@@ -75,16 +103,19 @@ export function TelecastView({
     <div className="grid items-start gap-5 lg:grid-cols-[1.6fr_1fr]">
       <div>
         <div className="relative h-[400px] overflow-hidden rounded-t-2xl border border-border bg-[#0f0d0a]">
-          {onAir && broadcast.kind === BroadcastKind.YOUTUBE && (
+          {/* A YouTube link (in any form) plays in an iframe; anything else is
+              treated as a direct video file. The stored "kind" is only a hint —
+              the URL itself decides, so a pasted youtu.be link always works. */}
+          {onAir && embedUrl && (
             <iframe
-              src={broadcast.url!}
+              src={embedUrl}
               title={`${house} live auction telecast`}
               allow="autoplay; encrypted-media; picture-in-picture"
               allowFullScreen
               className="absolute inset-0 z-1 h-full w-full border-0"
             />
           )}
-          {onAir && broadcast.kind === BroadcastKind.VIDEO && (
+          {onAir && !embedUrl && (
             // muted + playsInline are what let autoplay actually start.
             <video
               key={broadcast.url!}

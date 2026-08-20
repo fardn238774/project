@@ -52,6 +52,7 @@ model Buyer {
 
   bids          Bid[]
   wishlist      Wishlist[]
+  cartItems     CartItem[]
   engagements   Engagement[]
   conversations Conversation[]
   payments      Payment[]
@@ -255,6 +256,7 @@ enum ListingStatus {
   ACTIVE
   OFFER_RECEIVED
   SOLD
+  REJECTED
 }
 
 enum AccidentStatus {
@@ -280,6 +282,30 @@ model UsedCarListing {
   accidentStatus    AccidentStatus @default(NOT_CHECKED)
   status            ListingStatus  @default(PENDING_VERIFICATION)
   createdAt         DateTime       @default(now())
+
+  // Seller-submitted specifics, collected by the "List your car" form. All are
+  // optional at the column level so the additive migration applies cleanly to
+  // existing rows; the submission form enforces the ones sellers must provide.
+  registrationNumber String?
+  registrationYear   Int?
+  transmission       String?
+  fuelType           String?
+  engineCc           Int?
+  color              String?
+
+  // The car's auction sheet (image or PDF), uploaded at submission time. An
+  // admin reviews it — together with the registration details — before the
+  // listing is allowed onto the public marketplace.
+  auctionSheetUrl String?
+
+  // Seller-uploaded gallery: several photos and an optional 360°/walkaround
+  // video. Stored as public paths under /uploads.
+  photoUrls String[] @default([])
+  videoUrl  String?
+
+  // Admin moderation trail, mirroring how bidding organisations are reviewed.
+  reviewedAt      DateTime?
+  rejectionReason String?
 
   offers   Offer[]
   payments Payment[]
@@ -564,7 +590,9 @@ model ResearchModel {
   fuelPricePerL Decimal @db.Decimal(8, 2)
   kmPerL        Decimal @db.Decimal(5, 2)
 
-  issues ResearchIssue[]
+  issues      ResearchIssue[]
+  marketPrice MarketPrice?
+  maintenance MaintenanceItem[]
 }
 
 model ResearchIssue {
@@ -572,6 +600,71 @@ model ResearchIssue {
   modelId String
   model   ResearchModel @relation(fields: [modelId], references: [id], onDelete: Cascade)
   text    String
+}
+
+/// Live used-car market price for a research model, scraped from Bikroy and
+/// CACHED here (see prisma/scrape-bikroy.ts). The Hub only ever reads this
+/// table — it never scrapes on a page request — so the page stays fast and
+/// survives a scrape failure by showing the last cached figures.
+model MarketPrice {
+  id              String        @id @default(cuid())
+  researchModelId String        @unique
+  researchModel   ResearchModel @relation(fields: [researchModelId], references: [id], onDelete: Cascade)
+  source          String        @default("bikroy")
+  sampleCount     Int
+  minPriceBdt     Int
+  avgPriceBdt     Int
+  maxPriceBdt     Int
+  samples         Int[]         @default([])
+  scrapedAt       DateTime      @default(now())
+}
+
+/// Curated Bangladesh parts & servicing costs per model — powers the "parts &
+/// maintenance cost" section. Not scraped (classifieds don't carry parts
+/// prices); compiled from the local market.
+model MaintenanceItem {
+  id              String        @id @default(cuid())
+  researchModelId String
+  researchModel   ResearchModel @relation(fields: [researchModelId], references: [id], onDelete: Cascade)
+  category        String
+  name            String
+  priceBdt        Int
+  intervalKm      Int?
+  note            String?
+}
+
+// -------------------------------------------------- universal cart / checkout
+
+enum CartItemKind {
+  NEW_CAR
+  USED_CAR
+  RECONDITIONED
+  MODIFICATION
+}
+
+enum CartItemStatus {
+  IN_CART
+  PAID
+}
+
+/// A universal cross-pillar cart. A buyer adds new cars, used cars, reconditioned
+/// import lots and modification parts, then settles them together from /cart.
+/// `refId` is a loose reference to the source row — its table depends on `kind` —
+/// so there is deliberately no foreign key.
+model CartItem {
+  id        String         @id @default(cuid())
+  buyerId   String
+  buyer     Buyer          @relation(fields: [buyerId], references: [id], onDelete: Cascade)
+  kind      CartItemKind
+  refId     String
+  title     String
+  subtitle  String?
+  amountBdt Decimal        @db.Decimal(14, 2)
+  status    CartItemStatus @default(IN_CART)
+  createdAt DateTime       @default(now())
+  paidAt    DateTime?
+
+  @@index([buyerId, status])
 }
 
 // ----------------------------------------------------- payment + escrow

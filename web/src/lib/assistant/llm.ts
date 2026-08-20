@@ -71,3 +71,42 @@ export async function extractWithLlm(message: string): Promise<Requirements | nu
     return null;
   }
 }
+
+// -------------------------------------------------- conversational advice
+
+const CHAT_SYSTEM = `You are AutoBD's car-buying assistant for Bangladesh. Give concise, friendly, practical advice about buying new, used, and reconditioned (Japanese import) cars here — budgets in BDT/lakh, fuel economy, resale, BRTA registration, and total cost of ownership. When the platform has matched specific cars for the user's request, they are provided to you; refer to them by name and explain the trade-offs, but never invent listings or prices that are not given. Keep replies to a short paragraph or two, in plain language.`;
+
+export type ChatMsg = { role: "user" | "assistant"; content: string };
+
+/**
+ * A natural-language reply for the chat assistant. Returns null with no key (the
+ * caller then falls back to a templated answer), or if the call fails.
+ */
+export async function chatReply(history: ChatMsg[], inventoryNote: string): Promise<string | null> {
+  if (!llmConfigured()) return null;
+
+  try {
+    const res = await fetch(ENDPOINT, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        "x-api-key": process.env.ANTHROPIC_API_KEY!,
+        "anthropic-version": "2023-06-01",
+      },
+      body: JSON.stringify({
+        model: MODEL,
+        max_tokens: 500,
+        system: inventoryNote ? `${CHAT_SYSTEM}\n\n${inventoryNote}` : CHAT_SYSTEM,
+        messages: history.slice(-10),
+      }),
+      cache: "no-store",
+      signal: AbortSignal.timeout(25000),
+    });
+    if (!res.ok) return null;
+
+    const data: { content?: { type: string; text?: string }[] } = await res.json();
+    return data.content?.find((c) => c.type === "text")?.text?.trim() || null;
+  } catch {
+    return null;
+  }
+}

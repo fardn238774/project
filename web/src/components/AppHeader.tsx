@@ -29,10 +29,12 @@ export function AppHeader({
   email,
   role,
   orgName,
+  cartCount = 0,
 }: {
   email?: string | null;
   role?: Role;
   orgName?: string | null;
+  cartCount?: number;
 }) {
   const pathname = usePathname() ?? "/";
   const initial = (email?.[0] ?? "?").toUpperCase();
@@ -99,6 +101,15 @@ export function AppHeader({
       <div className="flex items-center gap-3.5">
         <Link href="/assistant" className="text-[13px] font-bold text-accent">
           AI Assistant
+        </Link>
+
+        <Link href="/cart" className="relative text-[13px] font-bold text-text hover:text-accent">
+          Cart
+          {cartCount > 0 && (
+            <span className="absolute -right-3.5 -top-2 flex h-[16px] min-w-[16px] items-center justify-center rounded-full bg-accent px-1 text-[10px] font-bold text-on-accent">
+              {cartCount}
+            </span>
+          )}
         </Link>
 
         {email ? (

@@ -3,6 +3,8 @@
 import { useState, useTransition } from "react";
 import {
   reviewOrganization,
+  reviewListing,
+  startAuction,
   startLot,
   endAuction,
   setBroadcast,
@@ -98,6 +100,67 @@ export function OrgSuspendButton({ organizationId }: { organizationId: string })
   );
 }
 
+// -------------------------------------------------- used-car listing review
+
+export function ListingReviewButtons({ listingId }: { listingId: string }) {
+  const { pending, error, run } = useAction();
+  const [reason, setReason] = useState("");
+  const [rejecting, setRejecting] = useState(false);
+
+  if (rejecting) {
+    return (
+      <div className="flex flex-col items-end gap-2">
+        <input
+          value={reason}
+          onChange={(e) => setReason(e.target.value)}
+          placeholder="Reason (shown to the seller)"
+          className="w-60 rounded-lg border border-border bg-bg px-2.5 py-1.5 text-xs text-text outline-none focus:border-accent"
+        />
+        <div className="flex gap-2">
+          <button
+            type="button"
+            disabled={pending}
+            onClick={() => run(() => reviewListing(listingId, "REJECT", reason))}
+            className="rounded-lg bg-accent px-3 py-1.75 text-xs font-bold text-on-accent disabled:opacity-50"
+          >
+            Confirm reject
+          </button>
+          <button
+            type="button"
+            onClick={() => setRejecting(false)}
+            className="rounded-lg bg-chip px-3 py-1.75 text-xs font-bold text-muted"
+          >
+            Cancel
+          </button>
+        </div>
+        {error && <p className="text-xs font-semibold text-accent">{error}</p>}
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex gap-2">
+      <button
+        type="button"
+        disabled={pending}
+        onClick={() => run(() => reviewListing(listingId, "APPROVE"))}
+        className="rounded-lg bg-[#2f8f5f] px-3 py-1.75 text-xs font-bold text-white disabled:opacity-50"
+      >
+        {pending ? "…" : "Approve"}
+      </button>
+      <button
+        type="button"
+        disabled={pending}
+        onClick={() => setRejecting(true)}
+        className="rounded-lg bg-chip px-3 py-1.75 text-xs font-bold text-muted"
+      >
+        Reject
+      </button>
+      {error && <p className="text-xs font-semibold text-accent">{error}</p>}
+    </div>
+  );
+}
+
 // ------------------------------------------------------------- lot controls
 
 export function StartLotButton({
@@ -146,6 +209,24 @@ export function EndAuctionButton({ auctionId }: { auctionId: string }) {
     >
       End session
     </button>
+  );
+}
+
+export function StartAuctionButton({ auctionId }: { auctionId: string }) {
+  const { pending, error, run } = useAction();
+  return (
+    <>
+      <button
+        type="button"
+        disabled={pending}
+        onClick={() => run(() => startAuction(auctionId))}
+        title="Flip this session live and put the next lot on the block"
+        className="rounded-lg bg-[#2f8f5f] px-3 py-1.75 text-xs font-bold text-white disabled:opacity-50"
+      >
+        {pending ? "…" : "▶ Start auction"}
+      </button>
+      {error && <span className="text-xs font-semibold text-accent">{error}</span>}
+    </>
   );
 }
 

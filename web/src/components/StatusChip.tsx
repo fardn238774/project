@@ -9,6 +9,7 @@ const TONE = {
   good: { bg: "#e8f5ee", color: "#1e6b42" },
   warn: { bg: "#fdf3e3", color: "#8a5b12" },
   unknown: { bg: "#efeee9", color: "#6f6a60" },
+  bad: { bg: "#fdecea", color: "#c1442d" },
 } as const;
 
 type Tone = keyof typeof TONE;
@@ -62,7 +63,9 @@ export function listingStatusPill(status: ListingStatus) {
       return { tone: "warn", label: "Offer received" } as const;
     case ListingStatus.SOLD:
       return { tone: "unknown", label: "Sold" } as const;
+    case ListingStatus.REJECTED:
+      return { tone: "bad", label: "Rejected" } as const;
     default:
-      return { tone: "unknown", label: "Pending verification" } as const;
+      return { tone: "warn", label: "Pending review" } as const;
   }
 }

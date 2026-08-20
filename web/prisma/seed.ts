@@ -13,6 +13,9 @@ import {
   PartCategory,
   EngagementStatus,
 } from "../src/generated/prisma/client";
+import { EXTRA_CATALOGS } from "./catalogs";
+import { MAINTENANCE } from "./maintenance";
+import { RESEARCH } from "./research-models";
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 const prisma = new PrismaClient({ adapter });
@@ -361,10 +364,20 @@ async function seedUsedCars(sellers: { id: string; fullName: string }[]) {
         mileageKm: 110000,
         location: "Sylhet",
         priceBdt: 1800000,
-        conditionNotes: "Seller-reported good condition. Ownership documents under BRTA verification review.",
+        conditionNotes:
+          "Seller-reported good condition, single owner. Minor scratch on front-left fender and two small dents on the tailgate (see auction sheet). Full service history available.",
         inspectionNotes: "Not yet requested by buyer.",
         ownershipVerified: false,
         accidentStatus: AccidentStatus.NOT_CHECKED,
+        // Seller-submitted registration + auction sheet, awaiting admin review.
+        // This is the sample the admin panel shows out of the box.
+        registrationNumber: "DHAKA METRO-GA 14-7788",
+        registrationYear: 2016,
+        transmission: "CVT",
+        fuelType: "Petrol",
+        engineCc: 2000,
+        color: "Pearl White",
+        auctionSheetUrl: "/sample-auction-sheet.svg",
         status: ListingStatus.PENDING_VERIFICATION,
       },
       // The three listings above come from the prototype and are all long past
@@ -512,6 +525,16 @@ async function seedAuctions(adminId: string) {
         startsAt: jstDate(a.inDays, a.jstHour, a.jstMinute),
         status: AuctionStatus.SCHEDULED,
         createdByAdminId: adminId,
+        // Each scheduled session ships with its own catalog, so the admin can
+        // start any of them and buyers immediately have lots to bid on.
+        lots: {
+          create: (EXTRA_CATALOGS[a.house] ?? []).map(({ agedBy, ...lot }) => ({
+            ...lot,
+            manufactureYear: eligibleYear(agedBy),
+            durationSeconds: LIVE_LOT_SECONDS,
+            status: LotStatus.PENDING,
+          })),
+        },
       },
     });
   }
@@ -583,76 +606,6 @@ async function seedModification() {
 
 // ------------------------------------------------------- research hub
 
-const RESEARCH = [
-  {
-    slug: "harrier",
-    name: "Toyota Harrier",
-    tagline: "60/80 series, hybrid & petrol",
-    specs:
-      "60-series (2013–2020): 2.0L petrol / 2.0L hybrid, FWD/AWD. 80-series (2020–): redesigned platform, 2.0L hybrid standard, more advanced safety suite.",
-    regTaxBdt: 85000,
-    tokenTaxBdt: 12000,
-    insuranceBdt: 28000,
-    fuelPricePerL: 125,
-    kmPerL: 14,
-    issues: [
-      "CVT judder reported on early 60-series petrol variants",
-      "Hybrid battery degradation after 120,000km on high-mileage imports",
-      "Panel gaps on aftermarket bumper replacements",
-    ],
-  },
-  {
-    slug: "vezel",
-    name: "Honda Vezel",
-    tagline: "Compact hybrid crossover",
-    specs:
-      "Gen 1 (2013–2018): 1.5L hybrid, well-suited to city driving. Gen 2 (2021–): larger footprint, upgraded hybrid system, more BD imports arriving.",
-    regTaxBdt: 62000,
-    tokenTaxBdt: 9000,
-    insuranceBdt: 21000,
-    fuelPricePerL: 125,
-    kmPerL: 18,
-    issues: [
-      "Gen 1 hybrid IPU cooling fan wear",
-      "Squeaky rear suspension on high-mileage units",
-      "Infotainment unit failures in humid climates",
-    ],
-  },
-  {
-    slug: "cx5",
-    name: "Mazda CX-5",
-    tagline: "Petrol/diesel mid-size SUV",
-    specs:
-      "KE (2012–2016) and KF (2017–) generations. SkyActiv petrol dominant in BD imports; diesel rare due to parts availability.",
-    regTaxBdt: 95000,
-    tokenTaxBdt: 14000,
-    insuranceBdt: 31000,
-    fuelPricePerL: 125,
-    kmPerL: 12,
-    issues: [
-      "Timing chain rattle on early SkyActiv-G engines",
-      "Infotainment dial (Mazda Connect) failures",
-      "Rust on rear wheel arches in coastal-import units",
-    ],
-  },
-  {
-    slug: "premio",
-    name: "Toyota Premio",
-    tagline: "Sedan, strong resale value",
-    specs:
-      "T260 generation (2007–2021), 1.5L/1.8L petrol. Long production run means excellent parts availability in BD.",
-    regTaxBdt: 58000,
-    tokenTaxBdt: 8000,
-    insuranceBdt: 19000,
-    fuelPricePerL: 125,
-    kmPerL: 16,
-    issues: [
-      "Oil consumption on high-mileage 1.8L units",
-      "Power window regulator wear",
-      "AC compressor clutch failure common past 100,000km",
-    ],
-  },
-];
 
 async function seedResearch() {
   await prisma.researchIssue.deleteMany();
@@ -660,7 +613,13 @@ async function seedResearch() {
   for (const r of RESEARCH) {
     const { issues, ...model } = r;
     await prisma.researchModel.create({
-      data: { ...model, issues: { create: issues.map((text) => ({ text })) } },
+      data: {
+        ...model,
+        issues: { create: issues.map((text) => ({ text })) },
+        // Curated parts/servicing costs. Live market prices are NOT seeded —
+        // they come from `npx tsx prisma/scrape-bikroy.ts`.
+        maintenance: { create: MAINTENANCE[model.slug] ?? [] },
+      },
     });
   }
 }

@@ -25,11 +25,16 @@ export function Assistant({ llmConfigured }: { llmConfigured: boolean }) {
 
   const ask = (text: string) => {
     if (!text.trim() || pending) return;
+    // Conversation so far (before this message) → chat history for the model.
+    const history = turns.map((t) => ({
+      role: t.from === "buyer" ? ("user" as const) : ("assistant" as const),
+      content: t.text,
+    }));
     setTurns((t) => [...t, { from: "buyer", text }]);
     setDraft("");
     start(async () => {
       setError(null);
-      const r = await askAssistant(text);
+      const r = await askAssistant(text, history);
       if (r.error) {
         setError(r.error);
         return;
@@ -45,10 +50,11 @@ export function Assistant({ llmConfigured }: { llmConfigured: boolean }) {
     <>
       {!llmConfigured && (
         <p className="mb-4 rounded-xl border border-border bg-chip p-4 text-[12.5px] leading-[1.5] text-muted">
-          No LLM key is set, so requirements are read by a built-in parser rather than a model.
-          The shortlist, ranking and reasoning below are real either way — they come from live
+          No AI key is set, so replies come from a built-in parser rather than a model. The
+          shortlist, ranking and reasoning below are real either way — they come from live
           inventory. Add <code className="font-mono">ANTHROPIC_API_KEY</code> to{" "}
-          <code className="font-mono">web/.env</code> for natural-language extraction.
+          <code className="font-mono">web/.env</code> for conversational AI advice and
+          natural-language understanding.
         </p>
       )}
 

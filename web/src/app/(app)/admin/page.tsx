@@ -3,13 +3,15 @@ import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/session";
 import { getSettings } from "@/lib/settings";
 import { getPlatformStats, getRevenueBySource } from "@/lib/analytics";
-import { bdt, num } from "@/lib/format";
+import { bdt, bdtLakh, km, num } from "@/lib/format";
 import { sessionDayLabel, timeInJst } from "@/lib/time";
 import { feeLabel } from "@/lib/agents";
 import { Pill } from "@/components/StatusChip";
 import {
   OrgReviewButtons,
   OrgSuspendButton,
+  ListingReviewButtons,
+  StartAuctionButton,
   StartLotButton,
   EndAuctionButton,
   BroadcastControl,
@@ -20,6 +22,7 @@ import {
   AuctionStatus,
   BroadcastKind,
   DisputeStatus,
+  ListingStatus,
   LotStatus,
   OrgStatus,
 } from "@/generated/prisma/enums";
@@ -29,8 +32,17 @@ export const metadata = { title: "Admin — AutoBD" };
 export default async function AdminPage() {
   await requireAdmin();
 
-  const [stats, revenue, settings, pending, approved, disputes, auctions, dutyBands] =
-    await Promise.all([
+  const [
+    stats,
+    revenue,
+    settings,
+    pending,
+    approved,
+    disputes,
+    auctions,
+    dutyBands,
+    pendingListings,
+  ] = await Promise.all([
       getPlatformStats(),
       getRevenueBySource(),
       getSettings(),
@@ -51,8 +63,9 @@ export default async function AdminPage() {
           auctionCar: { select: { make: true, model: true, lotNumber: true } },
         },
       }),
+      // All sessions, including ENDED ones — the admin can restart a finished
+      // session for another demo run via the Start auction control.
       prisma.auction.findMany({
-        where: { status: { not: AuctionStatus.ENDED } },
         orderBy: { startsAt: "asc" },
         include: {
           broadcast: true,
@@ -60,9 +73,21 @@ export default async function AdminPage() {
         },
       }),
       prisma.dutyRate.findMany({ orderBy: { ccMin: "asc" } }),
+      prisma.usedCarListing.findMany({
+        where: { status: ListingStatus.PENDING_VERIFICATION },
+        orderBy: { createdAt: "asc" },
+        include: { seller: { select: { fullName: true } } },
+      }),
     ]);
 
   const maxRevenue = Math.max(...revenue.rows.map((r) => r.value), 1);
+
+  // The broadcast panel only lists sessions that can still run. Lot control shows
+  // every session (so an ended one can be restarted) but sorts ended to the end.
+  const openAuctions = auctions.filter((a) => a.status !== AuctionStatus.ENDED);
+  const controlAuctions = [...auctions].sort(
+    (a, b) => Number(a.status === AuctionStatus.ENDED) - Number(b.status === AuctionStatus.ENDED),
+  );
 
   return (
     <main className="mx-auto w-full max-w-[1180px] px-10 pb-20 pt-8">
@@ -91,14 +116,15 @@ export default async function AdminPage() {
           Live auction broadcast
         </h2>
         <p className="mb-4 text-[13px] text-muted">
-          Broadcast a live auction feed to every buyer&apos;s telecast screen. Paste a YouTube
-          Live embed URL or a direct video stream URL.
+          Broadcast a live auction feed to every buyer&apos;s telecast screen. Paste any
+          YouTube link (watch, share, or live) or a direct .mp4 stream URL — the telecast
+          detects the type automatically. Then press <strong>Go live</strong>.
         </p>
         <div className="grid gap-3">
-          {auctions.length === 0 ? (
+          {openAuctions.length === 0 ? (
             <p className="text-[13px] text-dim">No open sessions to broadcast.</p>
           ) : (
-            auctions.map((a) => (
+            openAuctions.map((a) => (
               <BroadcastControl
                 key={a.id}
                 auctionId={a.id}
@@ -150,7 +176,7 @@ export default async function AdminPage() {
           You control when a session runs and which lot is on the block. Price moves only through
           real buyer bids — there is no admin path to raise one.
         </p>
-        {auctions.map((a) => (
+        {controlAuctions.map((a) => (
           <div key={a.id} className="mb-3 rounded-xl border border-border p-4 last:mb-0">
             <div className="mb-2.5 flex items-center justify-between gap-3">
               <p className="text-sm font-bold text-text">
@@ -160,6 +186,7 @@ export default async function AdminPage() {
                 <Pill tone={a.status === AuctionStatus.LIVE ? "warn" : "unknown"}>
                   {a.status}
                 </Pill>
+                <StartAuctionButton auctionId={a.id} />
                 <EndAuctionButton auctionId={a.id} />
               </div>
             </div>
@@ -193,6 +220,93 @@ export default async function AdminPage() {
             )}
           </div>
         ))}
+      </section>
+
+      <section className="mb-6 rounded-2xl border border-border bg-card p-[22px]">
+        <div className="mb-3.5 flex items-center justify-between gap-3">
+          <h2 className="text-[13px] font-bold uppercase tracking-[0.04em] text-dim">
+            Pending used-car listings
+          </h2>
+          {pendingListings.length > 0 && (
+            <span className="rounded-full bg-accent px-2.5 py-0.5 text-[11px] font-bold text-on-accent">
+              {pendingListings.length} awaiting review
+            </span>
+          )}
+        </div>
+        <p className="mb-4 text-[13px] text-muted">
+          Sellers submit their car with full details, registration information and the
+          car&apos;s auction sheet. Approve to publish it to the marketplace, or reject
+          with a reason the seller can act on.
+        </p>
+        {pendingListings.length === 0 ? (
+          <p className="py-3 text-[13px] text-dim">No listings awaiting review.</p>
+        ) : (
+          pendingListings.map((l) => (
+            <div key={l.id} className="border-t border-track py-4 first:border-t-0">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-sm font-bold text-text">{l.title}</p>
+                  <p className="mt-0.5 text-xs text-dim">
+                    {`${l.manufactureYear} ${l.make} ${l.model} · ${km(l.mileageKm)} km · ${l.location}`}
+                  </p>
+                  <p className="mt-0.5 text-xs text-dim">
+                    {`Seller: ${l.seller.fullName} · Reg: ${l.registrationNumber ?? "—"}`}
+                    {l.transmission ? ` · ${l.transmission}` : ""}
+                    {l.fuelType ? ` · ${l.fuelType}` : ""}
+                    {l.engineCc ? ` · ${l.engineCc}cc` : ""}
+                  </p>
+                </div>
+                <p className="whitespace-nowrap text-sm font-extrabold text-accent">
+                  {bdtLakh(l.priceBdt)}
+                </p>
+              </div>
+              <p className="mt-2 line-clamp-2 text-[13px] leading-[1.55] text-muted">
+                {l.conditionNotes}
+              </p>
+              {(l.photoUrls.length > 0 || l.videoUrl) && (
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  {l.photoUrls.slice(0, 6).map((src, i) => (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      key={i}
+                      src={src}
+                      alt={`${l.title} photo ${i + 1}`}
+                      className="h-11 w-14 rounded border border-border object-cover"
+                    />
+                  ))}
+                  {l.photoUrls.length > 6 && (
+                    <span className="text-xs text-dim">+{l.photoUrls.length - 6} more</span>
+                  )}
+                  {l.videoUrl && (
+                    <a
+                      href={l.videoUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="rounded-md border border-border px-2 py-1 text-xs font-bold text-text hover:border-accent hover:text-accent"
+                    >
+                      ▶ Video
+                    </a>
+                  )}
+                </div>
+              )}
+              <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+                {l.auctionSheetUrl ? (
+                  <a
+                    href={l.auctionSheetUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-bg px-3 py-1.75 text-xs font-bold text-text hover:border-accent hover:text-accent"
+                  >
+                    View auction sheet ↗
+                  </a>
+                ) : (
+                  <span className="text-xs text-dim">No auction sheet attached.</span>
+                )}
+                <ListingReviewButtons listingId={l.id} />
+              </div>
+            </div>
+          ))
+        )}
       </section>
 
       <div className="grid gap-5 lg:grid-cols-[1.2fr_1fr]">

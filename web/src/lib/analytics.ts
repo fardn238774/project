@@ -27,7 +27,9 @@ export async function getPlatformStats(): Promise<PlatformStats> {
     shipments,
     bookings,
   ] = await Promise.all([
-    prisma.usedCarListing.count({ where: { status: { not: ListingStatus.SOLD } } }),
+    prisma.usedCarListing.count({
+      where: { status: { in: [ListingStatus.ACTIVE, ListingStatus.OFFER_RECEIVED] } },
+    }),
     prisma.newCarVariant.count(),
     prisma.auctionCar.count({ where: { status: { in: [LotStatus.PENDING, LotStatus.LIVE] } } }),
     prisma.bid.count(),
