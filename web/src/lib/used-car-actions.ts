@@ -222,3 +222,83 @@ export async function createListing(
   revalidatePath("/admin");
   redirect("/used-cars/seller?created=1");
 }
+
+// ----------------------------------------- seller: offers & marking sold
+
+export type SellerActionResult = { error?: string; ok?: boolean };
+
+/** Seller accepts an offer: it wins, others are declined, the car is marked sold. */
+export async function acceptOffer(offerId: string): Promise<SellerActionResult> {
+  const me = await requireBuyer();
+  const offer = await prisma.offer.findUnique({
+    where: { id: offerId },
+    include: { listing: { select: { id: true, sellerId: true, status: true } } },
+  });
+  if (!offer) return { error: "That offer no longer exists." };
+  if (offer.listing.sellerId !== me.id) return { error: "Only the seller can accept offers." };
+  if (offer.listing.status === ListingStatus.SOLD) return { error: "This car is already sold." };
+
+  await prisma.$transaction([
+    prisma.offer.update({ where: { id: offerId }, data: { status: OfferStatus.ACCEPTED } }),
+    prisma.offer.updateMany({
+      where: { listingId: offer.listing.id, id: { not: offerId }, status: OfferStatus.PENDING },
+      data: { status: OfferStatus.REJECTED },
+    }),
+    prisma.usedCarListing.update({
+      where: { id: offer.listing.id },
+      data: { status: ListingStatus.SOLD },
+    }),
+  ]);
+
+  revalidatePath(`/used-cars/${offer.listing.id}`);
+  revalidatePath("/used-cars/seller");
+  revalidatePath("/used-cars");
+  return { ok: true };
+}
+
+/** Seller declines a single offer. Reverts the listing to ACTIVE if none remain. */
+export async function rejectOffer(offerId: string): Promise<SellerActionResult> {
+  const me = await requireBuyer();
+  const offer = await prisma.offer.findUnique({
+    where: { id: offerId },
+    include: { listing: { select: { id: true, sellerId: true } } },
+  });
+  if (!offer) return { error: "That offer no longer exists." };
+  if (offer.listing.sellerId !== me.id) return { error: "Only the seller can decline offers." };
+
+  await prisma.offer.update({ where: { id: offerId }, data: { status: OfferStatus.REJECTED } });
+  const stillPending = await prisma.offer.count({
+    where: { listingId: offer.listing.id, status: OfferStatus.PENDING },
+  });
+  if (stillPending === 0) {
+    await prisma.usedCarListing.updateMany({
+      where: { id: offer.listing.id, status: ListingStatus.OFFER_RECEIVED },
+      data: { status: ListingStatus.ACTIVE },
+    });
+  }
+
+  revalidatePath(`/used-cars/${offer.listing.id}`);
+  revalidatePath("/used-cars/seller");
+  return { ok: true };
+}
+
+/** Seller marks the car sold once a deal is agreed (e.g. off a chat). */
+export async function markSold(listingId: string): Promise<SellerActionResult> {
+  const me = await requireBuyer();
+  const listing = await prisma.usedCarListing.findUnique({
+    where: { id: listingId },
+    select: { sellerId: true },
+  });
+  if (!listing) return { error: "That listing no longer exists." };
+  if (listing.sellerId !== me.id) return { error: "Only the seller can mark it sold." };
+
+  await prisma.usedCarListing.update({
+    where: { id: listingId },
+    data: { status: ListingStatus.SOLD },
+  });
+
+  revalidatePath(`/used-cars/${listingId}`);
+  revalidatePath("/used-cars/seller");
+  revalidatePath("/used-cars");
+  return { ok: true };
+}

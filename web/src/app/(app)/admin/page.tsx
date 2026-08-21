@@ -7,6 +7,7 @@ import { bdt, bdtLakh, km, num } from "@/lib/format";
 import { sessionDayLabel, timeInJst } from "@/lib/time";
 import { feeLabel } from "@/lib/agents";
 import { Pill } from "@/components/StatusChip";
+import { StatCard } from "./StatCard";
 import {
   OrgReviewButtons,
   OrgSuspendButton,
@@ -92,22 +93,35 @@ export default async function AdminPage() {
   return (
     <main className="mx-auto w-full max-w-[1180px] px-10 pb-20 pt-8">
       <div className="mb-6 flex items-center justify-between gap-4">
-        <h1 className="text-[26px] font-extrabold text-text">Platform Analytics &amp; Revenue</h1>
-        <Link href="/" className="text-[13px] text-muted hover:text-accent">
-          &larr; Exit admin, back to buyer view
-        </Link>
+        <h1 className="text-[27px] font-extrabold tracking-[-0.01em] text-text">
+          Platform <span className="gradient-text">Analytics</span> &amp; Revenue
+        </h1>
+        <div className="flex items-center gap-4">
+          <Link
+            href="/admin/system"
+            className="rounded-[10px] bg-ink px-4 py-2 text-[13px] font-bold text-white transition hover:bg-accent hover:text-on-accent"
+          >
+            ⚙ System Management
+          </Link>
+          <Link href="/" className="text-[13px] text-muted hover:text-accent">
+            &larr; Exit admin, back to buyer view
+          </Link>
+        </div>
       </div>
 
-      <div className="mb-7 grid grid-cols-2 gap-3.5 lg:grid-cols-4">
-        <StatCard value={stats.activeListings.toLocaleString("en-US")} label="Total active listings" />
+      <div className="stagger mb-7 grid grid-cols-2 gap-3.5 lg:grid-cols-4">
+        <StatCard value={stats.activeListings} label="Total active listings" icon="🚗" />
         <StatCard
-          value={stats.bidsPlaced.toLocaleString("en-US")}
+          value={stats.bidsPlaced}
           label={`Bids placed · ${stats.winRatePercent}% of contested lots sold`}
+          icon="🔨"
         />
-        <StatCard value={stats.successfulImports.toLocaleString("en-US")} label="Successful imports" />
+        <StatCard value={stats.successfulImports} label="Successful imports" icon="📦" />
         <StatCard
-          value={`${stats.poolingMatchRatePercent}%`}
+          value={stats.poolingMatchRatePercent}
+          suffix="%"
           label="Container pooling match rate"
+          icon="🚢"
         />
       </div>
 
@@ -153,7 +167,7 @@ export default async function AdminPage() {
             </div>
             <div className="h-2.5 flex-1 overflow-hidden rounded-[5px] bg-track">
               <div
-                className="h-full rounded-[5px] bg-accent"
+                className="bar-grow h-full rounded-[5px] bg-accent"
                 style={{ width: `${(row.value / maxRevenue) * 100}%` }}
               />
             </div>
@@ -424,11 +438,3 @@ export default async function AdminPage() {
   );
 }
 
-function StatCard({ value, label }: { value: string; label: string }) {
-  return (
-    <div className="rounded-[14px] border border-border bg-card p-4.5">
-      <p className="text-2xl font-extrabold text-text">{value}</p>
-      <p className="text-xs text-dim">{label}</p>
-    </div>
-  );
-}

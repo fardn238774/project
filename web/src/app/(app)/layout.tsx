@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { AppHeader } from "@/components/AppHeader";
+import { RouteTransition } from "@/components/RouteTransition";
 import { getCartCount } from "@/lib/cart";
 import { Role } from "@/generated/prisma/enums";
 
@@ -41,7 +42,7 @@ export default async function AppLayout({
         orgName={org?.companyName}
         cartCount={cartCount}
       />
-      {children}
+      <RouteTransition>{children}</RouteTransition>
     </>
   );
 }

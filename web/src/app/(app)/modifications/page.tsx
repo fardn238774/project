@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { currentBuyer } from "@/lib/session";
-import { readCatalog, readGarage, knownChassisCodes } from "@/lib/fitment";
+import { readCatalog, readGarage } from "@/lib/fitment";
 import { ModStudio } from "./ModStudio";
 
 export const metadata = { title: "Modification Studio — AutoBD" };
@@ -20,10 +20,9 @@ export default async function ModificationsPage({
       })
     : null;
 
-  const [parts, garage, chassisCodes] = await Promise.all([
+  const [parts, garage] = await Promise.all([
     readCatalog(fromLot?.chassisCode ?? null),
     buyer ? readGarage(buyer.id) : Promise.resolve([]),
-    knownChassisCodes(),
   ]);
 
   return (
@@ -39,7 +38,6 @@ export default async function ModificationsPage({
       <ModStudio
         parts={parts}
         garage={garage}
-        chassisCodes={chassisCodes}
         initialChassis={fromLot?.chassisCode ?? null}
       />
     </main>

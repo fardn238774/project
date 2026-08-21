@@ -31,6 +31,8 @@ export async function readCatalog(chassisCode: string | null): Promise<CatalogPa
       brtaLegal: p.brtaLegal,
       boltPattern: p.boltPattern,
       offsetMm: p.offsetMm,
+      photoUrls: p.photoUrls,
+      videoUrls: p.videoUrls,
       fits,
       compatible: chassisCode === null ? true : fits.includes(chassisCode),
     };

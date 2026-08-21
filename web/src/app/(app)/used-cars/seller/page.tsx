@@ -18,7 +18,7 @@ export default async function SellerDashboardPage({
   const listings = await prisma.usedCarListing.findMany({
     where: { sellerId: buyer.id },
     orderBy: { createdAt: "desc" },
-    include: { _count: { select: { offers: true } } },
+    include: { _count: { select: { offers: true, threads: true } } },
   });
 
   return (
@@ -80,7 +80,14 @@ export default async function SellerDashboardPage({
                 <span>
                   <Pill tone={s.tone}>{s.label}</Pill>
                 </span>
-                <span className="text-text">{l._count.offers}</span>
+                <span className="text-text">
+                  {l._count.offers} {l._count.offers === 1 ? "offer" : "offers"}
+                  {l._count.threads > 0 && (
+                    <span className="mt-0.5 block text-[11px] font-semibold text-accent">
+                      {l._count.threads} chat{l._count.threads === 1 ? "" : "s"}
+                    </span>
+                  )}
+                </span>
                 <span className="font-bold text-text">{bdtLakh(l.priceBdt)}</span>
               </Link>
             );

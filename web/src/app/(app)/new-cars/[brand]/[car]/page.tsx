@@ -56,13 +56,57 @@ export default async function NewCarDetailPage({
       <p className="text-xs font-bold uppercase tracking-[0.03em] text-dim">{car.brand.name}</p>
       <h1 className="mb-4 text-[30px] font-extrabold text-text">{car.model}</h1>
 
-      <LocalPhoto
-        srcs={carImageSrcs(car.brand.slug, car.model)}
-        alt={`${car.brand.name} ${car.model}`}
-        containerClassName="mb-5 h-[260px] w-full overflow-hidden rounded-2xl border border-border"
-        imgClassName="object-cover"
-        fallback={<PhotoPlaceholder label="car photo" height={260} radius={0} />}
-      />
+      {car.photoUrls.length > 0 ? (
+        <div className="mb-5">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={car.photoUrls[0]}
+            alt={`${car.brand.name} ${car.model}`}
+            className="h-[260px] w-full rounded-2xl border border-border object-cover"
+          />
+          {car.photoUrls.length > 1 && (
+            <div className="mt-2.5 flex flex-wrap gap-2.5">
+              {car.photoUrls.slice(1).map((src, i) => (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  key={i}
+                  src={src}
+                  alt={`${car.brand.name} ${car.model} photo ${i + 2}`}
+                  className="h-20 w-28 rounded-lg border border-border object-cover"
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      ) : (
+        <LocalPhoto
+          srcs={carImageSrcs(car.brand.slug, car.model)}
+          alt={`${car.brand.name} ${car.model}`}
+          containerClassName="mb-5 h-[260px] w-full overflow-hidden rounded-2xl border border-border"
+          imgClassName="object-cover"
+          fallback={<PhotoPlaceholder label="car photo" height={260} radius={0} />}
+        />
+      )}
+
+      {car.videoUrls.length > 0 && (
+        <section className="mb-5 rounded-2xl border border-border bg-card p-[22px]">
+          <h2 className="mb-3 text-[13px] font-bold uppercase tracking-[0.04em] text-dim">
+            Walkaround videos
+          </h2>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {car.videoUrls.map((src, i) => (
+              <video
+                key={i}
+                controls
+                playsInline
+                preload="metadata"
+                src={src}
+                className="w-full rounded-xl border border-border bg-black"
+              />
+            ))}
+          </div>
+        </section>
+      )}
 
       <NewCarDetail
         newCarId={car.id}

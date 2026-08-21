@@ -14,6 +14,8 @@ export type CatalogPart = {
   brtaLegal: boolean;
   boltPattern: string | null;
   offsetMm: number | null;
+  photoUrls: string[];
+  videoUrls: string[];
   /** Chassis codes this part is listed for. */
   fits: string[];
   compatible: boolean;

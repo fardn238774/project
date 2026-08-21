@@ -116,7 +116,21 @@ export default async function AuctionLotsPage({
                 className="overflow-hidden rounded-2xl border border-border bg-card"
               >
                 <div className="relative">
-                  <PhotoPlaceholder label="lot photo" height={130} radius={0} />
+                  {lot.photoUrls.length > 0 ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={lot.photoUrls[0]}
+                      alt={`${lot.make} ${lot.model}`}
+                      className="h-[130px] w-full object-cover"
+                    />
+                  ) : (
+                    <PhotoPlaceholder label="lot photo" height={130} radius={0} />
+                  )}
+                  {lot.videoUrls.length > 0 && (
+                    <span className="absolute bottom-2 right-2 rounded-md bg-black/70 px-2 py-0.5 text-[10.5px] font-bold text-white">
+                      ▶ {lot.videoUrls.length}
+                    </span>
+                  )}
                   <span className="absolute left-2.5 top-2.5 rounded-md bg-ink px-2 py-[3px] text-[10.5px] font-bold text-white">
                     Lot {lot.lotNumber}
                   </span>

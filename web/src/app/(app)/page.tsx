@@ -42,24 +42,31 @@ export default async function HomePage() {
 
   return (
     <main className="mx-auto w-full max-w-[1180px] px-10 pb-20 pt-16">
-      <div className="mb-9 max-w-[680px]">
-        <p className="mb-2.5 text-[13px] font-bold uppercase tracking-[0.06em] text-accent">
+      <div className="mb-10 max-w-[760px]">
+        <p className="mb-3 inline-flex items-center gap-2 rounded-full border border-border bg-card/60 px-3 py-1 text-[12px] font-bold uppercase tracking-[0.06em] text-accent">
+          <span
+            className="h-1.5 w-1.5 rounded-full bg-accent"
+            style={{ animation: "pulseDot 1.4s ease-in-out infinite" }}
+          />
           Four ways to your next car
         </p>
-        <h1 className="text-[28px] font-extrabold leading-[1.15] tracking-[-0.02em] text-text">
-          Choose how you&apos;d like to buy to get started.
+        <h1 className="text-[40px] font-extrabold leading-[1.08] tracking-[-0.02em] text-text sm:text-[46px]">
+          Choose how you&apos;d like to{" "}
+          <span className="gradient-text">buy your next car.</span>
         </h1>
+        <p className="mt-3.5 max-w-[560px] text-[15px] leading-[1.6] text-muted">
+          New, used, Japanese reconditioned or modified — one platform, transparent landed cost,
+          all the way to your driveway.
+        </p>
       </div>
 
-      <div className="mb-16 grid gap-[18px] md:grid-cols-2 xl:grid-cols-4">
+      <div className="stagger mb-16 grid gap-[18px] md:grid-cols-2 xl:grid-cols-4">
         {PILLARS.map((p) => (
           <Link
             key={p.href}
             href={p.href}
-            className={`relative rounded-2xl border p-[22px] transition hover:-translate-y-0.5 ${
-              p.core
-                ? "border-accent bg-accent-tint hover:shadow-[0_6px_18px_rgba(var(--accent-rgb),0.18)]"
-                : "border-border bg-card hover:shadow-[0_6px_18px_rgba(0,0,0,0.06)]"
+            className={`hover-lift sheen group relative overflow-hidden rounded-2xl border p-[22px] ${
+              p.core ? "border-accent bg-accent-tint" : "border-border bg-card"
             }`}
           >
             {p.core && (
@@ -86,10 +93,10 @@ export default async function HomePage() {
         ))}
       </div>
 
-      <div className="grid gap-[18px] md:grid-cols-2">
+      <div className="stagger grid gap-[18px] md:grid-cols-2">
         <Link
           href="/research"
-          className="rounded-2xl border border-border bg-card p-6 transition hover:shadow-[0_6px_18px_rgba(0,0,0,0.06)]"
+          className="hover-lift rounded-2xl border border-border bg-card p-6"
         >
           <p className="mb-2 text-[13px] font-bold uppercase tracking-[0.04em] text-[#2f8f5f]">
             Dream Car Research Hub
@@ -99,7 +106,7 @@ export default async function HomePage() {
             calculator.
           </p>
         </Link>
-        <div className="rounded-2xl border border-border bg-card p-6">
+        <div className="hover-lift rounded-2xl border border-border bg-card p-6">
           <p className="mb-2 text-[13px] font-bold uppercase tracking-[0.04em] text-[#2f8f5f]">
             Container Pooling &amp; BRTA Tracker
           </p>

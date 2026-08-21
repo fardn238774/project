@@ -110,7 +110,45 @@ export default async function BiddingPage({
         <div className="grid items-start gap-6 lg:grid-cols-[1.5fr_1fr]">
           <div>
             <div className="mb-4 overflow-hidden rounded-2xl border border-border bg-card">
-              <PhotoPlaceholder label="auction lot photo — 4 angles" height={220} radius={0} />
+              {lot.photoUrls.length > 0 ? (
+                <div>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={lot.photoUrls[0]}
+                    alt={`${lot.make} ${lot.model}`}
+                    className="h-[260px] w-full object-cover"
+                  />
+                  {lot.photoUrls.length > 1 && (
+                    <div className="flex flex-wrap gap-2 p-3">
+                      {lot.photoUrls.slice(1).map((src, i) => (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          key={i}
+                          src={src}
+                          alt={`${lot.make} ${lot.model} photo ${i + 2}`}
+                          className="h-16 w-24 rounded-lg border border-border object-cover"
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <PhotoPlaceholder label="auction lot photo — 4 angles" height={220} radius={0} />
+              )}
+              {lot.videoUrls.length > 0 && (
+                <div className="grid gap-2.5 p-3 sm:grid-cols-2">
+                  {lot.videoUrls.map((src, i) => (
+                    <video
+                      key={i}
+                      controls
+                      playsInline
+                      preload="metadata"
+                      src={src}
+                      className="w-full rounded-lg border border-border bg-black"
+                    />
+                  ))}
+                </div>
+              )}
               <div className="p-5">
                 <div className="mb-3.5 flex items-start justify-between gap-3">
                   <div>

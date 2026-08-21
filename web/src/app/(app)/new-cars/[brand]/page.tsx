@@ -62,13 +62,29 @@ export default async function BrandCarsPage({
               href={`/new-cars/${b.slug}/${car.id}`}
               className="overflow-hidden rounded-2xl border border-border bg-card transition hover:shadow-[0_6px_18px_rgba(0,0,0,0.06)]"
             >
-              <LocalPhoto
-                srcs={carImageSrcs(b.slug, car.model)}
-                alt={car.model}
-                containerClassName="h-[130px] w-full"
-                imgClassName="object-cover"
-                fallback={<PhotoPlaceholder label="product photo" height={130} radius={0} />}
-              />
+              {car.photoUrls.length > 0 ? (
+                <div className="relative h-[130px] w-full overflow-hidden">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={car.photoUrls[0]}
+                    alt={car.model}
+                    className="h-full w-full object-cover"
+                  />
+                  {car.videoUrls.length > 0 && (
+                    <span className="absolute bottom-2 right-2 rounded-md bg-black/70 px-2 py-0.5 text-[11px] font-bold text-white">
+                      ▶ {car.videoUrls.length} video{car.videoUrls.length === 1 ? "" : "s"}
+                    </span>
+                  )}
+                </div>
+              ) : (
+                <LocalPhoto
+                  srcs={carImageSrcs(b.slug, car.model)}
+                  alt={car.model}
+                  containerClassName="h-[130px] w-full"
+                  imgClassName="object-cover"
+                  fallback={<PhotoPlaceholder label="product photo" height={130} radius={0} />}
+                />
+              )}
               <div className="p-5">
                 <p className="text-[17px] font-bold text-text">{car.model}</p>
                 <p className="mb-2.5 mt-1 text-sm text-muted">

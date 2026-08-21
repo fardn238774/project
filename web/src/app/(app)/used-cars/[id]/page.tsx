@@ -9,7 +9,10 @@ import { PhotoPlaceholder } from "@/components/PhotoPlaceholder";
 import { Pill, verifiedPill, accidentPill } from "@/components/StatusChip";
 import { OfferForm } from "./OfferForm";
 import { ListingGallery } from "./ListingGallery";
+import { OfferActions, MarkSoldButton } from "./SellerControls";
 import { AddToCartButton } from "@/components/AddToCartButton";
+import { ListingChatPanel } from "@/components/ListingChatPanel";
+import type { ChatMessage } from "@/lib/chat";
 import { CartItemKind, ListingStatus, OfferStatus } from "@/generated/prisma/client";
 
 export default async function UsedCarDetailPage({
@@ -68,6 +71,74 @@ export default async function UsedCarDetailPage({
       : isSold
         ? "This car has already been sold."
         : undefined;
+
+  // The owner sees received offers + every buyer's chat thread; a buyer sees
+  // only their own thread with the seller.
+  type ChatThread = { id: string; buyerName: string; messages: ChatMessage[] };
+  let offers: { id: string; amount: string; buyerName: string; status: OfferStatus }[] = [];
+  let sellerThreads: ChatThread[] = [];
+  let myThreadId: string | null = null;
+  let myMessages: ChatMessage[] = [];
+
+  if (isOwnListing && isPublic) {
+    const [offerRows, threadRows] = await Promise.all([
+      prisma.offer.findMany({
+        where: { listingId: id },
+        orderBy: { createdAt: "desc" },
+        include: { buyer: { select: { fullName: true } } },
+      }),
+      prisma.listingThread.findMany({
+        where: { listingId: id },
+        orderBy: { createdAt: "asc" },
+        include: {
+          buyer: { select: { fullName: true } },
+          messages: {
+            orderBy: { createdAt: "asc" },
+            take: 200,
+            include: { senderBuyer: { select: { fullName: true } } },
+          },
+        },
+      }),
+    ]);
+    offers = offerRows.map((o) => ({
+      id: o.id,
+      amount: bdt(o.amountBdt),
+      buyerName: o.buyer.fullName,
+      status: o.status,
+    }));
+    sellerThreads = threadRows.map((t) => ({
+      id: t.id,
+      buyerName: t.buyer.fullName,
+      messages: t.messages.map((m) => ({
+        id: m.id,
+        body: m.body,
+        createdAt: m.createdAt.toISOString(),
+        mine: m.senderBuyerId === buyer?.id,
+        senderLabel: m.senderBuyer.fullName,
+      })),
+    }));
+  } else if (buyer && !isOwnListing && !isSold) {
+    const t = await prisma.listingThread.findUnique({
+      where: { listingId_buyerId: { listingId: id, buyerId: buyer.id } },
+      include: {
+        messages: {
+          orderBy: { createdAt: "asc" },
+          take: 200,
+          include: { senderBuyer: { select: { fullName: true } } },
+        },
+      },
+    });
+    if (t) {
+      myThreadId = t.id;
+      myMessages = t.messages.map((m) => ({
+        id: m.id,
+        body: m.body,
+        createdAt: m.createdAt.toISOString(),
+        mine: m.senderBuyerId === buyer.id,
+        senderLabel: m.senderBuyer.fullName,
+      }));
+    }
+  }
 
   return (
     <main className="mx-auto w-full max-w-[900px] px-10 pb-25 pt-6">
@@ -189,26 +260,117 @@ export default async function UsedCarDetailPage({
         </p>
       </section>
 
-      {buyer && !isOwnListing && !isSold && (
-        <section className="mb-4 rounded-2xl border border-border bg-card p-[22px]">
-          <p className="mb-2.5 text-[13px] text-muted">
-            Buy now at the asking price and pay it with the rest of your cart, or make an offer below.
-          </p>
-          <AddToCartButton
-            kind={CartItemKind.USED_CAR}
-            refId={listing.id}
-            label={`Add to cart · ${bdtLakh(listing.priceBdt)}`}
-            className="rounded-[10px] bg-accent px-5 py-3 text-sm font-bold text-on-accent transition hover:bg-accent-hover disabled:opacity-60"
-          />
-        </section>
-      )}
+      {isOwnListing ? (
+        isPublic && (
+          <>
+            <section className="mb-4 rounded-2xl border border-border bg-card p-[22px]">
+              <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                <h2 className="text-[13px] font-bold uppercase tracking-[0.04em] text-dim">
+                  Your listing — offers &amp; messages
+                </h2>
+                {isSold ? (
+                  <Pill tone="good" size="md">
+                    Sold
+                  </Pill>
+                ) : (
+                  <MarkSoldButton listingId={listing.id} />
+                )}
+              </div>
 
-      <OfferForm
-        listingId={listing.id}
-        canOffer={Boolean(buyer) && !isOwnListing && !isSold}
-        blockedReason={blockedReason}
-        existingOffer={myOffer ? bdt(myOffer.amountBdt) : undefined}
-      />
+              <p className="mb-2 text-[12px] font-bold uppercase tracking-[0.03em] text-muted">
+                Offers received ({offers.length})
+              </p>
+              {offers.length === 0 ? (
+                <p className="text-[13px] text-dim">No offers yet. Buyers can offer or message you below.</p>
+              ) : (
+                <div className="overflow-hidden rounded-xl border border-border">
+                  {offers.map((o, i) => (
+                    <div
+                      key={o.id}
+                      className={`flex flex-wrap items-center justify-between gap-3 px-4 py-3 ${
+                        i > 0 ? "border-t border-track" : ""
+                      }`}
+                    >
+                      <div>
+                        <p className="text-sm font-bold text-text">{o.amount}</p>
+                        <p className="text-[12px] text-dim">from {o.buyerName}</p>
+                      </div>
+                      {o.status === OfferStatus.PENDING && !isSold ? (
+                        <OfferActions offerId={o.id} />
+                      ) : (
+                        <span className="rounded-md bg-chip px-2.5 py-1 text-[11px] font-bold text-dim">
+                          {o.status === OfferStatus.ACCEPTED
+                            ? "Accepted"
+                            : o.status === OfferStatus.REJECTED
+                              ? "Declined"
+                              : "Pending"}
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </section>
+
+            {sellerThreads.length > 0 && (
+              <section className="mb-4">
+                <p className="mb-2 text-[12px] font-bold uppercase tracking-[0.03em] text-muted">
+                  Buyer messages ({sellerThreads.length})
+                </p>
+                <div className="grid gap-3">
+                  {sellerThreads.map((t) => (
+                    <ListingChatPanel
+                      key={t.id}
+                      mode="seller"
+                      listingId={listing.id}
+                      threadId={t.id}
+                      initialMessages={t.messages}
+                      title={`Chat with ${t.buyerName}`}
+                      emptyHint="No messages yet."
+                    />
+                  ))}
+                </div>
+              </section>
+            )}
+          </>
+        )
+      ) : (
+        <>
+          {buyer && !isSold && (
+            <section className="mb-4 rounded-2xl border border-border bg-card p-[22px]">
+              <p className="mb-2.5 text-[13px] text-muted">
+                Buy now at the asking price and pay it with the rest of your cart, or make an offer below.
+              </p>
+              <AddToCartButton
+                kind={CartItemKind.USED_CAR}
+                refId={listing.id}
+                label={`Add to cart · ${bdtLakh(listing.priceBdt)}`}
+                className="rounded-[10px] bg-accent px-5 py-3 text-sm font-bold text-on-accent transition hover:bg-accent-hover disabled:opacity-60"
+              />
+            </section>
+          )}
+
+          <OfferForm
+            listingId={listing.id}
+            canOffer={Boolean(buyer) && !isSold}
+            blockedReason={blockedReason}
+            existingOffer={myOffer ? bdt(myOffer.amountBdt) : undefined}
+          />
+
+          {buyer && !isSold && (
+            <div className="mt-4">
+              <ListingChatPanel
+                mode="buyer"
+                listingId={listing.id}
+                threadId={myThreadId}
+                initialMessages={myMessages}
+                title={`Chat with ${listing.seller.fullName} (seller)`}
+                emptyHint={`Ask ${listing.seller.fullName} anything about this car — replies appear here.`}
+              />
+            </div>
+          )}
+        </>
+      )}
     </main>
   );
 }

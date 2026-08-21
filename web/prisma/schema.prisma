@@ -65,6 +65,8 @@ model Buyer {
   ratings       Rating[]
   disputes      Dispute[]
   testDrives    TestDriveReservation[]
+  listingThreads      ListingThread[]  @relation("ListingThreadBuyer")
+  listingMessagesSent ListingMessage[] @relation("ListingMessageSender")
 }
 
 enum OrgStatus {
@@ -87,6 +89,8 @@ model Organization {
   licenseNumber    String  @unique
   yearsInOperation Int
   about            String?
+  /// Admin-managed organization logo (path under public/uploads).
+  logoUrl          String?
 
   // Fee structure is per-organization and drives the landed-cost agent fee.
   // PERCENT -> feeValue is a percentage of the bid (e.g. 3.0)
@@ -179,6 +183,10 @@ model NewCar {
   priceMaxBdt   Decimal  @db.Decimal(14, 2)
   warrantyYears Int
   warrantyKm    Int
+  /// Admin-managed showroom photos for this model (paths under public/uploads).
+  photoUrls     String[] @default([])
+  /// Admin-managed walkaround / promo videos for this model (public/uploads).
+  videoUrls     String[] @default([])
   createdAt     DateTime @default(now())
 
   variants   NewCarVariant[]
@@ -309,6 +317,7 @@ model UsedCarListing {
 
   offers   Offer[]
   payments Payment[]
+  threads  ListingThread[]
 }
 
 enum OfferStatus {
@@ -326,6 +335,34 @@ model Offer {
   amountBdt Decimal        @db.Decimal(14, 2)
   status    OfferStatus    @default(PENDING)
   createdAt DateTime       @default(now())
+}
+
+/// A private buyer↔seller chat about one used-car listing. One thread per
+/// interested buyer; the seller is the listing's own seller. Both participants
+/// are Buyer accounts, so messages are sent by a Buyer (senderBuyer).
+model ListingThread {
+  id        String         @id @default(cuid())
+  listingId String
+  listing   UsedCarListing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  buyerId   String
+  buyer     Buyer          @relation("ListingThreadBuyer", fields: [buyerId], references: [id], onDelete: Cascade)
+  createdAt DateTime       @default(now())
+
+  messages ListingMessage[]
+
+  @@unique([listingId, buyerId])
+}
+
+model ListingMessage {
+  id            String        @id @default(cuid())
+  threadId      String
+  thread        ListingThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  senderBuyerId String
+  senderBuyer   Buyer         @relation("ListingMessageSender", fields: [senderBuyerId], references: [id], onDelete: Cascade)
+  body          String
+  createdAt     DateTime      @default(now())
+
+  @@index([threadId, createdAt])
 }
 
 // ------------------------------------- pillar 3: reconditioned import auctions
@@ -384,6 +421,10 @@ model AuctionCar {
   startedAt        DateTime?
   endsAt           DateTime?
   status           LotStatus @default(PENDING)
+
+  /// Admin-managed lot photos & videos (paths under public/uploads).
+  photoUrls String[] @default([])
+  videoUrls String[] @default([])
 
   /// Incremented each time an anti-snipe extension fires. No hard cap, but
   /// application logs a warning past 20 in case it signals a bug.
@@ -508,6 +549,9 @@ model Part {
   brtaLegal   Boolean      @default(true)
   boltPattern String?
   offsetMm    Int?
+  /// Admin-managed part photos & videos (paths under public/uploads).
+  photoUrls   String[]     @default([])
+  videoUrls   String[]     @default([])
   createdAt   DateTime     @default(now())
 
   fitments PartFitment[]

@@ -1,5 +1,15 @@
 import type { Metadata } from "next";
+import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
+import { LiveBackground } from "@/components/LiveBackground";
+import { Interactions } from "@/components/Interactions";
+
+const sans = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  variable: "--font-sans",
+  weight: ["400", "500", "600", "700", "800"],
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "AutoBD — Multi-Pillar Car Marketplace",
@@ -20,12 +30,16 @@ export default function RootLayout({
       lang="en"
       data-theme="light"
       suppressHydrationWarning
-      className="h-full antialiased"
+      className={`h-full antialiased ${sans.variable}`}
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
-      <body className="flex min-h-full flex-col">{children}</body>
+      <body className="flex min-h-full flex-col">
+        <LiveBackground />
+        {children}
+        <Interactions />
+      </body>
     </html>
   );
 }
