@@ -118,5 +118,7 @@ export async function register(_prev: AuthResult, formData: FormData): Promise<A
 }
 
 export async function logout() {
-  await signOut({ redirectTo: "/login" });
+  // Sign out returns to the public landing page, from which the user can log
+  // back in or browse — rather than dropping straight onto the login form.
+  await signOut({ redirectTo: "/welcome" });
 }

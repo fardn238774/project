@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { bdt } from "@/lib/format";
 import { CATEGORY_LABEL, type CatalogPart, type GarageCar } from "@/lib/parts";
 import { CartItemKind, PartCategory } from "@/generated/prisma/enums";
@@ -35,6 +35,14 @@ export function ModStudio({
   initialChassis: string | null;
 }) {
   const [tab, setTab] = useState<Tab>("catalog");
+
+  // Open the 3D configurator in the app's current light/dark theme.
+  const [configTheme, setConfigTheme] = useState<"light" | "dark">("dark");
+  useEffect(() => {
+    setConfigTheme(
+      document.documentElement.getAttribute("data-theme") === "dark" ? "dark" : "light",
+    );
+  }, []);
 
   const init = prefill(initialChassis);
   const [brand, setBrand] = useState(init.brand);
@@ -268,9 +276,9 @@ export function ModStudio({
           </p>
         </>
       ) : (
-        <div className="overflow-hidden rounded-2xl border border-border bg-black shadow-[0_12px_44px_rgba(0,0,0,0.14)]">
+        <div className="overflow-hidden rounded-2xl border border-border bg-bg shadow-[0_12px_44px_rgba(0,0,0,0.14)]">
           <iframe
-            src="/kaido-multicar-garage.html"
+            src={`/kaido-multicar-garage.html?theme=${configTheme}`}
             title="KAIDO Garage 3D configurator"
             className="block h-[calc(100vh-220px)] min-h-[600px] w-full border-0"
           />

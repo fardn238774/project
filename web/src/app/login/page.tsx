@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState, useState } from "react";
 import { login, register, type AuthResult } from "@/lib/auth-actions";
 
@@ -26,14 +27,22 @@ export default function LoginPage() {
 
   return (
     <main className="min-h-screen bg-[#f7f4ee] px-10 py-10">
+      <div className="mx-auto mb-5 max-w-[1000px]">
+        <Link
+          href="/welcome"
+          className="inline-flex items-center gap-2 text-[13px] font-semibold text-[#6f6a60] transition hover:text-[#c1442d]"
+        >
+          <span aria-hidden>←</span> Back to home
+        </Link>
+      </div>
       <div className="mx-auto grid max-w-[1000px] overflow-hidden rounded-[20px] border border-[#e6e1d6] bg-white shadow-[0_12px_44px_rgba(0,0,0,0.08)] md:grid-cols-2">
         {/* brand panel */}
         <div className="relative flex flex-col justify-between overflow-hidden bg-[#1a0d0d] p-10 text-white">
           <div className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-[radial-gradient(circle,rgba(193,68,45,0.35),transparent_70%)]" />
           <div className="relative">
-            <div className="mb-7 text-2xl font-extrabold tracking-tight">
+            <Link href="/welcome" className="mb-7 inline-block text-2xl font-extrabold tracking-tight">
               Auto<span className="text-[#c1442d]">BD</span>
-            </div>
+            </Link>
             <h1 className="mb-3.5 text-[27px] font-extrabold leading-tight">
               {mode === "login" ? "Welcome back." : "Join AutoBD."}
             </h1>

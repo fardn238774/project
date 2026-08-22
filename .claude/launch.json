@@ -2,20 +2,8 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "autobd-web",
-      "url": "http://localhost:3000"
-    },
-    {
-      "name": "autobd-web-dev",
-      "runtimeExecutable": "npm.cmd",
-      "runtimeArgs": ["--prefix", "web", "run", "dev"],
-      "port": 3000
-    },
-    {
-      "name": "autobd-static",
-      "runtimeExecutable": "python",
-      "runtimeArgs": ["-m", "http.server", "8000"],
-      "port": 8000
+      "name": "autobd",
+      "url": "http://localhost:1398"
     }
   ]
 }

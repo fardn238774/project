@@ -12,6 +12,7 @@ const NAV = [
   { href: "/auctions", label: "Reconditioned Import" },
   { href: "/modifications", label: "Modifications" },
   { href: "/research", label: "Research Hub" },
+  { href: "/services", label: "Services" },
 ];
 
 /// Mirrors the prototype's nav() grouping: the whole auction journey keeps

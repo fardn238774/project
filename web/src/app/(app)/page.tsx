@@ -93,7 +93,7 @@ export default async function HomePage() {
         ))}
       </div>
 
-      <div className="stagger grid gap-[18px] md:grid-cols-2">
+      <div className="stagger grid gap-[18px] md:grid-cols-3">
         <Link
           href="/research"
           className="hover-lift rounded-2xl border border-border bg-card p-6"
@@ -115,6 +115,15 @@ export default async function HomePage() {
             resale value.
           </p>
         </div>
+        <Link href="/services" className="hover-lift rounded-2xl border border-border bg-card p-6">
+          <p className="mb-2 text-[13px] font-bold uppercase tracking-[0.04em] text-accent">
+            Service Center Finder
+          </p>
+          <p className="text-[15px] leading-[1.5] text-text">
+            Find the closest car repair, tyre and service shops around you on a live map —
+            distance-sorted, with directions.
+          </p>
+        </Link>
       </div>
 
       <form action={logout} className="mt-12">
