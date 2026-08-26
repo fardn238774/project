@@ -1,5 +1,6 @@
 import { requireBuyer } from "@/lib/session";
 import { getCartItems } from "@/lib/cart";
+import { gatewayConfigs } from "@/lib/payments/gateways";
 import { CartView } from "./CartView";
 
 export const metadata = { title: "My cart — AutoBD" };
@@ -8,6 +9,11 @@ export default async function CartPage() {
   const buyer = await requireBuyer();
   const items = await getCartItems(buyer.id);
   const total = items.reduce((s, i) => s + Number(i.amountBdt.toString()), 0);
+  const methods = gatewayConfigs().map((g) => ({
+    key: g.gateway as string,
+    label: g.label,
+    configured: g.configured,
+  }));
 
   return (
     <main className="mx-auto w-full max-w-[820px] px-10 pb-24 pt-6">
@@ -25,6 +31,7 @@ export default async function CartPage() {
           amountBdt: Number(i.amountBdt.toString()),
         }))}
         total={total}
+        methods={methods}
       />
     </main>
   );

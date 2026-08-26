@@ -5,6 +5,7 @@ import { bdt } from "@/lib/format";
 import { CATEGORY_LABEL, type CatalogPart, type GarageCar } from "@/lib/parts";
 import { CartItemKind, PartCategory } from "@/generated/prisma/enums";
 import { AddToCartButton } from "@/components/AddToCartButton";
+import { addBuildToCart } from "@/lib/cart-actions";
 import {
   VEHICLES,
   vehicleBrands,
@@ -42,6 +43,29 @@ export function ModStudio({
     setConfigTheme(
       document.documentElement.getAttribute("data-theme") === "dark" ? "dark" : "light",
     );
+  }, []);
+
+  // The 3D configurator (an iframe) posts a "Confirm & Pay" build to us; we add
+  // it to the universal cart via the same server layer as every other pillar.
+  const [buildToast, setBuildToast] = useState<string | null>(null);
+  useEffect(() => {
+    const onMsg = (e: MessageEvent) => {
+      if (e.origin !== window.location.origin) return; // only our own iframe
+      const data = e.data as { type?: string; build?: Record<string, unknown> } | null;
+      if (!data || data.type !== "autobd:add-build" || !data.build) return;
+      const b = data.build;
+      void addBuildToCart({
+        carName: String(b.carName ?? "Custom build"),
+        paintLabel: String(b.paintLabel ?? ""),
+        paintPrice: Number(b.paintPrice),
+        finish: String(b.finish ?? "gloss"),
+      }).then((r) => {
+        setBuildToast(r.error ? r.error : "Custom build added to cart ✓");
+        setTimeout(() => setBuildToast(null), 6000);
+      });
+    };
+    window.addEventListener("message", onMsg);
+    return () => window.removeEventListener("message", onMsg);
   }, []);
 
   const init = prefill(initialChassis);
@@ -282,6 +306,15 @@ export function ModStudio({
             title="KAIDO Garage 3D configurator"
             className="block h-[calc(100vh-220px)] min-h-[600px] w-full border-0"
           />
+        </div>
+      )}
+
+      {buildToast && (
+        <div className="fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-3 rounded-xl border border-accent bg-card px-5 py-3 shadow-[0_12px_40px_-12px_rgba(0,0,0,0.5)]">
+          <span className="text-[14px] font-bold text-text">{buildToast}</span>
+          <a href="/cart" className="text-[13px] font-bold text-accent hover:underline">
+            View cart →
+          </a>
         </div>
       )}
     </>

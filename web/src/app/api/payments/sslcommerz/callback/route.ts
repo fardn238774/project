@@ -2,13 +2,15 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { sslcommerzValidate } from "@/lib/payments/gateways";
 import { holdInEscrow } from "@/lib/escrow-actions";
+import { completeCartPayment } from "@/lib/cart-actions";
 import { PaymentStatus } from "@/generated/prisma/enums";
 
 /**
  * SSLCommerz posts the buyer back here. The redirect itself proves nothing —
  * it is browser-supplied — so the transaction is re-validated against
  * SSLCommerz, and the amount is checked against what we actually charged,
- * before any money is treated as held.
+ * before any money is treated as received. A cart payment (no auction lot)
+ * settles the buyer's cart; an auction payment goes into escrow.
  */
 async function handle(request: Request) {
   const url = new URL(request.url);
@@ -28,12 +30,17 @@ async function handle(request: Request) {
   const payment = await prisma.payment.findUnique({ where: { id: tranId } });
   if (!payment) redirect("/?payment=unknown");
 
+  // Cart payments carry no auction lot; auction payments do.
+  const isCart = !payment.auctionCarId;
+  const back = (reason: string) =>
+    isCart ? `/cart?payment=${reason}` : `/escrow/${payment.auctionCarId}?payment=${reason}`;
+
   if (status !== "success" || !valId) {
     await prisma.payment.update({
       where: { id: tranId },
       data: { status: PaymentStatus.FAILED, gatewayRef: status ?? "cancelled" },
     });
-    redirect(`/escrow/${payment.auctionCarId}?payment=failed`);
+    redirect(back("failed"));
   }
 
   const validation = await sslcommerzValidate(valId);
@@ -47,7 +54,12 @@ async function handle(request: Request) {
       where: { id: tranId },
       data: { status: PaymentStatus.FAILED, gatewayRef: validation.status ?? "invalid" },
     });
-    redirect(`/escrow/${payment.auctionCarId}?payment=invalid`);
+    redirect(back("invalid"));
+  }
+
+  if (isCart) {
+    await completeCartPayment(payment.id, valId);
+    redirect("/cart?payment=success");
   }
 
   await holdInEscrow(payment.id, valId);
