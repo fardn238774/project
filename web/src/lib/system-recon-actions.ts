@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/session";
 import { saveImage, saveVideo } from "@/lib/uploads";
+import { parseBdLocal } from "@/lib/time";
 import {
   OrgStatus,
   FeeType,
@@ -196,8 +197,9 @@ function readAuctionFields(fd: FormData): {
   const startsAtRaw = str(fd, "startsAt");
   if (!house) return { error: "Auction house is required." };
   if (!location) return { error: "Location is required." };
-  const startsAt = new Date(startsAtRaw);
-  if (!startsAtRaw || Number.isNaN(startsAt.getTime())) return { error: "Pick a valid start date & time." };
+  // The datetime-local value is the admin's Bangladesh wall-clock time.
+  const startsAt = parseBdLocal(startsAtRaw);
+  if (!startsAt) return { error: "Pick a valid start date & time." };
   return { data: { house, location, startsAt } };
 }
 

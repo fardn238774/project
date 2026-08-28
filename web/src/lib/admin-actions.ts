@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/session";
 import { SETTING_KEYS, type SettingKey } from "@/lib/settings";
+import { parseBdLocal, fullBdLabel } from "@/lib/time";
 import {
   AuctionStatus,
   BroadcastKind,
@@ -12,7 +13,7 @@ import {
   OrgStatus,
 } from "@/generated/prisma/enums";
 
-export type AdminResult = { error?: string; ok?: boolean };
+export type AdminResult = { error?: string; ok?: boolean; scheduledFor?: string };
 
 // ------------------------------------------------------- organization review
 
@@ -148,6 +149,69 @@ export async function startLot(auctionCarId: string, durationSeconds: number): P
   revalidatePath("/admin");
   revalidatePath("/auctions", "layout");
   return { ok: true };
+}
+
+/**
+ * Schedule WHEN a lot goes on the block at a Bangladesh wall-clock time the
+ * admin picks. The lot is placed on the block (status LIVE) with startedAt in
+ * the chosen BD moment (now or future) and endsAt = startedAt + duration.
+ * Bidding stays closed until startedAt is reached — enforced in placeBid and
+ * the live state — so the lot opens on its own at that real BD time (the ~3s
+ * live poll flips it from "starts in…" to live). Price still only ever moves
+ * through a real buyer's bid.
+ */
+export async function scheduleLot(
+  auctionCarId: string,
+  startAtBd: string,
+  durationSeconds: number,
+): Promise<AdminResult> {
+  await requireAdmin();
+
+  if (!Number.isFinite(durationSeconds) || durationSeconds < 30 || durationSeconds > 86400) {
+    return { error: "Duration must be between 30 seconds and 24 hours." };
+  }
+
+  const startedAt = parseBdLocal(startAtBd);
+  if (!startedAt) return { error: "Pick a valid start date & time." };
+
+  const endsAt = new Date(startedAt.getTime() + durationSeconds * 1000);
+  if (endsAt.getTime() <= Date.now()) {
+    return { error: "That start time plus the duration is already in the past — pick a later time." };
+  }
+
+  const lot = await prisma.auctionCar.findUnique({
+    where: { id: auctionCarId },
+    select: { auctionId: true, status: true },
+  });
+  if (!lot) return { error: "That lot no longer exists." };
+  if (lot.status === LotStatus.SOLD) return { error: "That lot has already sold." };
+
+  await prisma.$transaction([
+    // Only one lot is on the block at a time.
+    prisma.auctionCar.updateMany({
+      where: { auctionId: lot.auctionId, status: LotStatus.LIVE, id: { not: auctionCarId } },
+      data: { status: LotStatus.PENDING, startedAt: null, endsAt: null },
+    }),
+    prisma.auctionCar.update({
+      where: { id: auctionCarId },
+      data: {
+        status: LotStatus.LIVE,
+        startedAt,
+        endsAt,
+        durationSeconds,
+        extensionCount: 0,
+        winningBidId: null,
+      },
+    }),
+    prisma.auction.update({
+      where: { id: lot.auctionId },
+      data: { status: AuctionStatus.LIVE },
+    }),
+  ]);
+
+  revalidatePath("/admin");
+  revalidatePath("/auctions", "layout");
+  return { ok: true, scheduledFor: fullBdLabel(startedAt) };
 }
 
 export async function endAuction(auctionId: string): Promise<AdminResult> {

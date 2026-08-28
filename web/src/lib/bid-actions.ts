@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { currentBuyer } from "@/lib/session";
 import { getSettings } from "@/lib/settings";
 import { num, jpy } from "@/lib/format";
+import { fullBdLabel } from "@/lib/time";
 import { LotStatus } from "@/generated/prisma/client";
 
 export type BidResult = {
@@ -52,6 +53,11 @@ export async function placeBid(auctionCarId: string, amountJpy: number): Promise
         if (!lot.endsAt) return { error: "This lot has no close time yet." };
 
         const now = Date.now();
+        // A scheduled lot is on the block but not yet open — bidding waits for
+        // its Bangladesh start time.
+        if (lot.startedAt && lot.startedAt.getTime() > now) {
+          return { error: `Bidding hasn't opened yet — this lot starts at ${fullBdLabel(lot.startedAt)} (BD).` };
+        }
         const msRemaining = lot.endsAt.getTime() - now;
         if (msRemaining <= 0) return { error: "Bidding on this lot has closed." };
 

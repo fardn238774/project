@@ -6,6 +6,7 @@ import {
   reviewListing,
   startAuction,
   startLot,
+  scheduleLot,
   endAuction,
   setBroadcast,
   updateSettings,
@@ -194,6 +195,71 @@ export function StartLotButton({
         {pending ? "…" : label}
       </button>
       {error && <p className="text-xs font-semibold text-accent">{error}</p>}
+    </div>
+  );
+}
+
+/**
+ * Schedule a lot to open at a specific Bangladesh date & time. The datetime the
+ * admin picks is read as BD wall-clock time on the server, so it opens at that
+ * real BD moment regardless of where the server runs.
+ */
+export function ScheduleLotButton({
+  auctionCarId,
+  defaultSeconds,
+}: {
+  auctionCarId: string;
+  defaultSeconds: number;
+}) {
+  const [pending, start] = useTransition();
+  const [when, setWhen] = useState("");
+  const [seconds, setSeconds] = useState(String(defaultSeconds));
+  const [error, setError] = useState<string | null>(null);
+  const [ok, setOk] = useState<string | null>(null);
+
+  const submit = () =>
+    start(async () => {
+      setError(null);
+      setOk(null);
+      if (!when) {
+        setError("Pick a start date & time.");
+        return;
+      }
+      const r = await scheduleLot(auctionCarId, when, Number(seconds));
+      if (r.error) setError(r.error);
+      else setOk(`Opens ${r.scheduledFor ?? "at the chosen time"} (BD).`);
+    });
+
+  return (
+    <div className="flex flex-col items-end gap-1.5">
+      <div className="flex flex-wrap items-center justify-end gap-2">
+        <input
+          type="datetime-local"
+          value={when}
+          onChange={(e) => setWhen(e.target.value)}
+          aria-label="Scheduled start (Bangladesh time)"
+          title="Bangladesh time"
+          className="rounded-lg border border-border bg-bg px-2 py-1.5 text-xs text-text outline-none focus:border-accent"
+        />
+        <input
+          value={seconds}
+          onChange={(e) => setSeconds(e.target.value)}
+          inputMode="numeric"
+          aria-label="Lot duration in seconds"
+          className="w-16 rounded-lg border border-border bg-bg px-2 py-1.5 text-xs text-text outline-none focus:border-accent"
+        />
+        <span className="text-xs text-dim">sec</span>
+        <button
+          type="button"
+          disabled={pending}
+          onClick={submit}
+          className="rounded-lg bg-accent px-3 py-1.75 text-xs font-bold text-on-accent hover:bg-accent-hover disabled:opacity-50"
+        >
+          {pending ? "…" : "Schedule (BD)"}
+        </button>
+      </div>
+      {error && <p className="text-xs font-semibold text-accent">{error}</p>}
+      {ok && !error && <p className="text-xs font-semibold text-[#2f8f5f]">{ok}</p>}
     </div>
   );
 }

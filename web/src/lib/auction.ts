@@ -20,6 +20,12 @@ export type LotState = {
   activeBidders: number;
   antiSnipeWarning: boolean;
   topBidderId: string | null;
+  /** Scheduled BD start (ISO) when the lot is set to open in the future. */
+  startedAt: string | null;
+  /** True while now < startedAt — the lot is on the block but not yet open. */
+  notStarted: boolean;
+  /** Seconds until the scheduled start (0 once open). */
+  secondsUntilStart: number;
 };
 
 export async function readLotState(auctionCarId: string): Promise<LotState | null> {
@@ -47,6 +53,12 @@ export async function readLotState(auctionCarId: string): Promise<LotState | nul
     ? Math.max(0, Math.floor((lot.endsAt.getTime() - Date.now()) / 1000))
     : 0;
 
+  // A lot can be scheduled to open at a future (BD) time: it sits on the block
+  // as LIVE, but bidding stays closed until startedAt is reached.
+  const secondsUntilStart = lot.startedAt
+    ? Math.max(0, Math.ceil((lot.startedAt.getTime() - Date.now()) / 1000))
+    : 0;
+
   return {
     status: lot.status,
     currentBidJpy,
@@ -59,6 +71,9 @@ export async function readLotState(auctionCarId: string): Promise<LotState | nul
     activeBidders: distinct.length,
     antiSnipeWarning: lot.extensionCount > settings.antiSnipeWarnAfterExtensions,
     topBidderId: top?.bidderId ?? null,
+    startedAt: lot.startedAt?.toISOString() ?? null,
+    notStarted: secondsUntilStart > 0,
+    secondsUntilStart,
   };
 }
 

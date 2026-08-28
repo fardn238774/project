@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useLiveLot } from "./live-lot-context";
 import { placeBid } from "@/lib/bid-actions";
 import { jpy } from "@/lib/format";
+import { formatCountdown } from "@/lib/time";
 import { LotStatus } from "@/generated/prisma/enums";
 
 /** The prototype's quick-bid step. */
@@ -21,13 +22,13 @@ export function BidControls({
   agentName: string;
   paymentHref: string;
 }) {
-  const { state, secondsRemaining, settings, refresh } = useLiveLot();
+  const { state, secondsRemaining, secondsUntilStart, notStarted, settings, refresh } = useLiveLot();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [custom, setCustom] = useState("");
 
-  const isOpen = state.status === LotStatus.LIVE && secondsRemaining > 0;
+  const isOpen = state.status === LotStatus.LIVE && secondsRemaining > 0 && !notStarted;
   const iAmTopBidder = buyerId !== null && state.topBidderId === buyerId;
 
   const bid = (amount: number) => {
@@ -151,8 +152,10 @@ export function BidControls({
       </form>
 
       {!isOpen && (
-        <p className="mt-3 text-[13px] text-muted">
-          Bidding is closed for this lot.
+        <p className="mt-3 text-[13px] font-semibold text-muted">
+          {notStarted
+            ? `Bidding opens in ${formatCountdown(secondsUntilStart)} — this lot is scheduled to start.`
+            : "Bidding is closed for this lot."}
         </p>
       )}
       {error && <p className="mt-3 text-[13px] font-semibold text-accent">{error}</p>}

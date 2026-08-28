@@ -14,6 +14,7 @@ import {
   ListingReviewButtons,
   StartAuctionButton,
   StartLotButton,
+  ScheduleLotButton,
   EndAuctionButton,
   BroadcastControl,
   SettingsForm,
@@ -223,11 +224,14 @@ export default async function AdminPage() {
                   {lot.status === LotStatus.SOLD ? (
                     <Pill tone="good">Sold</Pill>
                   ) : (
-                    <StartLotButton
-                      auctionCarId={lot.id}
-                      defaultSeconds={lot.durationSeconds}
-                      label={lot.status === LotStatus.LIVE ? "Restart lot" : "Put on the block"}
-                    />
+                    <div className="flex flex-col items-end gap-2">
+                      <StartLotButton
+                        auctionCarId={lot.id}
+                        defaultSeconds={lot.durationSeconds}
+                        label={lot.status === LotStatus.LIVE ? "Restart now" : "Start now"}
+                      />
+                      <ScheduleLotButton auctionCarId={lot.id} defaultSeconds={lot.durationSeconds} />
+                    </div>
                   )}
                 </div>
               ))

@@ -2,11 +2,11 @@
 
 import { useLiveLot } from "./live-lot-context";
 import { bdt, jpy, formatRate } from "@/lib/format";
-import { formatCountdown } from "@/lib/time";
+import { formatCountdown, fullBdLabel } from "@/lib/time";
 import { LotStatus } from "@/generated/prisma/enums";
 
 export function LiveStats() {
-  const { state, secondsRemaining, settings } = useLiveLot();
+  const { state, secondsRemaining, secondsUntilStart, notStarted, settings } = useLiveLot();
 
   const bidBdt = state.currentBidJpy * state.rate;
   // Inside the anti-snipe window a late bid will push the clock out.
@@ -21,14 +21,24 @@ export function LiveStats() {
         />
         <Stat label="Live BDT equivalent" value={bdt(bidBdt)} accent />
         <Stat
-          label="Time remaining"
+          label={notStarted ? "Starts in" : "Time remaining"}
           value={
-            state.status === LotStatus.LIVE ? formatCountdown(secondsRemaining) : "Closed"
+            notStarted
+              ? formatCountdown(secondsUntilStart)
+              : state.status === LotStatus.LIVE
+                ? formatCountdown(secondsRemaining)
+                : "Closed"
           }
-          urgent={closing}
+          urgent={notStarted || closing}
         />
         <Stat label="Active bidders" value={String(state.activeBidders)} />
       </div>
+
+      {notStarted && state.startedAt && (
+        <p className="mb-1 text-[12px] font-semibold text-accent">
+          {`Scheduled to open ${fullBdLabel(new Date(state.startedAt))} (Bangladesh time) — bidding is closed until then.`}
+        </p>
+      )}
 
       <p className="text-[11px] text-dim">
         {`Rate: 1 JPY ≈ ${formatRate(state.rate)} BDT`}

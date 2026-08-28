@@ -73,3 +73,28 @@ export function formatCountdown(totalSeconds: number) {
 
   return hours > 0 ? `${hours}:${pad(minutes)}:${pad(seconds)}` : `${minutes}:${pad(seconds)}`;
 }
+
+/**
+ * Parse a <input type="datetime-local"> value (e.g. "2026-08-29T14:00", which
+ * the admin means as Bangladesh wall-clock time) into a correct UTC Date.
+ * Bangladesh is UTC+6 with no daylight saving, so appending "+06:00" makes the
+ * moment unambiguous regardless of the server's own timezone (UTC on Vercel).
+ */
+export function parseBdLocal(value: string): Date | null {
+  const m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(String(value ?? ""));
+  if (!m) return null;
+  const d = new Date(`${m[1]}-${m[2]}-${m[3]}T${m[4]}:${m[5]}:00+06:00`);
+  return Number.isNaN(d.getTime()) ? null : d;
+}
+
+/** "29 Aug, 2:00 PM" in Bangladesh time — for showing a scheduled start. */
+export function fullBdLabel(d: Date) {
+  return new Intl.DateTimeFormat("en-GB", {
+    timeZone: BST,
+    day: "numeric",
+    month: "short",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  }).format(d);
+}

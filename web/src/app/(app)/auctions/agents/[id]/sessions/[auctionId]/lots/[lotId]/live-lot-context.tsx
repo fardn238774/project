@@ -25,6 +25,10 @@ type Ctx = {
   state: LiveState;
   /** Ticks down every second between polls so the clock looks continuous. */
   secondsRemaining: number;
+  /** Seconds until a scheduled lot opens (0 once it's live). */
+  secondsUntilStart: number;
+  /** True while the lot is on the block but hasn't reached its start time. */
+  notStarted: boolean;
   settings: LotSettings;
   pooled: boolean;
   setPooled: (v: boolean) => void;
@@ -55,6 +59,7 @@ export function LiveLotProvider({
 }) {
   const [state, setState] = useState(initialState);
   const [secondsRemaining, setSecondsRemaining] = useState(initialState.secondsRemaining);
+  const [secondsUntilStart, setSecondsUntilStart] = useState(initialState.secondsUntilStart);
   const [pooled, setPooled] = useState(false);
 
   const refresh = useCallback(async () => {
@@ -64,6 +69,7 @@ export function LiveLotProvider({
       const next: LiveState = await res.json();
       setState(next);
       setSecondsRemaining(next.secondsRemaining);
+      setSecondsUntilStart(next.secondsUntilStart);
     } catch {
       // Transient network error — the next tick retries.
     }
@@ -80,13 +86,18 @@ export function LiveLotProvider({
   useEffect(() => {
     const timer = setInterval(() => {
       setSecondsRemaining((s) => Math.max(0, s - 1));
+      setSecondsUntilStart((s) => Math.max(0, s - 1));
     }, 1000);
     return () => clearInterval(timer);
   }, []);
 
+  // Locally, the lot is "not started" until its start countdown hits zero; the
+  // next poll then confirms it live from the server.
+  const notStarted = secondsUntilStart > 0;
+
   const value = useMemo(
-    () => ({ state, secondsRemaining, settings, pooled, setPooled, refresh }),
-    [state, secondsRemaining, settings, pooled, refresh],
+    () => ({ state, secondsRemaining, secondsUntilStart, notStarted, settings, pooled, setPooled, refresh }),
+    [state, secondsRemaining, secondsUntilStart, notStarted, settings, pooled, refresh],
   );
 
   return <LiveLotContext.Provider value={value}>{children}</LiveLotContext.Provider>;
