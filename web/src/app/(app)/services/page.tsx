@@ -4,7 +4,7 @@ export const metadata = { title: "Service Centers — AutoBD" };
 
 export default function ServicesPage() {
   return (
-    <main className="mx-auto w-full max-w-[1100px] px-10 pb-20 pt-6">
+    <main className="mx-auto w-full max-w-[1100px] px-5 sm:px-8 lg:px-10 pb-20 pt-6">
       <p className="mb-2.5 inline-flex items-center gap-2 rounded-full border border-border bg-card/60 px-3 py-1 text-[12px] font-bold uppercase tracking-[0.05em] text-accent">
         <span
           className="h-1.5 w-1.5 rounded-full bg-accent"

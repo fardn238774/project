@@ -6,7 +6,7 @@
  */
 export default function Loading() {
   return (
-    <main className="mx-auto w-full max-w-[1180px] px-10 pb-20 pt-6">
+    <main className="mx-auto w-full max-w-[1180px] px-5 sm:px-8 lg:px-10 pb-20 pt-6">
       <div className="mb-3 h-8 w-64 max-w-full animate-pulse rounded-lg bg-chip" />
       <div className="mb-8 h-4 w-96 max-w-full animate-pulse rounded bg-chip" />
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">

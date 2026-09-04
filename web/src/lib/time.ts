@@ -66,8 +66,8 @@ export function daysUntil(d: Date, now: Date = new Date()) {
 /** "2:34" / "1:02:34" — the prototype's countdown format. */
 export function formatCountdown(totalSeconds: number) {
   const s = Math.max(0, Math.floor(totalSeconds));
-  const hours = Math.floor(s / 3600);
-  const minutes = Math.floor((s % 3600) / 60);
+  const hours = Math.floor(s / 1800);
+  const minutes = Math.floor((s % 1800) / 60);
   const seconds = s % 60;
   const pad = (n: number) => String(n).padStart(2, "0");
 

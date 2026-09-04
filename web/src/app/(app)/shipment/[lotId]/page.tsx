@@ -55,7 +55,7 @@ export default async function ShipmentPage({
   const containers = shipment.booking ? [] : await listOpenContainers(settings.containerCapacity);
 
   return (
-    <main className="mx-auto w-full max-w-[760px] px-10 pb-20 pt-6">
+    <main className="mx-auto w-full max-w-[760px] px-5 sm:px-8 lg:px-10 pb-20 pt-6">
       <h1 className="mb-1.5 text-[26px] font-extrabold text-text">Shipment &amp; import status</h1>
       <p className="mb-6 text-sm text-muted">
         {`${shipment.auctionCar.make} ${shipment.auctionCar.model} — ${shipment.auctionCar.manufactureYear} · Lot ${shipment.auctionCar.lotNumber}${engagement ? ` · ${engagement.organization.companyName}` : ""}`}

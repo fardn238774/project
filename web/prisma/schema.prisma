@@ -39,6 +39,7 @@ model User {
   organization Organization?
   admin        Admin?
   messages     Message[]
+  shipmentStageChanges ShipmentEvent[] @relation("ShipmentStageActor")
 }
 
 model Buyer {
@@ -373,6 +374,10 @@ enum AuctionStatus {
   ENDED
 }
 
+
+
+
+
 /// An auction session (e.g. "USS Yokohama, today 14:00 JST"). Only an Admin
 /// creates these; organizations act as bidding agents, not suppliers.
 model Auction {
@@ -446,6 +451,13 @@ model AuctionCar {
 
   @@index([auctionId, status])
 }
+
+
+
+
+
+
+
 
 /// Full audit trail — every bid ever placed, not just the current highest.
 /// Price only ever moves through rows in this table.
@@ -807,6 +819,11 @@ model ShipmentEvent {
   stage      ShipmentStage
   at         DateTime      @default(now())
 
+  // Who moved the shipment to this stage. Null = an automatic/system transition
+  // (e.g. the WIN_CONFIRMED + PAYMENT_RECEIVED events written when escrow funds).
+  changedById String?
+  changedBy   User?    @relation("ShipmentStageActor", fields: [changedById], references: [id], onDelete: SetNull)
+
   @@index([shipmentId, at])
 }
 
@@ -912,6 +929,8 @@ model PlatformSetting {
   value     String
   updatedAt DateTime @updatedAt
 }
+
+
 
 /// Cached FX so we don't hit the exchange-rate API on every page load.
 model ExchangeRate {

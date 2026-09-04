@@ -50,7 +50,7 @@ export default async function NewCarsManagementPage() {
   }));
 
   return (
-    <main className="mx-auto w-full max-w-[1080px] px-10 pb-24 pt-8">
+    <main className="mx-auto w-full max-w-[1080px] px-5 sm:px-8 lg:px-10 pb-24 pt-8">
       <div className="mb-6 flex items-center justify-between gap-4">
         <div>
           <h1 className="text-[26px] font-extrabold text-text">New Cars Catalog</h1>

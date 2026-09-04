@@ -43,7 +43,7 @@ export default async function TelecastPage({
   ]);
 
   return (
-    <main className="mx-auto w-full max-w-[1180px] px-10 pb-20 pt-6">
+    <main className="mx-auto w-full max-w-[1180px] px-5 sm:px-8 lg:px-10 pb-20 pt-6">
       <Link
         href={`/auctions/agents/${agent.id}/sessions/${auction.id}`}
         className="mb-4.5 block text-[13px] text-muted hover:text-text"

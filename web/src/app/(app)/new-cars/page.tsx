@@ -15,7 +15,7 @@ export default async function NewCarBrandsPage() {
   });
 
   return (
-    <main className="mx-auto w-full max-w-[1180px] px-10 pb-20 pt-6">
+    <main className="mx-auto w-full max-w-[1180px] px-5 sm:px-8 lg:px-10 pb-20 pt-6">
       <h1 className="mb-2 text-[30px] font-extrabold tracking-[-0.01em] text-text">
         Brand new cars
       </h1>

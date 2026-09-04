@@ -9,7 +9,7 @@ export default async function NewListingPage() {
   await requireBuyer();
 
   return (
-    <main className="mx-auto w-full max-w-[760px] px-10 pb-24 pt-6">
+    <main className="mx-auto w-full max-w-[760px] px-5 sm:px-8 lg:px-10 pb-24 pt-6">
       <Link
         href="/used-cars/seller"
         className="mb-4.5 block text-[13px] text-muted hover:text-text"

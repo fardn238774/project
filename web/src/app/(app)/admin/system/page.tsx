@@ -20,7 +20,7 @@ export default async function SystemManagementPage() {
     ]);
 
   return (
-    <main className="mx-auto w-full max-w-[1180px] px-10 pb-20 pt-8">
+    <main className="mx-auto w-full max-w-[1180px] px-5 sm:px-8 lg:px-10 pb-20 pt-8">
       <div className="mb-6 flex items-center justify-between gap-4">
         <div>
           <h1 className="text-[26px] font-extrabold text-text">System Management</h1>

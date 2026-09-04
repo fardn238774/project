@@ -3,7 +3,10 @@
   "configurations": [
     {
       "name": "autobd",
-      "url": "http://localhost:1398"
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "cwd": "web",
+      "port": 3000
     }
   ]
 }

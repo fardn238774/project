@@ -16,7 +16,7 @@ export default async function CartPage() {
   }));
 
   return (
-    <main className="mx-auto w-full max-w-[820px] px-10 pb-24 pt-6">
+    <main className="mx-auto w-full max-w-[820px] px-5 sm:px-8 lg:px-10 pb-24 pt-6">
       <h1 className="mb-1.5 text-[26px] font-extrabold text-text">Your cart &amp; payments</h1>
       <p className="mb-6 max-w-[560px] text-sm text-muted">
         Everything you&apos;re buying across AutoBD — new, used, reconditioned and modifications —

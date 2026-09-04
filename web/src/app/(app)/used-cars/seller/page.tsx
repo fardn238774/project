@@ -22,7 +22,7 @@ export default async function SellerDashboardPage({
   });
 
   return (
-    <main className="mx-auto w-full max-w-[900px] px-10 pb-20 pt-6">
+    <main className="mx-auto w-full max-w-[900px] px-5 sm:px-8 lg:px-10 pb-20 pt-6">
       <Link href="/used-cars" className="mb-4.5 block text-[13px] text-muted hover:text-text">
         &larr; Back to marketplace
       </Link>

@@ -42,7 +42,7 @@ export default async function UsedCarsPage({
   });
 
   return (
-    <main className="mx-auto w-full max-w-[1180px] px-10 pb-20 pt-6">
+    <main className="mx-auto w-full max-w-[1180px] px-5 sm:px-8 lg:px-10 pb-20 pt-6">
       <div className="mb-7 flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="mb-2 text-[30px] font-extrabold tracking-[-0.01em] text-text">

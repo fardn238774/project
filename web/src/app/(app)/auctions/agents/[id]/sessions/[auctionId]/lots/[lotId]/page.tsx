@@ -67,7 +67,7 @@ export default async function BiddingPage({
   const paper = brtaPaperValue(lot.manufactureYear, settings.importEligibilityMaxAgeYears);
 
   return (
-    <main className="mx-auto w-full max-w-[1280px] px-10 pb-20 pt-6">
+    <main className="mx-auto w-full max-w-[1280px] px-5 sm:px-8 lg:px-10 pb-20 pt-6">
       <div className="mb-5 flex flex-wrap items-center gap-3">
         <Link
           href={`/auctions/agents/${agent.id}/sessions/${auctionId}`}

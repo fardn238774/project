@@ -6,7 +6,7 @@ export const metadata = { title: "AI Assistant — AutoBD" };
 
 export default function AssistantPage() {
   return (
-    <main className="mx-auto w-full max-w-[760px] px-10 pb-20 pt-6">
+    <main className="mx-auto w-full max-w-[760px] px-5 sm:px-8 lg:px-10 pb-20 pt-6">
       <div className="mb-5.5 flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-[26px] font-extrabold text-text">AI car assistant</h1>

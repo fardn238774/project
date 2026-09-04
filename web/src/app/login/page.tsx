@@ -26,7 +26,7 @@ export default function LoginPage() {
   const roleLabel = ROLES.find((r) => r.key === role)!.label;
 
   return (
-    <main className="min-h-screen bg-[#f7f4ee] px-10 py-10">
+    <main className="min-h-screen bg-[#f7f4ee] px-5 sm:px-8 lg:px-10 py-10">
       <div className="mx-auto mb-5 max-w-[1000px]">
         <Link
           href="/welcome"

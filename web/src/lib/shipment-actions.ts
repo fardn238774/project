@@ -30,7 +30,8 @@ export async function advanceShipment(shipmentId: string): Promise<ShipmentResul
 
   await prisma.$transaction([
     prisma.shipment.update({ where: { id: shipmentId }, data: { stage: next } }),
-    prisma.shipmentEvent.create({ data: { shipmentId, stage: next } }),
+    // Record who advanced it, so the tracker's history shows the responsible admin.
+    prisma.shipmentEvent.create({ data: { shipmentId, stage: next, changedById: user.id } }),
   ]);
 
   revalidatePath("/shipment", "layout");

@@ -62,7 +62,7 @@ export default async function EscrowPage({
   const paid = payment !== null;
 
   return (
-    <main className="mx-auto w-full max-w-[640px] px-10 pb-20 pt-6">
+    <main className="mx-auto w-full max-w-[640px] px-5 sm:px-8 lg:px-10 pb-20 pt-6">
       <h1 className="mb-1.5 text-[26px] font-extrabold text-text">Escrow payment</h1>
       <p className="mb-5.5 text-sm text-muted">
         {`Funds are held by AutoBD's escrow gateway and only released to ${org.companyName} after you confirm delivery.`}

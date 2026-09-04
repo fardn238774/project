@@ -64,7 +64,7 @@ export default async function OrgDashboardPage({
   const responseLabel = await avgResponseLabel(org.id);
 
   return (
-    <main className="mx-auto w-full max-w-[1180px] px-10 pb-20 pt-8">
+    <main className="mx-auto w-full max-w-[1180px] px-5 sm:px-8 lg:px-10 pb-20 pt-8">
       <h1 className="mb-1 text-[26px] font-extrabold text-text">
         {`Welcome back, ${org.companyName}`}
       </h1>

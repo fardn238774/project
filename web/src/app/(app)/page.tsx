@@ -41,7 +41,7 @@ export default async function HomePage() {
   if (session?.user?.role === Role.ORGANIZATION) redirect("/org");
 
   return (
-    <main className="mx-auto w-full max-w-[1180px] px-10 pb-20 pt-16">
+    <main className="mx-auto w-full max-w-[1180px] px-5 sm:px-8 lg:px-10 pb-20 pt-16">
       <div className="mb-10 max-w-[760px]">
         <p className="mb-3 inline-flex items-center gap-2 rounded-full border border-border bg-card/60 px-3 py-1 text-[12px] font-bold uppercase tracking-[0.06em] text-accent">
           <span

@@ -52,7 +52,7 @@ export default async function AuctionLotsPage({
 
   return (
     <>
-      <main className="mx-auto w-full max-w-[1180px] px-10 pb-30 pt-6">
+      <main className="mx-auto w-full max-w-[1180px] px-5 sm:px-8 lg:px-10 pb-30 pt-6">
         <Link
           href={`/auctions/agents/${agent.id}/sessions`}
           className="mb-4.5 block text-[13px] text-muted hover:text-text"
@@ -159,7 +159,7 @@ export default async function AuctionLotsPage({
         </div>
       </main>
 
-      <div className="fixed bottom-0 left-0 right-0 z-10 flex items-center justify-between gap-4 border-t border-border bg-card px-10 py-4">
+      <div className="fixed bottom-0 left-0 right-0 z-10 flex items-center justify-between gap-4 border-t border-border bg-card px-5 sm:px-8 lg:px-10 py-4">
         <p className="text-[13px] text-muted">
           <span className="font-bold text-text">{wishlistedIds.size}</span> wishlisted for this
           session

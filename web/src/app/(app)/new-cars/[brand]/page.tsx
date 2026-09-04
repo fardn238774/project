@@ -35,7 +35,7 @@ export default async function BrandCarsPage({
   if (!b) notFound();
 
   return (
-    <main className="mx-auto w-full max-w-[1180px] px-10 pb-20 pt-6">
+    <main className="mx-auto w-full max-w-[1180px] px-5 sm:px-8 lg:px-10 pb-20 pt-6">
       <Link href="/new-cars" className="mb-4.5 block text-[13px] text-muted hover:text-text">
         &larr; All brands
       </Link>

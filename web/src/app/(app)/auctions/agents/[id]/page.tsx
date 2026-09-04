@@ -27,7 +27,7 @@ export default async function AgentProfilePage({
   const rating = ratingLabel(agent.ratingAvg);
 
   return (
-    <main className="mx-auto w-full max-w-[900px] px-10 pb-30 pt-6">
+    <main className="mx-auto w-full max-w-[900px] px-5 sm:px-8 lg:px-10 pb-30 pt-6">
       <Link href="/auctions" className="mb-4.5 block text-[13px] text-muted hover:text-text">
         &larr; Back to all agents
       </Link>
@@ -87,7 +87,7 @@ export default async function AgentProfilePage({
         )}
       </div>
 
-      <div className="fixed bottom-0 left-0 right-0 z-10 flex justify-center border-t border-border bg-card px-10 py-4">
+      <div className="fixed bottom-0 left-0 right-0 z-10 flex justify-center border-t border-border bg-card px-5 sm:px-8 lg:px-10 py-4">
         <Link
           href={`/auctions/agents/${agent.id}/sessions`}
           className="rounded-[11px] bg-accent px-8 py-3.5 text-[15px] font-bold text-on-accent shadow-[0_4px_14px_rgba(var(--accent-rgb),0.3)] transition hover:bg-accent-hover"

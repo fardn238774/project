@@ -29,7 +29,7 @@ export default async function ResearchBrandPage({
   const brandName = brandOf(models[0].name).name;
 
   return (
-    <main className="mx-auto w-full max-w-[1180px] px-10 pb-20 pt-6">
+    <main className="mx-auto w-full max-w-[1180px] px-5 sm:px-8 lg:px-10 pb-20 pt-6">
       <Link href="/research" className="mb-4.5 block text-[13px] text-muted hover:text-text">
         &larr; All brands
       </Link>
