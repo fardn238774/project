@@ -50,7 +50,7 @@ export default async function HomePage() {
           />
           Four ways to your next car
         </p>
-        <h1 className="text-[40px] font-extrabold leading-[1.08] tracking-[-0.02em] text-text sm:text-[46px]">
+        <h1 className="text-[30px] font-extrabold leading-[1.12] tracking-[-0.02em] text-text sm:text-[46px] sm:leading-[1.08]">
           Choose how you&apos;d like to{" "}
           <span className="gradient-text">buy your next car.</span>
         </h1>

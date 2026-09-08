@@ -204,7 +204,7 @@ export function Landing({
           <p className="lp-rise mb-4 inline-flex items-center gap-2.5 text-[12px] font-bold uppercase tracking-[0.12em] text-accent" style={{ animationDelay: "0.05s" }}>
             <span className="bg-accent" style={{ width: 18, height: 2 }} /> Car Marketplace · Bangladesh
           </p>
-          <h1 className="lp-rise max-w-[820px] text-[40px] font-extrabold leading-[1.03] tracking-[-0.03em] text-text sm:text-[60px]" style={{ animationDelay: "0.15s" }}>
+          <h1 className="lp-rise max-w-[820px] text-[30px] font-extrabold leading-[1.08] tracking-[-0.03em] text-text sm:text-[60px] sm:leading-[1.03]" style={{ animationDelay: "0.15s" }}>
             Buy a car, without the <span className="lp-grad">guesswork.</span>
           </h1>
           <div className="lp-rise mt-7 flex flex-wrap items-center gap-x-8 gap-y-4" style={{ animationDelay: "0.28s" }}>
@@ -266,11 +266,11 @@ export function Landing({
       </section>
 
       {/* ---- pillars ---- */}
-      <section id="pillars" className="mx-auto w-full max-w-[1180px] px-6 py-24 sm:px-10">
+      <section id="pillars" className="mx-auto w-full max-w-[1180px] px-6 py-14 sm:py-24 sm:px-10">
         <p className="mb-4 inline-flex items-center gap-2.5 text-[12px] font-bold uppercase tracking-[0.12em] text-accent">
           <span className="bg-accent" style={{ width: 18, height: 2 }} /> Four pillars
         </p>
-        <h2 className="mb-12 max-w-[600px] text-[34px] font-extrabold tracking-[-0.02em] text-text sm:text-[38px]">
+        <h2 className="mb-12 max-w-[600px] text-[26px] font-extrabold tracking-[-0.02em] text-text sm:text-[38px]">
           One workflow, four ways to buy.
         </h2>
         <div className="grid gap-4.5 sm:grid-cols-2 xl:grid-cols-4">
@@ -299,8 +299,8 @@ export function Landing({
       </section>
 
       {/* ---- live cost demo ---- */}
-      <section className="mx-auto w-full max-w-[1180px] px-6 pb-24 sm:px-10">
-        <div className="lp-pulse relative grid items-center gap-10 overflow-hidden rounded-[26px] border border-border bg-card p-8 sm:p-12 lg:grid-cols-2">
+      <section className="mx-auto w-full max-w-[1180px] px-6 pb-14 sm:pb-24 sm:px-10">
+        <div className="lp-pulse relative grid items-center gap-8 overflow-hidden rounded-[26px] border border-border bg-card p-6 sm:gap-10 sm:p-12 lg:grid-cols-2">
           {[0, 1, 2, 3, 4].map((i) => (
             <span key={i} className={`lp-bubble lp-bubble-${i}`} aria-hidden />
           ))}
@@ -346,13 +346,13 @@ export function Landing({
       </section>
 
       {/* ---- how it works ---- */}
-      <section id="how" className="mx-auto w-full max-w-[1180px] px-6 pb-24 sm:px-10">
+      <section id="how" className="mx-auto w-full max-w-[1180px] px-6 pb-14 sm:pb-24 sm:px-10">
         <div className="grid gap-12 lg:grid-cols-[1fr_1.3fr]">
           <div>
             <p className="mb-4 inline-flex items-center gap-2.5 text-[12px] font-bold uppercase tracking-[0.12em] text-accent">
               <span className="bg-accent" style={{ width: 18, height: 2 }} /> How it works
             </p>
-            <h2 className="mb-7 text-[34px] font-extrabold leading-[1.15] tracking-[-0.02em] text-text sm:text-[38px]">
+            <h2 className="mb-7 text-[26px] font-extrabold leading-[1.15] tracking-[-0.02em] text-text sm:text-[38px]">
               Four steps, start to delivery.
             </h2>
             <Link
@@ -379,11 +379,11 @@ export function Landing({
       </section>
 
       {/* ---- trust / testimonials ---- */}
-      <section id="trust" className="mx-auto w-full max-w-[1180px] px-6 pb-24 sm:px-10">
+      <section id="trust" className="mx-auto w-full max-w-[1180px] px-6 pb-14 sm:pb-24 sm:px-10">
         <p className="mb-4 inline-flex items-center gap-2.5 text-[12px] font-bold uppercase tracking-[0.12em] text-accent">
           <span className="bg-accent" style={{ width: 18, height: 2 }} /> Why AutoBD
         </p>
-        <h2 className="mb-10 max-w-[600px] text-[34px] font-extrabold tracking-[-0.02em] text-text sm:text-[38px]">
+        <h2 className="mb-10 max-w-[600px] text-[26px] font-extrabold tracking-[-0.02em] text-text sm:text-[38px]">
           Trusted by buyers across Bangladesh.
         </h2>
         <div className="mb-4.5 grid gap-4.5 md:grid-cols-2">
@@ -403,12 +403,12 @@ export function Landing({
       </section>
 
       {/* ---- final CTA (expanding rings + bubbles) ---- */}
-      <section className="mx-auto w-full max-w-[1180px] px-6 pb-24 sm:px-10">
-        <div className="lp-pulse relative overflow-hidden rounded-[28px] border border-border bg-card p-12 text-center sm:p-16">
+      <section className="mx-auto w-full max-w-[1180px] px-6 pb-14 sm:pb-24 sm:px-10">
+        <div className="lp-pulse relative overflow-hidden rounded-[28px] border border-border bg-card p-7 text-center sm:p-16">
           {[0, 1, 2, 3].map((i) => (
             <span key={i} className={`lp-bubble lp-bubble-${i}`} aria-hidden />
           ))}
-          <h2 className="mb-3.5 text-[34px] font-extrabold tracking-[-0.02em] text-text sm:text-[40px]">Ready to find your car?</h2>
+          <h2 className="mb-3.5 text-[26px] font-extrabold tracking-[-0.02em] text-text sm:text-[40px]">Ready to find your car?</h2>
           <p className="mb-8 text-[16px] text-muted">
             {loggedIn ? "Jump back into your dashboard." : "Log in or create a free account to get started."}
           </p>
@@ -427,11 +427,11 @@ export function Landing({
       </section>
 
       {/* ---- gallery ---- */}
-      <section id="gallery" className="mx-auto w-full max-w-[1180px] px-6 pb-24 sm:px-10">
+      <section id="gallery" className="mx-auto w-full max-w-[1180px] px-6 pb-14 sm:pb-24 sm:px-10">
         <p className="mb-4 inline-flex items-center gap-2.5 text-[12px] font-bold uppercase tracking-[0.12em] text-accent">
           <span className="bg-accent" style={{ width: 18, height: 2 }} /> Gallery
         </p>
-        <h2 className="mb-9 max-w-[600px] text-[34px] font-extrabold tracking-[-0.02em] text-text sm:text-[38px]">
+        <h2 className="mb-9 max-w-[600px] text-[26px] font-extrabold tracking-[-0.02em] text-text sm:text-[38px]">
           The kind of cars you&apos;ll find here.
         </h2>
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 sm:grid-rows-2 sm:[grid-auto-rows:220px]">
